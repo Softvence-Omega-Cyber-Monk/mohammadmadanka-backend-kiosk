@@ -2,6 +2,8 @@ import express from 'express';
 import authRouter from '../modules/auth/auth.routes';
 import userRoutes from '../modules/user/user.routes';
 import templateRoutes from '../modules/template/template.routes';
+import path from 'path';
+import placeholderRoutes from '../modules/placeholder/placeholder.routes';
 
 const Routes = express.Router();
 // Array of module routes
@@ -17,6 +19,10 @@ const moduleRouts = [
   {
     path: '/templates',
     router:templateRoutes,
+  },
+  {
+    path: '/placeholders',
+    router: placeholderRoutes, 
   }
 ];
 
