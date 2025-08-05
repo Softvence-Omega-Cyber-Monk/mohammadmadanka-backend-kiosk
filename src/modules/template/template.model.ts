@@ -33,7 +33,6 @@ const TemplateSchema = new Schema(
     occasion: { type: String, required: true },
     targetUser: { type: String, required: true },
     rudeContent: { type: Boolean, required: true , default: false },
-    createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     price: { type: Number, required: true },
     holesInfo: [HolesInfoSchema],
     isDeleted: { type: Boolean, default: false },

@@ -28,7 +28,6 @@ export type Template = {
   link: string;
   category: string;
   occasion: string;
-  createdBy: string;
   targetUser: string;
   rudeContent: boolean;
   price: number;
