@@ -1,89 +1,77 @@
-import mongoose, { ClientSession, Types } from 'mongoose';
+import mongoose, { ClientSession } from 'mongoose';
 import { TUser } from './user.interface';
 import { UserModel } from './user.model';
 import { uploadImgToCloudinary } from '../../util/uploadImgToCloudinary';
+import { Types, Document } from 'mongoose';
 
-
-
-
-const createUser = async (payload: Partial<TUser>, method?: string) => {
-  
-  const existingUser = await UserModel.findOne({ email: payload.email }).select('+password');
+const createUser = async (payload: Partial<TUser>) => {
+  const existingUser = await UserModel.findOne({ email: payload.email }).select(
+    '+password',
+  );
 
   if (existingUser) {
     if (!existingUser.isDeleted) {
       return {
-        message: "A user with this email already exists and is active.",
+        message: 'A user with this email already exists and is active.',
         data: null,
       };
     }
   }
 
-  const session: ClientSession = await mongoose.startSession();
-
   try {
-    const result = await session.withTransaction(async () => {
-      let user;
+    const created = await UserModel.create(payload);
 
-      if (method) {
-        const { password, ...rest } = payload;
-        const created = await UserModel.create([rest], { session });
-        user = created[0];
-      } else {
-        user = new UserModel(payload);
-        await user.save({ session });
-      }
-      return {
-        message: "User created successfully.",
-        data: user,
-      };
-    });
-
-    return result;
-  } catch (error) {
-    console.error("Error creating user:", error);
     return {
-      message: "User creation failed due to an internal error.",
-      data: null,
+      message: 'User created successfully.',
+      data: created,
     };
-  } finally {
-    session.endSession();
+  } catch (error) {
+    console.error('Error creating user:', error);
+    throw error;
   }
 };
 
+const getAllUsers = async () => {
+  const result = await UserModel.find({ isDeleted: false });
+  return result;
+};
 
-const getAllUsers= async()=>{
- const result = await UserModel.find();
- return result;
-}
-
+const getSingleUser = async (user_id: Types.ObjectId) => {
+  const result = await UserModel.findOne({ _id: user_id, isDeleted: false });
+  return result;
+};
 
 const deleteSingleUser = async (user_id: Types.ObjectId) => {
-  const session: ClientSession = await mongoose.startSession();
-  session.startTransaction();
-  try {
-      await UserModel.findOneAndUpdate({ _id: user_id }, { isDeleted: true ,email:null}, { session });      
+  const existingUser = await UserModel.findOne({ _id: user_id }).select(
+    '+password',
+  );
+  if (existingUser?.role !== 'admin') {
+    const session: ClientSession = await mongoose.startSession();
+    session.startTransaction();
+    try {
+      await UserModel.findOneAndUpdate(
+        { _id: user_id },
+        { isDeleted: true, email: null },
+        { session },
+      );
+
       await session.commitTransaction();
       session.endSession();
-  } catch (error) {
+    } catch (error: any) {
       await session.abortTransaction();
       session.endSession();
       throw error;
+    }
+  } else {
+    throw new Error('Cannot delete admin user');
   }
 };
-
-const selfDistuct = async (user_id:Types.ObjectId) => {
-const result = deleteSingleUser(user_id)
-return result;
-}
-
-
 
 const userServices = {
   createUser,
   getAllUsers,
+  getSingleUser,
   deleteSingleUser,
-  selfDistuct,
 };
 
 export default userServices;

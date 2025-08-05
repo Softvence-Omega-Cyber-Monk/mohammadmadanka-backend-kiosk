@@ -1,98 +1,64 @@
 import bcrypt from 'bcrypt';
-import config from '../../config';
-import authUtill from './auth.utill';
+
 import { UserModel } from '../user/user.model';
-import idConverter from '../../util/idConvirter';
+
+import { TUser } from '../user/user.interface';
+import { createAccessToken, createRefreshToken } from './auth.utill';
+import config from '../../config';
 import jwt, { JwtPayload } from 'jsonwebtoken';
-import { sendEmail } from '../../util/sendEmail';
-import userServices from '../user/user.service';
 
-const logIn = async (
-  email: string,
-  password: string,
-  method: 'google' | 'email_Pass' | 'facebook' = 'email_Pass',
-) => {
-  let user = await UserModel.findOne({ email }).select('+password');
+const login = async (payload: Partial<TUser>) => {
+  const user: any = await UserModel.findOne({ email: payload?.email }).select(
+    '+password',
+  );
 
-  // console.log("user is",user)
-
- 
-  if ((user?.isBlocked || user?.isDeleted || !user) && (method === 'google' || method === 'facebook')) {
-    // Optional: archive/rename old user, or just ignore
-
-    // Register a fresh user
-    await userServices.createUser(
-      {
-        email,
-      },
-      method,
-    );
-
-    // Re-fetch new user
-    user = await UserModel.findOne({ email }).select('+password');
-
-    if (!user) {
-      throw new Error('User creation failed');
-    }
-  }
-
-  // If still no user (and not a social login), throw error
+  // Check if user exists
   if (!user) {
-    throw new Error('No user found with this email');
+    throw new Error('User is not found !');
   }
 
-  // Deny login for blocked/deleted users for normal email login
-  if ((user.isBlocked || user.isDeleted) && method === 'email_Pass') {
-    throw new Error('This user is blocked or deleted');
+  // Block deleted users
+  if (user.isDeleted) {
+    throw new Error('User is deleted!');
   }
 
-  // Password check for email login
-  if (method === 'email_Pass') {
-    const match = await bcrypt.compare(password, user.password);
-    if (!match) {
-      throw new Error('Password is not matched');
-    }
+  //  Check password
+  if (!payload.password) {
+    throw new Error('Password is required!');
   }
 
-
-  const updatedUser = await UserModel.findOneAndUpdate(
-    { email },
-    { isLoggedIn: true },
-    { new: true },
+  const isPasswordMatched = await bcrypt.compare(
+    payload.password,
+    user.password,
   );
 
+  if (!isPasswordMatched) {
+    throw new Error('Password not matched !');
+  }
 
-  const tokenizeData = {
-    id: user._id.toHexString(),
+  //  Create Tokens
+  const jwtPayload = {
+    userId: user._id.toString(),
     role: user.role,
-    username: updatedUser?.name,
+    email:user.email,
+    name: user.name,
   };
-
-  const approvalToken = authUtill.createToken(
-    tokenizeData,
-    config.jwt_token_secret,
-    config.token_expairsIn,
+  const accessToken = createAccessToken(
+    jwtPayload,
+    config.jwt_token_secret as string,
+    parseInt(config.token_expairsIn as string),
   );
 
-  const refreshToken = authUtill.createToken(
-    tokenizeData,
-    config.jwt_refresh_Token_secret,
-    config.rifresh_expairsIn,
+  const refreshToken = createRefreshToken(
+    jwtPayload,
+    config.jwt_refresh_Token_secret as string,
+    parseInt(config.rifresh_expairsIn as string),
   );
 
-  return { approvalToken, refreshToken, updatedUser };
-};
-
-
-const logOut = async (userId: string) => {
-  const convertedId = idConverter(userId);
-
-  const findUserById = await UserModel.findOneAndUpdate(
-    { _id: convertedId },
-    { isLoggedIn: false, loggedOutTime: new Date() },
-    { new: true },
-  );
-  return findUserById;
+  return {
+    accessToken,
+    refreshToken,
+  };
 };
 
 const changePassword = async (
@@ -106,19 +72,20 @@ const changePassword = async (
       authorizationToken,
       config.jwt_token_secret as string,
     ) as JwtPayload;
+    console.log(decoded);
 
-    if (!decoded || !decoded.id) {
+    if (!decoded) {
       throw new Error('Invalid or unauthorized token');
     }
 
-    const userId = decoded.id;
+    const userId = decoded.userId;
 
     // Find the user and include the password field
     const findUser = await UserModel.findOne({ _id: userId })
       .select('+password')
       .lean(); // Convert to a plain object for performance
 
-    if (!findUser || !findUser.password) {
+    if (!findUser) {
       throw new Error('User not found or password missing');
     }
 
@@ -169,43 +136,28 @@ const refreshToken = async (refreshToken: string) => {
     throw Error('tocan decodaing Failed');
   }
 
-  const { id, iat, role } = decoded as JwtPayload;
+  const { userId, role } = decoded as JwtPayload;
 
   const findUser = await UserModel.findOne({
-    _id: id,
-    isDelited: false,
+    _id: userId,
+    isDeleted: false,
   });
+  console.log();
 
   if (!findUser) {
     throw Error('Unauthorised User or forbitten Access');
   }
 
-  // console.log(findUser)
-  if ((findUser.passwordChangeTime || findUser.loggedOutTime) && iat) {
-    const passwordChangedAt = findUser.passwordChangeTime
-      ? new Date(findUser.passwordChangeTime).getTime() / 1000
-      : null;
-
-    const logOutTimedAt = findUser.loggedOutTime
-      ? new Date(findUser.loggedOutTime).getTime() / 1000
-      : null;
-
-    if (
-      (passwordChangedAt && passwordChangedAt > iat) ||
-      (logOutTimedAt && logOutTimedAt > iat)
-    ) {
-      throw Error('Unauthorized User: Try logging in again');
-    }
-  }
-
   const JwtPayload = {
-    id: findUser.id,
+    userId: findUser.id,
     role: role,
+    email:findUser.email,
+    name: findUser.name,
   };
-  const approvalToken = authUtill.createToken(
+  const approvalToken = createAccessToken(
     JwtPayload,
     config.jwt_token_secret as string,
-    config.token_expairsIn as string,
+    parseInt(config.token_expairsIn as string),
   );
 
   return {
@@ -213,124 +165,71 @@ const refreshToken = async (refreshToken: string) => {
   };
 };
 
-const forgetPassword = async (email: string) => {
-  const user = await UserModel.findOne({ email });
+// const forgetPassword = async (email: string) => {
+//   const user = await UserModel.findOne({ email });
 
-  if (!user) {
-    throw new Error('User not found with this email');
-  }
+//   if (!user) {
+//     throw new Error('User not found with this email');
+//   }
 
-  if (user.isDeleted) {
-    throw new Error('This user is deleted. This function is not available.');
-  }
+//   if (user.isDeleted) {
+//     throw new Error('This user is deleted. This function is not available.');
+//   }
 
-  const tokenizeData = {
-    id: user._id,
-    role: user.role,
-  };
+//   const tokenizeData = {
+//     id: user._id,
+//     role: user.role,
+//   };
 
-  const resetToken = authUtill.createToken(
-    tokenizeData,
-    config.jwt_token_secret as string,
-    config.token_expairsIn as string
-  );
+//   const resetToken = authUtill.createToken(
+//     tokenizeData,
+//     config.jwt_token_secret as string,
+//     config.token_expairsIn as string,
+//   );
 
-  const resetLink = `${config.FrontEndHostedPort}?id=${user._id}&token=${resetToken}`;
+//   const resetLink = `${config.FrontEndHostedPort}?id=${user._id}&token=${resetToken}`;
 
-  const passwordResetHtml = `
-    <div>
-      <p>Dear User,</p>
-      <p>Click the button below to reset your password. This link expires in 10 minutes.</p> 
-      <p>
-          <a href="${resetLink}" target="_blank">
-              <button style="padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 4px;">
-                  Reset Password
-              </button>
-          </a>
-      </p>
-    </div>
-  `;
+//   const passwordResetHtml = `
+//     <div>
+//       <p>Dear User,</p>
+//       <p>Click the button below to reset your password. This link expires in 10 minutes.</p>
+//       <p>
+//           <a href="${resetLink}" target="_blank">
+//               <button style="padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 4px;">
+//                   Reset Password
+//               </button>
+//           </a>
+//       </p>
+//     </div>
+//   `;
 
-  const emailResponse = await sendEmail(user.email, 'Reset Your Password', passwordResetHtml);
+//   const emailResponse = await sendEmail(
+//     user.email,
+//     'Reset Your Password',
+//     passwordResetHtml,
+//   );
 
-  if (emailResponse.success) {
-    return {
-      success: true,
-      message: '✅ Check your email for the reset password link.',
-      emailSentTo: emailResponse.accepted,
-      resetLink,
-    };
-  } else {
-    return {
-      success: false,
-      message: '❌ Failed to send password reset email.',
-      error: emailResponse.error,
-    };
-  }
-};
-
-const resetPassword = async (
-  authorizationToken: string,
-  userId: string,
-  newPassword: string,
-) => {
-  // Decode the token
-  const decoded = jwt.verify(
-    authorizationToken,
-    config.jwt_token_secret as string,
-  ) as JwtPayload;
-
-  if (!decoded || !decoded.id) {
-    throw Error('Invalid or unauthorized token');
-  }
-
-  const { id } = decoded;
-  if (id === userId) {
-    // Find the user and include the password field
-    const findUser = await UserModel.findOne({ _id: id }).select('+password');
-
-    if (!findUser || !findUser.password) {
-      throw Error('User not found or password missing');
-    }
-
-    // Hash the new password
-    const newPasswordHash = await bcrypt.hash(
-      newPassword,
-      Number(config.bcrypt_salt),
-    );
-
-    // Update the user's password and passwordChangeTime
-    const updatePassword = await UserModel.findOneAndUpdate(
-      { _id: id },
-      {
-        password: newPasswordHash,
-        passwordChangeTime: new Date(),
-      },
-      { new: true },
-    );
-
-    if (!updatePassword) {
-      throw Error('Error updating password');
-    }
-
-    return { passwordChanged: true };
-  } else {
-    throw Error('Invalid User');
-  }
-};
-
-const collectProfileData = async (id: string) => {
-  const result = await UserModel.findOne({ _id: id });
-  return result;
-};
+//   if (emailResponse.success) {
+//     return {
+//       success: true,
+//       message: '✅ Check your email for the reset password link.',
+//       emailSentTo: emailResponse.accepted,
+//       resetLink,
+//     };
+//   } else {
+//     return {
+//       success: false,
+//       message: '❌ Failed to send password reset email.',
+//       error: emailResponse.error,
+//     };
+//   }
+// };
 
 const authServices = {
-  logIn,
-  logOut,
+  login,
+
   changePassword,
   refreshToken,
-  forgetPassword,
-  resetPassword,
-  collectProfileData,
+  // forgetPassword,
 };
 export default authServices;
