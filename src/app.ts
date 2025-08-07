@@ -5,6 +5,7 @@ import globalErrorHandler from './middleware/globalErrorHandler';
 import routeNotFound from './middleware/routeNotFound';
 import Routes from './routes';
 import cookieParser from 'cookie-parser';
+import path from 'path';
 
 // middleWares
 app.use(express.json());
