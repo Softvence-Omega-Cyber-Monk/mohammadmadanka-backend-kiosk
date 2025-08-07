@@ -31,19 +31,22 @@ const uploadTemplateImage = catchAsync(async (req: Request, res: Response) => {
 
 
 const create = catchAsync(async (req: Request, res: Response) => {
-  const { localImagePath, name, ...restData } = req.body;
+  const { localImagePath, localpreviewLink, name, ...restData } = req.body;
 
-  if (!localImagePath || !name) {
-    throw new Error("Template name and localImagePath are required");
-  }
+  // if (!localImagePath || !name || !localpreviewLink) {
+  //   throw new Error("Template name and localImagePath are required");
+  // }
 
   // 1. Upload to Cloudinary using your utility
-  const cloudinaryResult = await uploadImgToCloudinary(name, localImagePath);
 
+
+  const template = await uploadImgToCloudinary(name, localImagePath);
+  const preview = await uploadImgToCloudinary("hello", localpreviewLink);
   // 2. Prepare full data for DB
   const templateData = {
     name,
-    link: cloudinaryResult.secure_url, // ✅ Store Cloudinary link
+    link: template.secure_url, // ✅ Store Cloudinary link
+    previewLink:  preview.secure_url,
     ...restData,
   };
 

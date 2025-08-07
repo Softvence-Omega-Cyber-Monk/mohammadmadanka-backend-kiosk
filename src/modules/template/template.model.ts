@@ -26,6 +26,7 @@ const HolesInfoSchema = new Schema({
 
 const TemplateSchema = new Schema(
   {
+    previewLink: {type: String, required: true},
     name: { type: String, required: true },
     SKU: { type: String, required: true, unique: true },
     link: { type: String, required: true },
