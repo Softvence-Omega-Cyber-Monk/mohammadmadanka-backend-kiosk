@@ -1,18 +1,17 @@
-import mongoose, { ClientSession } from 'mongoose';
-import { TUser } from './user.interface';
-import { UserModel } from './user.model';
-import { uploadImgToCloudinary } from '../../util/uploadImgToCloudinary';
-import { Types, Document } from 'mongoose';
+import mongoose, { ClientSession } from "mongoose";
+import { TUser } from "./user.interface";
+import { UserModel } from "./user.model";
+import { Types } from "mongoose";
 
 const createUser = async (payload: Partial<TUser>) => {
   const existingUser = await UserModel.findOne({ email: payload.email }).select(
-    '+password',
+    "+password"
   );
 
   if (existingUser) {
     if (!existingUser.isDeleted) {
       return {
-        message: 'A user with this email already exists and is active.',
+        message: "A user with this email already exists and is active.",
         data: null,
       };
     }
@@ -22,11 +21,11 @@ const createUser = async (payload: Partial<TUser>) => {
     const created = await UserModel.create(payload);
 
     return {
-      message: 'User created successfully.',
+      message: "User created successfully.",
       data: created,
     };
   } catch (error) {
-    console.error('Error creating user:', error);
+    console.error("Error creating user:", error);
     throw error;
   }
 };
@@ -43,16 +42,16 @@ const getSingleUser = async (user_id: Types.ObjectId) => {
 
 const deleteSingleUser = async (user_id: Types.ObjectId) => {
   const existingUser = await UserModel.findOne({ _id: user_id }).select(
-    '+password',
+    "+password"
   );
-  if (existingUser?.role !== 'admin') {
+  if (existingUser?.role !== "superAdmin") {
     const session: ClientSession = await mongoose.startSession();
     session.startTransaction();
     try {
       await UserModel.findOneAndUpdate(
         { _id: user_id },
         { isDeleted: true, email: null },
-        { session },
+        { session }
       );
 
       await session.commitTransaction();
@@ -63,7 +62,7 @@ const deleteSingleUser = async (user_id: Types.ObjectId) => {
       throw error;
     }
   } else {
-    throw new Error('Cannot delete admin user');
+    throw new Error("Cannot delete admin user");
   }
 };
 

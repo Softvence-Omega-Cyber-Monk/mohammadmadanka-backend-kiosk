@@ -1,20 +1,20 @@
-import catchAsync from '../../util/catchAsync';
-import authServices from './auth.service';
+import catchAsync from "../../util/catchAsync";
+import authServices from "./auth.service";
 
 const logIn = catchAsync(async (req, res) => {
   const { email, password } = req.body;
   const result = await authServices.login({ email, password });
   const { accessToken, refreshToken } = result;
 
-  res.cookie('refreshToken', refreshToken, {
+  res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production', // true in production (HTTPS)
-    sameSite: 'strict', // or 'lax' depending on cross-site needs
+    secure: process.env.NODE_ENV === "production", // true in production (HTTPS)
+    sameSite: "strict", // or 'lax' depending on cross-site needs
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
 
   res.status(200).json({
-    message: 'Log In Successful',
+    message: "Log In Successful",
     accessToken,
     refreshToken,
   });
@@ -24,30 +24,32 @@ const changePassword = catchAsync(async (req, res) => {
   const { oldPassword, newPassword } = req.body;
   const authorizationToken = req.headers?.authorization as string;
 
+
   const result = await authServices.changePassword(
     authorizationToken,
     oldPassword,
-    newPassword,
+    newPassword
   );
   res.status(200).json({
     success: true,
-    message: 'password changed',
+    message: "password changed",
     body: result,
   });
 });
 
 const refreshToken = catchAsync(async (req, res) => {
+  const token = req.cookies.refreshToken;
+  console.log("refresh token from cookie", token);
 
-  const refreshToken = req.cookies.refreshToken;
-
-  const result = await authServices.refreshToken(refreshToken);
+  const result = await authServices.refreshToken(token);
 
   res.status(200).json({
     success: true,
-    message: 'log token refreshed',
+    message: "log token refreshed",
     body: result,
   });
 });
+
 
 // const forgetPassword = catchAsync(async (req, res) => {
 

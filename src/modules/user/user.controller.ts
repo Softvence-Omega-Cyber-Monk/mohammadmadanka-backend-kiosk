@@ -1,11 +1,13 @@
 
 import catchAsync from '../../util/catchAsync';
-import sendResponse from '../../util/sendResponse';
 import idConverter from '../../util/idConvirter';
+import sendResponse from '../../util/sendResponse';
+
 import userServices from './user.service';
 
 const createUser = catchAsync(async (req, res) => {
   const user = req.body;
+  console.log('user in controller', user);
   const result = await userServices.createUser(user);
   res.status(200).json({
     message: result.message || 'user created successfully',
@@ -25,6 +27,7 @@ const getAllUsers = catchAsync(async (req, res) => {
 
 const getSingleUser = catchAsync(async (req, res) => {
   const user_id = req.query.user_id as string;
+  console.log(user_id)
   const userIdConverted = idConverter(user_id);
   if (!userIdConverted) {
     throw new Error('user id conversion failed');

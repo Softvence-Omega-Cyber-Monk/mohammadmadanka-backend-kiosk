@@ -1,7 +1,7 @@
 import { TUserRole } from "../../constents";
 
 export type TUser = {
-  name: string;
+  shopName: string;
   phone: string;
   email: string;
   password: string;

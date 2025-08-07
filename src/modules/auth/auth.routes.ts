@@ -11,7 +11,7 @@ authRouter.post('/logIn', validator(logInValidator), authController.logIn);
 
 authRouter.post(
   '/changePassword',
-  auth(userRole.admin, userRole.user),
+  auth(userRole.superAdmin, userRole.shopAdmin),
   authController.changePassword,
 );
 

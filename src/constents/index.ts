@@ -1,9 +1,8 @@
-export type TUserRole = "superAdmin" | "admin" | "user";
-
+export type TUserRole = "superAdmin" | "shopAdmin" 
 export const userRole = {
   superAdmin: "superAdmin",
-  user: "user",
-  admin: "admin",
+
+  shopAdmin: "shopAdmin",
 } as const;
 
 export type TErrorSource = {

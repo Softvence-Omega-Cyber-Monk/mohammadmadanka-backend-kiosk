@@ -11,17 +11,17 @@ userRoutes.post('/createUser', userController.createUser);
 // admin routes
 userRoutes.get(
   '/getAlluser',
-  auth(userRole.admin, userRole.user),
+  // auth(userRole.superAdmin, userRole.shopAdmin),
   userController.getAllUsers,
 );
 userRoutes.get(
   '/getSingleUser',
-  auth(userRole.admin, userRole.user),
+  // auth(userRole.superAdmin, userRole.shopAdmin),
   userController.getSingleUser,
 );
 userRoutes.delete(
   '/deleteSingleUser',
-  auth(userRole.admin),
+  // auth(userRole.shopAdmin),
   userController.deleteSingleUser,
 );
 

@@ -6,15 +6,15 @@ import { TUser } from "./user.interface";
 
 const UserSchema = new Schema<TUser>(
   {
-    name: { type: String, required: false, default: "user" },
+    shopName: { type: String, required: false },
     phone: { type: String, unique: false },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
 
     role: {
       type: String,
-      enum: ["superAdmin", "admin", "user"],
-      default: userRole.user,
+      enum: ["superAdmin", "shopAdmin"],
+      default: userRole.shopAdmin,
     },
 
     isDeleted: { type: Boolean, default: false },
