@@ -41,7 +41,7 @@ const create = catchAsync(async (req: Request, res: Response) => {
 
 
   const template = await uploadImgToCloudinary(name, localImagePath);
-  const preview = await uploadImgToCloudinary("hello", localpreviewLink);
+  const preview = await uploadImgToCloudinary("abc123", localpreviewLink);
   // 2. Prepare full data for DB
   const templateData = {
     name,
@@ -142,6 +142,21 @@ const filterTemplates = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getTargetUser = catchAsync(async (req: Request, res: Response) => {
+
+  const result = await TemplateService.getTargetUser();
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Templates retrieved successfully",
+    data: result,
+  });
+});
+
+
+
+
+
 const templateController = {
   create,
   getAll,
@@ -150,7 +165,8 @@ const templateController = {
   softDelete,
   getByAdmin,
   filterTemplates,
-  uploadTemplateImage
+  uploadTemplateImage,
+  getTargetUser
 };
 
 export default templateController;

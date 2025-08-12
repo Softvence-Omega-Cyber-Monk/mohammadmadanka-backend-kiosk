@@ -51,8 +51,20 @@ const filterTemplates = async (filters: {
   if (filters.category) query.category = filters.category;
   if (filters.occasion) query.occasion = filters.occasion;
 
-  const templates = await TemplateModel.find(query);
+  const templates = await TemplateModel.find(query, 'id previewLink targetUser rudeContent');
   return templates;
+};
+
+
+const getTargetUser = async () => {
+  try {
+    // Use MongoDB's distinct to get unique targetUser values
+    const targetUsers = await TemplateModel.distinct('targetUser', { isDeleted: false });
+    return targetUsers;
+  } catch (err) {
+    console.error('Error fetching unique target users:', err);
+    throw err;
+  }
 };
 
 
@@ -64,6 +76,7 @@ const templateService = {
   softDelete,
   getByCreatedBy,
   filterTemplates,
+  getTargetUser,
 };
 
 export default templateService;
