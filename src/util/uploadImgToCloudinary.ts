@@ -29,11 +29,8 @@ export const uploadImgToCloudinary = async (name: string, filePath: string) => {
       public_id: name,
     });
 
-    // Log the upload result
-    console.log("Upload result:", uploadResult);
-
     // Delete the file from the local filesystem after uploading it to Cloudinary
-    await deleteFile(filePath);
+     await deleteFile(filePath);
 
     // Return the upload result
     return uploadResult;
@@ -66,6 +63,24 @@ export const uploadMultipleImages = async (filePaths: string[]) => {
   }
 };
 
+export const deleteImageFromCloudinary = async (publicId: string) => {
+  cloudinary.config({
+    cloud_name: config.cloudinary_name,
+    api_key: config.cloudinary_api_key,
+    api_secret: config.cloudinary_api_secret,
+  });
+
+  console.log("Deleting image from Cloudinary with public ID:", publicId);
+  try {
+    // Delete the image from Cloudinary using its public ID
+    const result = await cloudinary.uploader.destroy(publicId);
+    return result;
+  } catch (error) {
+    console.error("Error deleting image from Cloudinary:", error);
+    throw new Error("Image deletion failed");
+  }
+};
+
 // Multer storage configuration for local file saving
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -73,6 +88,8 @@ const storage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+
+    //cb(null, file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname));
     cb(null, file.fieldname + "-" + uniqueSuffix); // Generate unique file name
   },
 });

@@ -56,14 +56,11 @@ const selfDistuct = catchAsync(async (req, res) => {
   });
 });
 
-
-
 const userController = {
   createUser,
   getAllUsers,
   deleteSingleUser,
-  selfDistuct,
-  
+  selfDistuct,  
 };
 
 
