@@ -13,9 +13,10 @@ import { upload } from '../../util/uploadImgToCloudinary';
     templaterouter.delete('/delete/:id', templateController.softDelete);
     templaterouter.get('/getByAdmin',auth(userRole.admin), templateController.getByAdmin);
     templaterouter.get('/filter', templateController.filterTemplates);
-    
+    templaterouter.get('/getTargetUser', templateController.getTargetUser);
     templaterouter.post('/upload', upload.single('file'), templateController.uploadTemplateImage);
     templaterouter.post('/create', templateController.create);
+    
     
 
     export default templaterouter;
