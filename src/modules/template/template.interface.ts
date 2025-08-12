@@ -23,6 +23,7 @@ export type HolesInfo = {
 
 export type Template = {
   _id?: string;
+  previewLink: string;
   SKU?: string;
   name: string;
   link: string;

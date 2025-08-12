@@ -30,7 +30,7 @@ export const uploadImgToCloudinary = async (name: string, filePath: string) => {
     });
 
     // Delete the file from the local filesystem after uploading it to Cloudinary
-    await deleteFile(filePath);
+     await deleteFile(filePath);
 
     // Return the upload result
     return uploadResult;
