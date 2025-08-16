@@ -3,7 +3,10 @@ import TemplateService from "./template.service";
 import catchAsync from "../../util/catchAsync";
 import sendResponse from "../../util/sendResponse";
 
-import { uploadImgToCloudinary } from '../../util/uploadImgToCloudinary';
+import {
+  uploadImgToCloudinary,
+  uploadMultipleImages,
+} from "../../util/uploadImgToCloudinary";
 
 const uploadTemplateImage = catchAsync(async (req: Request, res: Response) => {
   const imgFile = req.file;
@@ -28,25 +31,18 @@ const uploadTemplateImage = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-
-
 const create = catchAsync(async (req: Request, res: Response) => {
   const { localImagePath, localpreviewLink, name, ...restData } = req.body;
 
-  // if (!localImagePath || !name || !localpreviewLink) {
-  //   throw new Error("Template name and localImagePath are required");
-  // }
-
-  // 1. Upload to Cloudinary using your utility
-
-
-  const template = await uploadImgToCloudinary(name, localImagePath);
-  const preview = await uploadImgToCloudinary("abc123", localpreviewLink);
+  const [templateUrl, previewUrl] = await uploadMultipleImages([
+    localImagePath,
+    localpreviewLink,
+  ]);
   // 2. Prepare full data for DB
   const templateData = {
     name,
-    link: template.secure_url, // ✅ Store Cloudinary link
-    previewLink:  preview.secure_url,
+    link: templateUrl,
+    previewLink: previewUrl,
     ...restData,
   };
 
@@ -61,7 +57,6 @@ const create = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
-
 
 const getAll = catchAsync(async (req: Request, res: Response) => {
   const result = await TemplateService.getAll();
@@ -127,7 +122,7 @@ const getByAdmin = catchAsync(async (req: Request, res: Response) => {
 });
 
 const filterTemplates = catchAsync(async (req: Request, res: Response) => {
-  const { category, occasion } = req.query ;
+  const { category, occasion } = req.query;
 
   const result = await TemplateService.filterTemplates({
     category: category as string,
@@ -143,7 +138,6 @@ const filterTemplates = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getTargetUser = catchAsync(async (req: Request, res: Response) => {
-
   const result = await TemplateService.getTargetUser();
   sendResponse(res, {
     statusCode: 200,
@@ -152,10 +146,6 @@ const getTargetUser = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
-
-
-
-
 
 const templateController = {
   create,
@@ -166,7 +156,7 @@ const templateController = {
   getByAdmin,
   filterTemplates,
   uploadTemplateImage,
-  getTargetUser
+  getTargetUser,
 };
 
 export default templateController;

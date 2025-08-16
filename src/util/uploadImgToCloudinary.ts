@@ -40,28 +40,31 @@ export const uploadImgToCloudinary = async (name: string, filePath: string) => {
   }
 };
 
-// Function to handle multiple image uploads
+// Function to handle multiple image uploads with auto-generated names
 export const uploadMultipleImages = async (filePaths: string[]) => {
+  cloudinary.config({
+    cloud_name: config.cloudinary_name,
+    api_key: config.cloudinary_api_key,
+    api_secret: config.cloudinary_api_secret,
+  });
+
   try {
-    // Initialize an array to store the image URLs
     const imageUrls: string[] = [];
 
-    // Loop through the file paths and upload each one
     for (const filePath of filePaths) {
-      const imageName = `${Math.floor(
-        100 + Math.random() * 900
-      )}-${Date.now()}`; // Unique image name
+      // Generate a unique name for each image
+      const imageName = `${Math.floor(100 + Math.random() * 900)}-${Date.now()}`;
+
       const uploadResult = await uploadImgToCloudinary(imageName, filePath);
-      imageUrls.push(uploadResult.secure_url); // Store the secure URL of the uploaded image
+      imageUrls.push(uploadResult.secure_url);
     }
 
-    // Return the array of image URLs
     return imageUrls;
   } catch (error) {
     console.error("Error uploading multiple images:", error);
     throw new Error("Multiple image upload failed");
   }
-};
+}
 
 export const deleteImageFromCloudinary = async (publicId: string) => {
   cloudinary.config({
