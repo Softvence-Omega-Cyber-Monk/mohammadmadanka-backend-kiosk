@@ -32,6 +32,7 @@ export type Template = {
   targetUser: string;
   rudeContent: boolean;
   price: number;
+  //aspectRatio: number;
   holesInfo: HolesInfo[];
   isDeleted?: boolean;
   createdAt?: Date;

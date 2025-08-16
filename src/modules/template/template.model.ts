@@ -1,4 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
+import { number } from 'zod';
 
 const PhotoHoleSchema = new Schema({
   placeholderLink: { type: String, required: true },
@@ -36,6 +37,7 @@ const TemplateSchema = new Schema(
     rudeContent: { type: Boolean, required: true , default: false },
     price: { type: Number, required: true },
     holesInfo: [HolesInfoSchema],
+    //aspectRatio: { type:number, require:true},
     isDeleted: { type: Boolean, default: false },
   },
   {
