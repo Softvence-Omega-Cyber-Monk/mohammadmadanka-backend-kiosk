@@ -29,7 +29,7 @@ const TemplateSchema = new Schema(
   {
     previewLink: {type: String, required: true},
     name: { type: String, required: true },
-    SKU: { type: String, required: true, unique: true },
+    SKU: { type: String, required: true},
     link: { type: String, required: true },
     category: { type: String, required: true },
     occasion: { type: String, required: true },
@@ -37,7 +37,7 @@ const TemplateSchema = new Schema(
     rudeContent: { type: Boolean, required: true , default: false },
     price: { type: Number, required: true },
     holesInfo: [HolesInfoSchema],
-    //aspectRatio: { type:number, require:true},
+    aspectRatio: { type:Number, require:true},
     isDeleted: { type: Boolean, default: false },
   },
   {
