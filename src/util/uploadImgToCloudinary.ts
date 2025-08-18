@@ -30,7 +30,7 @@ export const uploadImgToCloudinary = async (name: string, filePath: string) => {
     });
 
     // Delete the file from the local filesystem after uploading it to Cloudinary
-     await deleteFile(filePath);
+    // await deleteFile(filePath);
 
     // Return the upload result
     return uploadResult;
@@ -42,11 +42,11 @@ export const uploadImgToCloudinary = async (name: string, filePath: string) => {
 
 // Function to handle multiple image uploads with auto-generated names
 export const uploadMultipleImages = async (filePaths: string[]) => {
-  cloudinary.config({
-    cloud_name: config.cloudinary_name,
-    api_key: config.cloudinary_api_key,
-    api_secret: config.cloudinary_api_secret,
-  });
+  // cloudinary.config({
+  //   cloud_name: config.cloudinary_name,
+  //   api_key: config.cloudinary_api_key,
+  //   api_secret: config.cloudinary_api_secret,
+  // });
 
   try {
     const imageUrls: string[] = [];

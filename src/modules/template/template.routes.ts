@@ -1,5 +1,5 @@
 import { Router } from 'express';
-    import templateController from './template.controller';
+import templateController from './template.controller';
 import { userRole } from '../../constents';
 import auth from '../../middleware/auth';
 import { upload } from '../../util/uploadImgToCloudinary';
