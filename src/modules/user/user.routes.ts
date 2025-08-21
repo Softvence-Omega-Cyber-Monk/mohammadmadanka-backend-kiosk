@@ -11,7 +11,7 @@ userRoutes.post('/createUser', userController.createUser);
 // admin routes
 userRoutes.get(
   '/getAlluser',
-  // auth(userRole.superAdmin, userRole.shopAdmin),
+  auth(userRole.superAdmin, userRole.shopAdmin),
   userController.getAllUsers,
 );
 userRoutes.get(
