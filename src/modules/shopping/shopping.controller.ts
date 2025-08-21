@@ -25,18 +25,18 @@ const create = catchAsync(async (req: Request, res: Response) => {
   const [cardUrl, msgUrl] = await uploadMultipleImages(paths);
 
   // Save in DB via service
-  const shopping = await ShoppingService.create({
-    name,
-    template_id,
-    price,
-    cardImgURL: cardUrl,
-    msgImgURL: msgUrl || null, // null if not provided
-  } as any);
+  // const shopping = await ShoppingService.create({
+  //   name,
+  //   template_id,
+  //   price,
+  //   cardImgURL: cardUrl,
+  //   msgImgURL: msgUrl || null, // null if not provided
+  // } as any);
 
   return res.status(201).json({
     success: true,
     message: "Shopping item created successfully",
-    data: shopping,
+    data: [cardUrl, msgUrl],
   });
 });
 
