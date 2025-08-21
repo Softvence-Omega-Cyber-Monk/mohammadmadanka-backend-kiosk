@@ -5,6 +5,7 @@ import mongoose, { ObjectId } from "mongoose";
 
 // Create order (shopOwner id comes from token)
 const create = async (shopOwnerId: string, items: { product: string; quantity: number }[]) => {
+  console.log("hdschd");
   // ✅ ensure products exist
   for (const item of items) {
     const product = await ProductModel.findById(item.product);

@@ -7,6 +7,7 @@ import ShoppingRoutes from '../modules/shopping/shopping.routes';
 import { PrintData } from '../modules/printData/printData.model';
 import { printDataRouter } from '../modules/printData/printData.route';
 import productRouter from '../modules/product/product.routes';
+import orderrouter from '../modules/order/order.routes';
 
 const Routes = express.Router();
 
@@ -38,6 +39,11 @@ const moduleRouts = [
     path : "/product",
     router: productRouter,
   },
+  {
+    path : "/o",
+    router: orderrouter,
+  },
+
 ];
 
 moduleRouts.forEach(({ path, router }) => {

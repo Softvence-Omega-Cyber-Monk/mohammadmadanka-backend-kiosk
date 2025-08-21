@@ -1,12 +1,14 @@
 import { Router } from 'express';
     import orderController from './order.controller';
+import auth from '../../middleware/auth';
+import { userRole } from '../../constents';
 
-    const router = Router();
+    const orderrouter = Router();
 
-    router.post('/create', orderController.create);
-    router.get('/getAll', orderController.getAll);
-    router.get('/getSingle/:id', orderController.getById);
-    router.put('/update/:id', orderController.update);
-    router.delete('/delete/:id', orderController.softDelete);
+    orderrouter.post('/create',auth(userRole.shopAdmin), orderController.create);
+    orderrouter.get('/getAll', orderController.getAll);
+    //router.get('/getSingle/:id', orderController.getById);
+    //router.put('/update/:id', orderController.update);
+    orderrouter.delete('/delete/:id', orderController.softDelete);
 
-    export default router;
+    export default orderrouter;
