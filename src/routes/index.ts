@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Router } from 'express';
 import authRouter from '../modules/auth/auth.routes';
 import userRoutes from '../modules/user/user.routes';
 import templateRoutes from '../modules/template/template.routes';
@@ -6,6 +6,7 @@ import placeholderRoutes from '../modules/placeholder/placeholder.routes';
 import ShoppingRoutes from '../modules/shopping/shopping.routes';
 import { PrintData } from '../modules/printData/printData.model';
 import { printDataRouter } from '../modules/printData/printData.route';
+import productRouter from '../modules/product/product.routes';
 
 const Routes = express.Router();
 
@@ -32,7 +33,11 @@ const moduleRouts = [
   {
     path: '/printData',
     router: printDataRouter, 
-  }
+  },
+  {
+    path : "/product",
+    router: productRouter,
+  },
 ];
 
 moduleRouts.forEach(({ path, router }) => {
