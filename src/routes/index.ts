@@ -4,17 +4,19 @@ import userRoutes from '../modules/user/user.routes';
 import templateRoutes from '../modules/template/template.routes';
 import placeholderRoutes from '../modules/placeholder/placeholder.routes';
 import ShoppingRoutes from '../modules/shopping/shopping.routes';
+import { PrintData } from '../modules/printData/printData.model';
+import { printDataRouter } from '../modules/printData/printData.route';
 
 const Routes = express.Router();
-// Array of module routes
+
 const moduleRouts = [
   {
-    path: '/auth',
+    path: "/auth",
     router: authRouter,
   },
   {
-    path: '/users',
-    router:userRoutes,
+    path: "/users",
+    router: userRoutes,
   },
   {
     path: '/templates',
@@ -26,7 +28,10 @@ const moduleRouts = [
   },
    {
     path: '/shopping',
-    router:  ShoppingRoutes, 
+    router:  ShoppingRoutes, },
+  {
+    path: '/printData',
+    router: printDataRouter, 
   }
 ];
 

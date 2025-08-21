@@ -1,59 +1,58 @@
-import { NextFunction, Request, Response } from 'express';
-import { JwtPayload } from 'jsonwebtoken';
-import authUtill from '../modules/auth/auth.utill';
-import catchAsync from '../util/catchAsync';
-import { TUserRole } from '../constents';
-import { UserModel } from '../modules/user/user.model';
-import idConverter from '../util/idConvirter';
+import { JwtPayload } from "jsonwebtoken";
+import config from "../config";
+import jwt from "jsonwebtoken";
 
-const auth = (...requeredUserRole: TUserRole[]) => {
-    return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-        const authorizationToken = req?.headers?.authorization;
-        if (!authorizationToken) {
-            throw new Error('Unauthorized User: Missing Authorization Token');
-        }
+import catchAsync from "../util/catchAsync";
+import { TUserRole } from "../constents";
 
-        const decoded = authUtill.decodeAuthorizationToken(authorizationToken);
+import { UserModel } from "../modules/user/user.model";
 
-        if (!decoded) {
-            throw new Error('Unauthorized User: Token decoding failed');
-        }
+const auth = (...requiredRoles: TUserRole[]) => {
+  return catchAsync(async (req, res, next) => {
+    const token = req.headers.authorization;
 
-        const { id, role, iat } = decoded as JwtPayload;
+    //Check if token is sent
+    if (!token) {
+      throw new Error("Token not found: Unauthorized User!");
+    }
 
-        // Check if the user's role is allowed
-        if (requeredUserRole.length && !requeredUserRole.includes(role)) {
-            throw new Error('Unauthorized User: Role not permitted yoo yoo');
-        }
+    // If token found, then verify token and find out decoded jwtPayload fields
+    let decoded;
+    try {
+      decoded = jwt.verify(
+        token,
+        config.jwt_token_secret as string
+      ) as JwtPayload;
+    } catch (error) {
+      console.log(error);
+      throw new Error("can not verify !");
+    }
+    const { email, userId, role } = decoded;
 
-        // Find the user in the database
-        const findUser = await UserModel.findOne({
-            _id:idConverter(id),
-            isLoggedIn:true,
-            isDeleted:false
-        });
+    const user = await UserModel.findById(userId);
 
-        if (!findUser) {
-            throw new Error('Unauthorized User: Forbidden Access');
-        }
+    // Check if user exists
+    if (!user) {
+      throw new Error("user not found !");
+    }
+    // if( user.isVerified === false) {
+    //   throw new ApiError(httpStatus.FORBIDDEN, "Please verify your email first!");
+    // }
 
-        // Check if the user has logged out after the token was issued
-        const logOutTime = findUser.loggedOutTime
-            ? new Date(findUser.loggedOutTime).getTime() / 1000
-            : null;
+    // Check if user is deleted
+    const isUserDeleted = user?.isDeleted;
+    if (isUserDeleted) {
+      throw new Error("user deleted !");
+    }
 
-        if (logOutTime && iat && iat < logOutTime) {
-            throw new Error(
-                'Unauthorized User: Your session has expired. Please log in again'
-            );
-        }
+    // Check if the request was sent by authorized user or not
+    if (requiredRoles && !requiredRoles.includes(role)) {
+      throw new Error("role mismatch !");
+    }
 
-        // Attach user information to the request
-        req.user = decoded as JwtPayload;
-
-        // Proceed to the next middleware
-        next();
-    });
+    req.user = decoded as JwtPayload;
+    next();
+  });
 };
 
 export default auth;
