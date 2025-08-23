@@ -17,13 +17,17 @@ const OrderSchema = new mongoose.Schema(
   {
     shopOwner: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "ShopOwner", // your shopowner table
+      ref: "UserCollection",
       required: true,
     },
     items: {
       type: [OrderItemSchema],
       required: true,
     },
+    amount: {
+    type: Number,
+    required: true,
+  },
     status: {
       type: String,
       enum: ["pending", "approved", "delivered", "rejected"],
@@ -37,6 +41,10 @@ const OrderSchema = new mongoose.Schema(
     deliveredAt: {
       type: Date,
       default: null,
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }

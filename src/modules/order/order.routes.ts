@@ -1,14 +1,15 @@
-import { Router } from 'express';
-    import orderController from './order.controller';
-import auth from '../../middleware/auth';
-import { userRole } from '../../constents';
+import { Router } from "express";
+import orderController from "./order.controller";
+import auth from "../../middleware/auth";
+import { userRole } from "../../constents";
 
-    const orderrouter = Router();
+const orderRouter = Router();
 
-    orderrouter.post('/create',auth(userRole.shopAdmin), orderController.create);
-    orderrouter.get('/getAll', orderController.getAll);
-    //router.get('/getSingle/:id', orderController.getById);
-    //router.put('/update/:id', orderController.update);
-    orderrouter.delete('/delete/:id', orderController.softDelete);
+orderRouter.post("/create", auth(userRole.shopAdmin), orderController.create);
+orderRouter.get("/getAll",auth(userRole.superAdmin), orderController.getAll);
+orderRouter.get("/getSingle/:id", orderController.getById);
+orderRouter.put("/update/:id", orderController.update);
+orderRouter.put("/updateStatus/:id",auth(userRole.superAdmin), orderController.updateStatus);
+orderRouter.delete("/delete/:id", orderController.softDelete);
 
-    export default orderrouter;
+export default orderRouter;

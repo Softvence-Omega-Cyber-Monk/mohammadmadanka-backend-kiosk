@@ -8,6 +8,8 @@ import { PrintData } from '../modules/printData/printData.model';
 import { printDataRouter } from '../modules/printData/printData.route';
 import productRouter from '../modules/product/product.routes';
 import orderrouter from '../modules/order/order.routes';
+import orderRouter from '../modules/order/order.routes';
+import shopinventoryRouter from '../modules/shopinventory/shopinventory.routes';
 
 const Routes = express.Router();
 
@@ -40,8 +42,12 @@ const moduleRouts = [
     router: productRouter,
   },
   {
-    path : "/o",
-    router: orderrouter,
+    path : "/order",
+    router: orderRouter,
+  },
+  {
+    path: "/inventory",
+    router : shopinventoryRouter,
   },
 
 ];
