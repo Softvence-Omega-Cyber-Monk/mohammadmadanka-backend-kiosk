@@ -32,20 +32,27 @@ const uploadTemplateImage = catchAsync(async (req: Request, res: Response) => {
 });
 
 const create = catchAsync(async (req: Request, res: Response) => {
-  const { localImagePath, localpreviewLink, name, ...restData } = req.body;
+  const { localImagePath, localpreviewLink,localProductPath, name, ...restData } = req.body;
 
   const [templateUrl, previewUrl] = await uploadMultipleImages([
     localImagePath,
     localpreviewLink,
   ]);
-  // 2. Prepare full data for DB
+
+  let productUrl: string | undefined;
+  if (localProductPath) {
+    // upload only if provided
+    [productUrl] = await uploadMultipleImages([localProductPath]);
+  }
+
+  // Prepare full data for DB
   const templateData = {
     name,
     link: templateUrl,
     previewLink: previewUrl,
+    ...(productUrl ? { productlink: productUrl } : {}), // add only if exists
     ...restData,
   };
-
   // 3. Save to DB
   const result = await TemplateService.create(templateData);
 

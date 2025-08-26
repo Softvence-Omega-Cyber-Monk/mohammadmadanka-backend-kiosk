@@ -28,26 +28,20 @@ export const uploadImgToCloudinary = async (name: string, filePath: string) => {
     const uploadResult = await cloudinary.uploader.upload(filePath, {
       public_id: name,
     });
-
-    // Delete the file from the local filesystem after uploading it to Cloudinary
-    // await deleteFile(filePath);
-
     // Return the upload result
     return uploadResult;
   } catch (error) {
     console.error("Error uploading image to Cloudinary:", error);
     throw new Error("Image upload failed");
   }
+  finally {
+    // ✅ Always clean up local file (success or fail)
+    await deleteFile(filePath);
+  }
 };
 
 // Function to handle multiple image uploads with auto-generated names
 export const uploadMultipleImages = async (filePaths: string[]) => {
-  // cloudinary.config({
-  //   cloud_name: config.cloudinary_name,
-  //   api_key: config.cloudinary_api_key,
-  //   api_secret: config.cloudinary_api_secret,
-  // });
-
   try {
     const imageUrls: string[] = [];
 
@@ -64,6 +58,7 @@ export const uploadMultipleImages = async (filePaths: string[]) => {
     console.error("Error uploading multiple images:", error);
     throw new Error("Multiple image upload failed");
   }
+  
 }
 
 export const deleteImageFromCloudinary = async (publicId: string) => {

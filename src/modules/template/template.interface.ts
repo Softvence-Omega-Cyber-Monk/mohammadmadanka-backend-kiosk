@@ -21,12 +21,24 @@ export type HolesInfo = {
   textHoles: TextHole[];
 };
 
+export type TemplateCofig= {
+  x: number;
+  y: number;
+  height: number;
+  width: number;
+  scaleX: number;
+  scaleY: number;
+  rotation: number;
+}
+
 export type Template = {
   _id?: string;
   previewLink: string;
   SKU?: string;
   name: string;
   link: string;
+  productlink?:string;
+  config?: TemplateCofig;
   category: string;
   occasion: string;
   targetUser: string;

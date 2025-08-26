@@ -1,5 +1,15 @@
-import mongoose, { Schema } from 'mongoose';
-import { number } from 'zod';
+import mongoose, { Schema } from "mongoose";
+import { number } from "zod";
+
+const TemplateCofig = new Schema({
+  x: { type: Number },
+  y: { type: Number },
+  height: { type: Number },
+  width: { type: Number },
+  scaleX: { type: Number },
+  scaleY: { type: Number },
+  rotation: { type: Number },
+});
 
 const PhotoHoleSchema = new Schema({
   placeholderLink: { type: String, required: true },
@@ -15,7 +25,7 @@ const TextHoleSchema = new Schema({
   y: { type: Number, required: true },
   height: { type: Number, required: true },
   width: { type: Number, required: true },
-  font: {type: String , required: true},
+  font: { type: String, required: true },
   fontSize: { type: Number, required: true },
   color: { type: String, required: true },
 });
@@ -27,17 +37,24 @@ const HolesInfoSchema = new Schema({
 
 const TemplateSchema = new Schema(
   {
-    previewLink: {type: String, required: true},
+    previewLink: { type: String, required: true },
     name: { type: String, required: true },
-    SKU: { type: String, required: true},
+    SKU: { type: String, required: true },
     link: { type: String, required: true },
-    category: { type: String, required: true },
-    occasion: { type: String, required: true },
+    config: {type: TemplateCofig, required: false},
+    productlink: { type: String, required: false},
+    category: { 
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Category",
+          required: true},
+    occasion: { type: mongoose.Schema.Types.ObjectId,
+          ref: "Occasion",
+          required: true },
     targetUser: { type: String, required: true },
-    rudeContent: { type: Boolean, required: true , default: false },
+    rudeContent: { type: Boolean, required: true, default: false },
     price: { type: Number, required: true },
     holesInfo: [HolesInfoSchema],
-    aspectRatio: { type:Number, require:true},
+    aspectRatio: { type: Number, require: true },
     isDeleted: { type: Boolean, default: false },
   },
   {
@@ -45,5 +62,5 @@ const TemplateSchema = new Schema(
   }
 );
 
-const TemplateModel = mongoose.model('Template', TemplateSchema);
+const TemplateModel = mongoose.model("Template", TemplateSchema);
 export default TemplateModel;
