@@ -4,6 +4,7 @@ import catchAsync from "../../util/catchAsync";
 import sendResponse from "../../util/sendResponse";
 
 import {
+  deleteFile,
   uploadImgToCloudinary,
   uploadMultipleImages,
 } from "../../util/uploadImgToCloudinary";
@@ -151,6 +152,23 @@ const getTargetUser = catchAsync(async (req: Request, res: Response) => {
     success: true,
     message: "Templates retrieved successfully",
     data: result,
+  });
+});
+
+export const deleteLocalImage = catchAsync(async (req: Request, res: Response) => {
+  // Example request: DELETE /api/v1/images/delete-local/uploads/abc.png
+  const filePath = req.params.filePath;
+
+  // ✅ ensure the path is always inside "uploads" folder
+  //const safePath = path.join(process.cwd(), filePath);
+
+  await deleteFile(filePath);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Local image deleted successfully",
+    data: { path: filePath },
   });
 });
 

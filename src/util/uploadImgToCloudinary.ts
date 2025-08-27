@@ -5,7 +5,7 @@ import fs from "fs/promises";
 import config from "../config";
 
 // Function to delete a file from the local filesystem
-const deleteFile = async (filePath: string) => {
+export const deleteFile = async (filePath: string) => {
   try {
     await fs.unlink(filePath);
     console.log(`File deleted successfully: ${filePath}`);
