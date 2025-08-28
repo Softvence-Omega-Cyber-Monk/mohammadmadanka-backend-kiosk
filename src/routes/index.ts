@@ -6,7 +6,6 @@ import placeholderRoutes from "../modules/placeholder/placeholder.routes";
 import ShoppingRoutes from "../modules/shopping/shopping.routes";
 import { PrintData } from "../modules/printData/printData.model";
 import { printDataRouter } from "../modules/printData/printData.route";
-import productRouter from "../modules/product/product.routes";
 import orderrouter from "../modules/order/order.routes";
 import orderRouter from "../modules/order/order.routes";
 import shopinventoryRouter from "../modules/shopinventory/shopinventory.routes";
@@ -41,10 +40,6 @@ const moduleRouts = [
   {
     path: "/printData",
     router: printDataRouter,
-  },
-  {
-    path: "/product",
-    router: productRouter,
   },
   {
     path: "/order",

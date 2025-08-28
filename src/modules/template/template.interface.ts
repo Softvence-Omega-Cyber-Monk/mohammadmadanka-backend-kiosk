@@ -1,3 +1,6 @@
+import { Category } from "../category/category.interface";
+import { Occasion } from "../occasion/occasion.interface";
+
 export type Hole = {
   x: number;
   y: number;
@@ -39,8 +42,8 @@ export type Template = {
   link: string;
   productlink?:string;
   config?: TemplateCofig;
-  category: string;
-  occasion: string;
+  category: Category;
+  occasion: Occasion;
   targetUser: string;
   rudeContent: boolean;
   price: number;
