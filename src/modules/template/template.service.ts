@@ -7,12 +7,14 @@ const create = async (data: Template) => {
 };
 
 const getAll = async () => {
-  const templates = await TemplateModel.find({ isDeleted: false });
+  const templates = await TemplateModel.find({ isDeleted: false })
+  .populate("category", "name")
+  .populate("occasion", "name");
   return templates;
 };
 
 const getById = async (id: string) => {
-  const template = await TemplateModel.findOne({ _id: id, isDeleted: false });
+  const template = await TemplateModel.findOne({ _id: id, isDeleted: false }).populate("category");
   return template;
 };
 
