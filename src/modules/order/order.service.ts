@@ -25,7 +25,7 @@ const create = async (shopOwnerId: string, items: { category: string; quantity: 
 
 // Get all orders
 const getAll = async () => {
-  const orders = await OrderModel.find()
+  const orders = await OrderModel.find().populate("shopOwner").populate("items.category").lean();
   return orders;
 };
 
