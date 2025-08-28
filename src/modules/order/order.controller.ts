@@ -36,7 +36,7 @@ const getById = catchAsync(async (req: Request, res: Response) => {
 
 const update = catchAsync(async (req: Request, res: Response) => {
   // destructure status out so it can’t be updated
-  const { status,amount, ...allowedUpdates } = req.body;
+  const { status, ...allowedUpdates } = req.body;
 
   const result = await orderService.update(req.params.id, allowedUpdates);
 
