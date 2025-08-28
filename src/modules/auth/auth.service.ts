@@ -11,6 +11,7 @@ const login = async (payload: Partial<TUser>) => {
   const user: any = await UserModel.findOne({ email: payload?.email }).select(
     "+password"
   );
+  console.log(user);
 
   // Check if user exists
   if (!user) {
@@ -43,6 +44,7 @@ const login = async (payload: Partial<TUser>) => {
     email: user.email,
     name: user.name,
   };
+  console.log(jwtPayload);
   const accessToken = createAccessToken(
     jwtPayload,
     config.jwt_token_secret as string,
@@ -73,7 +75,6 @@ const changePassword = async (
       authorizationToken,
       config.jwt_token_secret as string
     ) as JwtPayload;
-
 
     if (!decoded) {
       throw new Error("Invalid or unauthorized token");

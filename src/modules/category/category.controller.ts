@@ -5,6 +5,8 @@ import sendResponse from "../../util/sendResponse";
 
 const create = catchAsync(async (req: Request, res: Response) => {
   const imgFile = req.file;
+  console.log(imgFile)
+  console.log(req.body)
 
   if (!imgFile) {
     throw new Error("image file are required.");
