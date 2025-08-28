@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
 
 const OrderItemSchema = new mongoose.Schema({
-  product: {
+  category: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Product", // reference Product model
+    ref: "Category", // reference Product model
     required: true,
   },
   quantity: {
@@ -24,14 +24,11 @@ const OrderSchema = new mongoose.Schema(
       type: [OrderItemSchema],
       required: true,
     },
-    amount: {
-    type: Number,
-    required: true,
-  },
     status: {
       type: String,
       enum: ["pending", "approved", "delivered", "rejected"],
       default: "pending",
+      unique: false,
     },
     approvedBy: {
       type: mongoose.Schema.Types.ObjectId,

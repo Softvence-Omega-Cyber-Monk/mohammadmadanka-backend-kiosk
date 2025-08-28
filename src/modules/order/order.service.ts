@@ -1,24 +1,23 @@
 import OrderModel from "./order.model";
-import ProductModel from "../product/product.model";
+//import ProductModel from "../category/category.model";
 import { Order } from "./order.interface"; // optional interface
 import mongoose, { ObjectId } from "mongoose";
 import InventoryModel from "../shopinventory/shopinventory.model";
 
 // Create order (shopOwner id comes from token)
-const create = async (shopOwnerId: string, items: { product: string; quantity: number }[]) => {
-  let amount=0;
-  // ✅ ensure products exist
-  for (const item of items) {
-    const product = await ProductModel.findById(item.product);
-    amount += (product?.price ?? 0) * item.quantity; // ✅ accumulate
-    if (!product) {
-      throw new Error(`Product with id ${item.product} not found`);
-    }
-  }
+const create = async (shopOwnerId: string, items: { category: string; quantity: number }[]) => {
+  // let amount=0;
+  // // ✅ ensure products exist
+  // for (const item of items) {
+  //   const product = await ProductModel.findById(item.product);
+  //   amount += (product?.price ?? 0) * item.quantity; // ✅ accumulate
+  //   if (!product) {
+  //     throw new Error(`Product with id ${item.product} not found`);
+  //   }
+  // }
   const order = await OrderModel.create({
     shopOwner: shopOwnerId,
     items,
-    amount,
   });
 
   return order;
@@ -38,23 +37,23 @@ const getById = async (id: string) => {
 
 
 const update = async (id: string, data: Partial<Order>) => {
-  let amount = 0;
+  // let amount = 0;
 
-  // ✅ If items are being updated, recalculate amount
-  if (data.items && data.items.length > 0) {
-    for (const item of data.items) {
-      const product = await ProductModel.findById(item.product);
+  // // ✅ If items are being updated, recalculate amount
+  // if (data.items && data.items.length > 0) {
+  //   for (const item of data.items) {
+  //     const product = await ProductModel.findById(item.product);
 
-      if (!product) {
-        throw new Error(`Product with id ${item.product} not found`);
-      }
+  //     if (!product) {
+  //       throw new Error(`Product with id ${item.product} not found`);
+  //     }
 
-      amount += (product.price ?? 0) * item.quantity;
-    }
+  //     amount += (product.price ?? 0) * item.quantity;
+  //   }
 
-    // overwrite amount safely
-    data.amount = amount;
-  }
+  //   // overwrite amount safely
+  //   data.amount = amount;
+  // }
 
   const updatedOrder = await OrderModel.findOneAndUpdate(
     { _id: id, isDeleted: false },
@@ -72,7 +71,7 @@ const updateStatus = async (
   status: "pending" | "approved" | "delivered" | "rejected",
   adminId?: string
 ) => {
-  const order = await OrderModel.findById(id).populate("items.product");
+  const order = await OrderModel.findById(id).populate("items.category");
   if (!order) return null;
 
   order.status = status;
@@ -89,7 +88,7 @@ const updateStatus = async (
       await InventoryModel.findOneAndUpdate(
         {
           shopOwner: order.shopOwner,
-          product: item.product, // ObjectId of Product
+          category: item.category, // ObjectId of Product
         },
         {
           $inc: { quantity: item.quantity }, // ✅ increase stock
