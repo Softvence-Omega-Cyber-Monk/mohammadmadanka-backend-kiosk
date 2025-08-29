@@ -31,39 +31,42 @@ app.get('/', (req, res) => {
 
 //  Routes
 app.use('/api/v1', Routes);
-// // Authentication callback route (Epson authorization)
-// app.get('/epson/auth', (req, res) => {
-//   const authUrl = `https://auth.epsonconnect.com/auth/authorize?response_type=code&client_id=${process.env.CLIENT_ID}&redirect_uri=${process.env.REDIRECT_URI}&scope=device`;
-//   res.redirect(authUrl);
-// });
+// Authentication callback route (Epson authorization)
+app.get('/epson/auth', (req, res) => {
+  console.log("Redirecting to Epson authentication URL...   auth");
+  const authUrl = `https://auth.epsonconnect.com/auth/authorize?response_type=code&client_id=${process.env.CLIENT_ID}&redirect_uri=${process.env.REDIRECT_URI}&scope=device`;
+  console.log("Epson Auth URL:", authUrl);
+  res.redirect(authUrl);
+});
 
-// // Declare deviceToken at the top-level scope
-// let deviceToken: string | undefined;
+// Declare deviceToken at the top-level scope
+let deviceToken: string | undefined;
 
-// // Epson callback URL for exchanging code for deviceToken
-// app.get('/api/epson/callback', catchAsync(async (req, res, next) => {
-//   const { code } = req.query;
+// Epson callback URL for exchanging code for deviceToken
+app.get('/api/epson/callback', catchAsync(async (req, res, next) => {
+  const { code } = req.query;
 
-//   if (!code) {
-//     return res.status(400).send('Error: No authorization code received.');
-//   }
+  if (!code) {
+    return res.status(400).send('Error: No authorization code received.');
+  }
 
-//   try {
-//     const tokenResponse = await axios.post('https://auth.epsonconnect.com/auth/token', qs.stringify({
-//       code: code,
-//       client_id: process.env.CLIENT_ID,
-//       client_secret: process.env.CLIENT_SECRET,
-//       redirect_uri: process.env.REDIRECT_URI,
-//       grant_type: 'authorization_code'
-//     }));
+  try {
+    console.log("Exchanging authorization code for device token...   callback");
+    const tokenResponse = await axios.post('https://auth.epsonconnect.com/auth/token', qs.stringify({
+      code: code,
+      client_id: process.env.CLIENT_ID,
+      client_secret: process.env.CLIENT_SECRET,
+      redirect_uri: process.env.REDIRECT_URI,
+      grant_type: 'authorization_code'
+    }));
 
-//     deviceToken = (tokenResponse.data as { access_token: string }).access_token;  // Store the device token
-//     res.send('Authentication successful! You can now print by calling /print.');
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).send('Error exchanging authorization code for token.');
-//   }
-// }));
+    deviceToken = (tokenResponse.data as { access_token: string }).access_token;  // Store the device token
+    res.send('Authentication successful! You can now print by calling /print.');
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error exchanging authorization code for token.');
+  }
+}));
 
 // route not found
 app.use(routeNotFound);
@@ -72,3 +75,4 @@ app.use(routeNotFound);
 app.use(globalErrorHandler);
 
 export default app;
+
