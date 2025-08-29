@@ -17,6 +17,9 @@ const PhotoHoleSchema = new Schema({
   y: { type: Number, required: true },
   height: { type: Number, required: true },
   width: { type: Number, required: true },
+  scaleX: { type: Number,  required: false, default: 1 },
+  scaleY: { type: Number,  required: false, default: 1 },
+  rotation: { type: Number, required: false, default: 0 },
 });
 
 const TextHoleSchema = new Schema({
@@ -25,6 +28,9 @@ const TextHoleSchema = new Schema({
   y: { type: Number, required: true },
   height: { type: Number, required: true },
   width: { type: Number, required: true },
+  scaleX: { type: Number,  required: false, default: 1 },
+  scaleY: { type: Number,  required: false, default: 1 },
+  rotation: { type: Number, required: false, default: 0 },
   font: { type: String, required: true },
   fontSize: { type: Number, required: true },
   color: { type: String, required: true },
