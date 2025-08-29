@@ -11,8 +11,8 @@ import orderRouter from "../modules/order/order.routes";
 import shopinventoryRouter from "../modules/shopinventory/shopinventory.routes";
 import CategoryRouter from "../modules/category/category.routes";
 import OccasionRouter from "../modules/occasion/occasion.routes";
-import PrintRouter from "../modules/print/print.routes";
-import EpsonRoute from "../modules/print/Auth/auth.route";
+//import PrintRouter from "../modules/print/print.routes";
+import EpsonRoute from "../modules/printing/printing.route";
 
 const Routes = express.Router();
 
@@ -57,12 +57,8 @@ const moduleRouts = [
     path: "/occasion",
     router: OccasionRouter,
   },
-  {
-    path: "/print",
-    router: PrintRouter,
-  },
     {
-    path: "/epson",
+    path: "/printing",
     router: EpsonRoute,
   }
 ];
