@@ -3,7 +3,7 @@ import catchAsync from "../../util/catchAsync";
 import inventoryService from "./shopinventory.service";
 
 const getByShopOwner = catchAsync(async (req: Request, res: Response) => {
-  const shopOwnerId = (req as any).user.userId; // 👈 from token
+  const shopOwnerId = req.params.id// 👈 from token
   const inventory = await inventoryService.getByShopOwner(shopOwnerId);
 
   res.status(200).json({

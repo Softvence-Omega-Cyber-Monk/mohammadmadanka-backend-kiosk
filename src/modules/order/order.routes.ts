@@ -7,6 +7,7 @@ const orderRouter = Router();
 
 orderRouter.post("/create", auth(userRole.shopAdmin), orderController.create);
 orderRouter.get("/getAll", auth(userRole.superAdmin), orderController.getAll);
+orderRouter.get("/getSingleUserOrders/:email", orderController.getSingleUserOrders);
 orderRouter.get("/getSingle/:id", orderController.getById);
 orderRouter.put("/update/:id", orderController.update);
 orderRouter.put(

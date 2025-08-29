@@ -34,9 +34,9 @@ app.use('/api/v1', Routes);
 // Authentication callback route (Epson authorization)
 app.get('/epson/auth', (req, res) => {
   console.log("Redirecting to Epson authentication URL...   auth");
-  const authUrl = `https://auth.epsonconnect.com/auth/authorize?response_type=code&client_id=${process.env.CLIENT_ID}&redirect_uri=${process.env.REDIRECT_URI}&scope=device`;
-  console.log("Epson Auth URL:", authUrl);
-  res.redirect(authUrl);
+  window.location.href = `https://auth.epsonconnect.com/auth/authorize?response_type=code&client_id=${process.env.CLIENT_ID}&redirect_uri=${process.env.REDIRECT_URI}&scope=device`;
+  // console.log("Epson Auth URL:", authUrl);
+  // res.redirect(authUrl);
 });
 
 // Declare deviceToken at the top-level scope

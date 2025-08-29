@@ -7,6 +7,7 @@ import sendResponse from "../../util/sendResponse";
 const create = catchAsync(async (req: Request, res: Response) => {
   const shopOwnerId = (req as any).user.userId; // 👈 from token (auth middleware must set req.user)
   const { items } = req.body;
+  console.log(items)
   const order = await orderService.create(shopOwnerId, items);
   sendResponse(res, {
     statusCode: 201,
@@ -19,6 +20,16 @@ const create = catchAsync(async (req: Request, res: Response) => {
 // Get all orders
 const getAll = catchAsync(async (req: Request, res: Response) => {
   const orders = await orderService.getAll();
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Orders fetched successfully",
+    data: orders,
+  });
+});
+const getSingleUserOrders = catchAsync(async (req: Request, res: Response) => {
+  const email =req.params.email; // 👈 from token (auth middleware must set req.user)
+  const orders = await orderService.getSingleUserOrders(email);
   sendResponse(res, {
     statusCode: 200,
     success: true,
@@ -75,6 +86,7 @@ const softDelete = catchAsync(async (req: Request, res: Response) => {
 const orderController = {
   create,
   getAll,
+  getSingleUserOrders,
   getById,
   updateStatus,
   softDelete,

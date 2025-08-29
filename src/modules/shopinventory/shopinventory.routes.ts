@@ -9,7 +9,7 @@ const shopinventoryRouter = Router();
 shopinventoryRouter.get("/getAll", shopinventoryController.getAll);
 shopinventoryRouter.get(
   "/getByShopOwner/:id",
-  auth(userRole.shopAdmin, userRole.superAdmin),
+//   auth(userRole.shopAdmin, userRole.superAdmin),
   shopinventoryController.getByShopOwner
 );
 // router.put('/update/:id', shopinventoryController.update);

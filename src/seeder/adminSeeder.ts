@@ -4,6 +4,7 @@ import userServices from "../modules/user/user.service";
 
 const adminSeeder = async () => {
   const superAdmin = {
+    shopName: "Super Admin Shop",
     name: "SuperAdmin",
     email: "superAdmin@gmail.com",
     role: userRole.superAdmin,
