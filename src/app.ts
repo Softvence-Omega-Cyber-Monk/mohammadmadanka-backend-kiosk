@@ -18,7 +18,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // app.use(cors());
 app.use(
   cors({
-    origin: ['*', 'http://localhost:5173'],
+    origin: ['*', 'http://localhost:5173','https://darling-panda-d34576.netlify.app'],
     methods: 'GET,POST,PUT,PATCH,DELETE',
     allowedHeaders: 'Content-Type, Authorization',
     credentials: true,
