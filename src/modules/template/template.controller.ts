@@ -3,7 +3,11 @@ import TemplateService from "./template.service";
 import catchAsync from "../../util/catchAsync";
 import sendResponse from "../../util/sendResponse";
 
-import { uploadImgToCloudinary } from '../../util/uploadImgToCloudinary';
+import {
+  deleteFile,
+  uploadImgToCloudinary,
+  uploadMultipleImages,
+} from "../../util/uploadImgToCloudinary";
 
 const uploadTemplateImage = catchAsync(async (req: Request, res: Response) => {
   const imgFile = req.file;
@@ -28,28 +32,28 @@ const uploadTemplateImage = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-
-
 const create = catchAsync(async (req: Request, res: Response) => {
-  const { localImagePath, localpreviewLink, name, ...restData } = req.body;
+  const { localImagePath, localpreviewLink,localProductPath, name, ...restData } = req.body;
 
-  // if (!localImagePath || !name || !localpreviewLink) {
-  //   throw new Error("Template name and localImagePath are required");
-  // }
+  const [templateUrl, previewUrl] = await uploadMultipleImages([
+    localImagePath,
+    localpreviewLink,
+  ]);
 
-  // 1. Upload to Cloudinary using your utility
+  let productUrl: string | undefined;
+  if (localProductPath) {
+    // upload only if provided
+    [productUrl] = await uploadMultipleImages([localProductPath]);
+  }
 
-
-  const template = await uploadImgToCloudinary(name, localImagePath);
-  const preview = await uploadImgToCloudinary("abc123", localpreviewLink);
-  // 2. Prepare full data for DB
+  // Prepare full data for DB
   const templateData = {
     name,
-    link: template.secure_url, // ✅ Store Cloudinary link
-    previewLink:  preview.secure_url,
+    link: templateUrl,
+    previewLink: previewUrl,
+    ...(productUrl ? { productlink: productUrl } : {}), // add only if exists
     ...restData,
   };
-
   // 3. Save to DB
   const result = await TemplateService.create(templateData);
 
@@ -61,7 +65,6 @@ const create = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
-
 
 const getAll = catchAsync(async (req: Request, res: Response) => {
   const result = await TemplateService.getAll();
@@ -127,7 +130,7 @@ const getByAdmin = catchAsync(async (req: Request, res: Response) => {
 });
 
 const filterTemplates = catchAsync(async (req: Request, res: Response) => {
-  const { category, occasion } = req.query ;
+  const { category, occasion } = req.query;
 
   const result = await TemplateService.filterTemplates({
     category: category as string,
@@ -143,7 +146,6 @@ const filterTemplates = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getTargetUser = catchAsync(async (req: Request, res: Response) => {
-
   const result = await TemplateService.getTargetUser();
   sendResponse(res, {
     statusCode: 200,
@@ -153,9 +155,22 @@ const getTargetUser = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+export const deleteLocalImage = catchAsync(async (req: Request, res: Response) => {
+  // Example request: DELETE /api/v1/images/delete-local/uploads/abc.png
+  const filePath = req.params.filePath;
 
+  // ✅ ensure the path is always inside "uploads" folder
+  //const safePath = path.join(process.cwd(), filePath);
 
+  await deleteFile(filePath);
 
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Local image deleted successfully",
+    data: { path: filePath },
+  });
+});
 
 const templateController = {
   create,
@@ -166,7 +181,7 @@ const templateController = {
   getByAdmin,
   filterTemplates,
   uploadTemplateImage,
-  getTargetUser
+  getTargetUser,
 };
 
 export default templateController;

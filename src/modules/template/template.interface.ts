@@ -1,3 +1,6 @@
+import { Category } from "../category/category.interface";
+import { Occasion } from "../occasion/occasion.interface";
+
 export type Hole = {
   x: number;
   y: number;
@@ -21,17 +24,30 @@ export type HolesInfo = {
   textHoles: TextHole[];
 };
 
+export type TemplateCofig= {
+  x: number;
+  y: number;
+  height: number;
+  width: number;
+  scaleX: number;
+  scaleY: number;
+  rotation: number;
+}
+
 export type Template = {
   _id?: string;
   previewLink: string;
   SKU?: string;
   name: string;
   link: string;
-  category: string;
-  occasion: string;
+  productlink?:string;
+  config?: TemplateCofig;
+  category: Category;
+  occasion: Occasion;
   targetUser: string;
   rudeContent: boolean;
   price: number;
+  aspectRatio: number;
   holesInfo: HolesInfo[];
   isDeleted?: boolean;
   createdAt?: Date;

@@ -5,7 +5,7 @@ import fs from "fs/promises";
 import config from "../config";
 
 // Function to delete a file from the local filesystem
-const deleteFile = async (filePath: string) => {
+export const deleteFile = async (filePath: string) => {
   try {
     await fs.unlink(filePath);
     console.log(`File deleted successfully: ${filePath}`);
@@ -28,40 +28,38 @@ export const uploadImgToCloudinary = async (name: string, filePath: string) => {
     const uploadResult = await cloudinary.uploader.upload(filePath, {
       public_id: name,
     });
-
-    // Delete the file from the local filesystem after uploading it to Cloudinary
-     await deleteFile(filePath);
-
     // Return the upload result
     return uploadResult;
   } catch (error) {
     console.error("Error uploading image to Cloudinary:", error);
     throw new Error("Image upload failed");
   }
+  finally {
+    // ✅ Always clean up local file (success or fail)
+    await deleteFile(filePath);
+  }
 };
 
-// Function to handle multiple image uploads
+// Function to handle multiple image uploads with auto-generated names
 export const uploadMultipleImages = async (filePaths: string[]) => {
   try {
-    // Initialize an array to store the image URLs
     const imageUrls: string[] = [];
 
-    // Loop through the file paths and upload each one
     for (const filePath of filePaths) {
-      const imageName = `${Math.floor(
-        100 + Math.random() * 900
-      )}-${Date.now()}`; // Unique image name
+      // Generate a unique name for each image
+      const imageName = `${Math.floor(100 + Math.random() * 900)}-${Date.now()}`;
+
       const uploadResult = await uploadImgToCloudinary(imageName, filePath);
-      imageUrls.push(uploadResult.secure_url); // Store the secure URL of the uploaded image
+      imageUrls.push(uploadResult.secure_url);
     }
 
-    // Return the array of image URLs
     return imageUrls;
   } catch (error) {
     console.error("Error uploading multiple images:", error);
     throw new Error("Multiple image upload failed");
   }
-};
+  
+}
 
 export const deleteImageFromCloudinary = async (publicId: string) => {
   cloudinary.config({
