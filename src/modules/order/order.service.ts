@@ -3,9 +3,13 @@ import OrderModel from "./order.model";
 import { Order } from "./order.interface"; // optional interface
 import mongoose, { ObjectId } from "mongoose";
 import InventoryModel from "../shopinventory/shopinventory.model";
+import { UserModel } from "../user/user.model";
 
 // Create order (shopOwner id comes from token)
-const create = async (shopOwnerId: string, items: { category: string; quantity: number }[]) => {
+const create = async (
+  shopOwnerId: string,
+  items: { category: string; quantity: number }[]
+) => {
   // let amount=0;
   // // ✅ ensure products exist
   // for (const item of items) {
@@ -25,16 +29,29 @@ const create = async (shopOwnerId: string, items: { category: string; quantity: 
 
 // Get all orders
 const getAll = async () => {
-  const orders = await OrderModel.find().populate("shopOwner").populate("items.category").lean();
+  const orders = await OrderModel.find()
+    .populate("shopOwner")
+    .populate("items.category")
+    .lean();
+  return orders;
+};
+const getSingleUserOrders = async (email: string) => {
+  const shopOwner = await UserModel.findOne({ email: email });
+  if (!shopOwner) {
+    throw new Error(`User with email ${email} not found`);
+  }
+  const orders = await OrderModel.find({ shopOwner })
+    .populate("shopOwner")
+    .populate("items.category")
+    .lean();
   return orders;
 };
 
 // Get order by id
 const getById = async (id: string) => {
-  const order = await OrderModel.findById(id)
+  const order = await OrderModel.findById(id);
   return order;
 };
-
 
 const update = async (id: string, data: Partial<Order>) => {
   // let amount = 0;
@@ -63,7 +80,6 @@ const update = async (id: string, data: Partial<Order>) => {
 
   return updatedOrder;
 };
-
 
 // Update order status
 const updateStatus = async (
@@ -107,13 +123,18 @@ const updateStatus = async (
 
 // Soft delete (if you want it)
 const softDelete = async (id: string) => {
-  const order = await OrderModel.findByIdAndUpdate(id, { isDeleted: true }, { new: true });
+  const order = await OrderModel.findByIdAndUpdate(
+    id,
+    { isDeleted: true },
+    { new: true }
+  );
   return order;
 };
 
 const orderService = {
   create,
   getAll,
+  getSingleUserOrders,
   getById,
   updateStatus,
   softDelete,

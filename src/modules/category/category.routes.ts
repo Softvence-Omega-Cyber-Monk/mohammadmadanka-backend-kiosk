@@ -13,3 +13,7 @@ import { upload } from '../../util/uploadImgToCloudinary';
     CategoryRouter.delete('/delete/:id', categoryController.softDelete);
 
     export default CategoryRouter;
+
+
+
+    

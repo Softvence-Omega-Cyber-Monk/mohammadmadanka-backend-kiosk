@@ -6,8 +6,8 @@ import { TUser } from "./user.interface";
 
 const UserSchema = new Schema<TUser>(
   {
-    shopName: { type: String, required: false },
-    phone: { type: String, unique: false },
+    shopName: { type: String, required: true },
+    phone: { type: String, unique: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
 
@@ -19,7 +19,6 @@ const UserSchema = new Schema<TUser>(
 
     isDeleted: { type: Boolean, default: false },
     isBlocked: { type: Boolean, default: false },
-
   },
   { timestamps: true }
 );

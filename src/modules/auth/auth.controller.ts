@@ -3,6 +3,7 @@ import authServices from "./auth.service";
 
 const logIn = catchAsync(async (req, res) => {
   const { email, password } = req.body;
+  console.log('body in controlller ',email, password);
   const result = await authServices.login({ email, password });
   const { accessToken, refreshToken } = result;
 
@@ -23,7 +24,6 @@ const logIn = catchAsync(async (req, res) => {
 const changePassword = catchAsync(async (req, res) => {
   const { oldPassword, newPassword } = req.body;
   const authorizationToken = req.headers?.authorization as string;
-
 
   const result = await authServices.changePassword(
     authorizationToken,
@@ -49,7 +49,6 @@ const refreshToken = catchAsync(async (req, res) => {
     body: result,
   });
 });
-
 
 // const forgetPassword = catchAsync(async (req, res) => {
 

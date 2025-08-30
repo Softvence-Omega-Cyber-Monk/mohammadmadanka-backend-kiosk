@@ -1,8 +1,11 @@
-import OccasionModel from './occasion.model';
-    import { Occasion } from './occasion.interface';
-import { deleteImageFromCloudinary, uploadImgToCloudinary } from '../../util/uploadImgToCloudinary';
+import OccasionModel from "./occasion.model";
+import { Occasion } from "./occasion.interface";
+import {
+  deleteImageFromCloudinary,
+  uploadImgToCloudinary,
+} from "../../util/uploadImgToCloudinary";
 
-  const create = async (imgFile: Express.Multer.File, data: Occasion) => {
+const create = async (imgFile: Express.Multer.File, data: Occasion) => {
   const result = await uploadImgToCloudinary(imgFile.filename, imgFile.path);
 
   console.log(result);
@@ -64,13 +67,13 @@ const softDelete = async (id: string) => {
   return result1;
 };
 
-    const occasionService = {
-      create,
-      getAll,
-      getById,
-      update,
-      softDelete,
-      getAllname,
-    };
+const occasionService = {
+  create,
+  getAll,
+  getById,
+  update,
+  softDelete,
+  getAllname,
+};
 
-    export default occasionService;
+export default occasionService;

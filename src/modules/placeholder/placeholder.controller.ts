@@ -42,8 +42,10 @@ const getById = catchAsync(async (req: Request, res: Response) => {
 });
 
 const Delete = catchAsync(async (req: Request, res: Response) => {
+
   const id = req.params.id || req.body.id;
   const publicId = req.body.public_id;
+  console.log(publicId)
   const result = await PlaceholderService.Delete(id, publicId);
   if (!result) {
     throw new Error("Placeholder not found or already deleted.");
