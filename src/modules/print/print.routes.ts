@@ -2,11 +2,11 @@
 
 import { Router } from 'express';
 import { createPrintJob } from './print.controller';
-import { authenticate } from '../../middleware/epsonAuth';
+import { ensureAuthenticated } from '../../middleware/epsonAuth';
 
 const PrintRouter = Router();
 
 // Route to create a print job
-PrintRouter.post('/print',authenticate, createPrintJob);
+PrintRouter.post('/print',ensureAuthenticated, createPrintJob);
 
 export default PrintRouter;
