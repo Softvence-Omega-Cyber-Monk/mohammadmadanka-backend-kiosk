@@ -7,6 +7,6 @@ import { upload } from '../../util/uploadImgToCloudinary';
     placeholderRoutes.post('/upoload-placeholder', upload.single('file'), placeholderController.create);
     placeholderRoutes.get('/getAll', placeholderController.getAll);
     placeholderRoutes.get('/getSingle/:id', placeholderController.getById);
-    placeholderRoutes.delete('/delete', placeholderController.Delete);
+    placeholderRoutes.delete('/delete/:id', placeholderController.Delete);
 
     export default placeholderRoutes;
