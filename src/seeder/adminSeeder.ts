@@ -1,27 +1,26 @@
-import { userRole } from '../constents';
-import { UserModel } from '../modules/user/user.model';
-import userServices from '../modules/user/user.service';
+import { userRole } from "../constents";
+import { UserModel } from "../modules/user/user.model";
+import userServices from "../modules/user/user.service";
 
 const adminSeeder = async () => {
-  const admin = {
-    name: 'SuperAdmin',
-    email: 'admin@gmail.com',
-    role: userRole.admin,
-    password: '1',
-    aggriedToTerms:true
+  const superAdmin = {
+    shopName: "Super Admin Shop",
+    name: "SuperAdmin",
+    email: "superAdmin@gmail.com",
+    role: userRole.superAdmin,
+    password: "123456",
   };
-  
-  const adminExist = await UserModel.findOne({ role: userRole.admin });
+
+  const adminExist = await UserModel.findOne({ role: userRole.superAdmin });
 
   if (!adminExist) {
-    console.log('seeding admin....');
-    const createAdmin =await userServices.createUser(admin);
-    if (!createAdmin) 
-    {
-      throw Error('admin could not be created');
+    console.log("seeding superAdmin....");
+    const createAdmin = await userServices.createUser(superAdmin);
+    if (!createAdmin) {
+      throw Error("admin could not be created");
     }
 
-    console.log("Create admin : ", createAdmin);
+    console.log("Create superAdmin : ", createAdmin);
   }
 };
 

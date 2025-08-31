@@ -1,34 +1,21 @@
-import jwt, { Secret } from "jsonwebtoken";
-import config from "../../config";
+import jwt, { JwtPayload } from 'jsonwebtoken';
 
-const createToken = (tokenizeData:Record<string,any>, tokenSecret:string, expiresIn:any): string => {
-    if (!tokenSecret) {
-        throw new Error("Token secret is missing.");
-    }
-
-    return jwt.sign(tokenizeData, tokenSecret, { expiresIn });
+export const createAccessToken = (
+  jwtPayload: { userId: string; role: string },
+  secret: string,
+  expiresIn: number,
+) => {
+  return jwt.sign(jwtPayload, secret, { expiresIn });
+};
+export const createRefreshToken = (
+  jwtPayload: { userId: string; role: string },
+  secret: string,
+  expiresIn: number,
+) => {
+  return jwt.sign(jwtPayload, secret, { expiresIn });
 };
 
-const decodeToken = (token: string, secret: Secret) => {
-    try {
-        if (!token) {
-            throw new Error("Token is missing.");
-        }
-        return jwt.verify(token, secret);
-        
-    } catch (error) {
-        console.error("Token decoding error:", error);
-        return null; // Handle invalid token gracefully
-    }
+export const verifyToken = (token: string, secret: string) => {
+  
+  return jwt.verify(token, secret) as JwtPayload;
 };
-
-const decodeAuthorizationToken = (token: string) => decodeToken(token, config.jwt_token_secret);
-const decodeRefreshToken = (token: string) => decodeToken(token, config.jwt_refresh_Token_secret);
-
-const authUtil = {
-    createToken,
-    decodeAuthorizationToken,
-    decodeRefreshToken
-};
-
-export default authUtil;
