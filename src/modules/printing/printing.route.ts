@@ -9,6 +9,14 @@ const EpsonRoute = Router();
 const upload = multer({ dest: 'uploads/' });  // Handle file upload
 
 // Use the ensureAuthenticated middleware to check if the user is authenticated
+
+EpsonRoute.get("/check-auth", (req, res) => {
+  if (req.session?.deviceToken) {
+    return res.json({ isAuthenticated: true });
+  }
+  res.json({ isAuthenticated: false });
+});
 EpsonRoute.post('/print', ensureAuthenticated, upload.single('file'), printImage); // Correct callback function
 
 export default EpsonRoute;
+
