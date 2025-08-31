@@ -21,7 +21,7 @@ app.use(
     origin: [
       "*",
       "http://localhost:5173",
-      "https://darling-panda-d34576.netlify.app",
+      "https://chimerical-genie-ac461a.netlify.app",
     ],
     methods: "GET,POST,PUT,PATCH,DELETE",
     allowedHeaders: "Content-Type, Authorization",
