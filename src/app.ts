@@ -46,10 +46,10 @@ app.get("/epson/auth", (req, res) => {
 });
 
 // Epson OAuth callback
-app.get("/api/epson/callback", catchAsync(async (req :Request, res:Response) => {
+app.get("/api/epson/callback", catchAsync(async (req: Request, res: Response) => {
   console.log('Epson callback hit');
   const code = req.query.code as string;
-  console.log(code)
+  console.log(code);
 
   if (!code) {
     return res.status(400).send("Missing code");
@@ -71,7 +71,8 @@ app.get("/api/epson/callback", catchAsync(async (req :Request, res:Response) => 
   const tokenData = await tokenResponse.json();
 
   // Save deviceToken in session
-  req.session.deviceToken = tokenData.device_token;
+  // Make sure req.session exists and is typed correctly in your project setup
+  (req as any).session.deviceToken = tokenData.device_token;
 
   // Redirect back to frontend
   res.redirect("http://localhost:5173?auth=success");
