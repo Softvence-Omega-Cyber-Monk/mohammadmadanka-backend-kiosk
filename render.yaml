@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: Mohammadmadanka-kiosk-backend
+    env: node
+    repo: https://github.com/softvence-omega/mohammadmadanka-backend-kiosk/tree/tamim
+    branch: tamim
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false  
+    rootDir: .
+    plan: free
