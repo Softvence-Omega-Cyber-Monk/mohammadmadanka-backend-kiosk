@@ -38,6 +38,9 @@ app.use("/api/v1", Routes);
 // Authentication callback route (Epson authorization)j
 // Epson OAuth start
 app.get("/epson/auth", (req, res) => {
+  if (!process.env.REDIRECT_URI) {
+    throw new Error("REDIRECT_URI is not defined in environment variables");
+  }
   const authUrl = `https://auth.epsonconnect.com/auth/authorize?response_type=code&client_id=${process.env.CLIENT_ID}&redirect_uri=${encodeURIComponent(process.env.REDIRECT_URI)}&scope=device`;
   res.redirect(authUrl);
 });

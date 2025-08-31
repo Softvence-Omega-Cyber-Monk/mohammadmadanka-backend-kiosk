@@ -5,6 +5,13 @@ import multer from 'multer';
 import { printImage } from './printing.controller'; // Ensure correct import
 import { ensureAuthenticated } from '../../middleware/epsonAuth'; // Ensure middleware is working
 
+// Extend express-session types to include deviceToken
+declare module 'express-session' {
+  interface SessionData {
+    deviceToken?: string;
+  }
+}
+
 const EpsonRoute = Router();
 const upload = multer({ dest: 'uploads/' });  // Handle file upload
 
