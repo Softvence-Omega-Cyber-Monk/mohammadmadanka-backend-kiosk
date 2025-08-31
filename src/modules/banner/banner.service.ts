@@ -7,7 +7,7 @@ import { v2 as cloudinary } from 'cloudinary';
 const create = async (imgFile: Express.Multer.File) => {
   const result = await uploadImgToCloudinary(imgFile.filename, imgFile.path);
 
-  console.log(result);
+
 
   if (!result.secure_url) {
     throw new Error("Image upload failed.");
