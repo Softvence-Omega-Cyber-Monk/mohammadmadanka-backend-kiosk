@@ -1,4 +1,4 @@
-export type sticker = {
+export type banner = {
       _id?: string;
       link: string; 
       public_id: string;

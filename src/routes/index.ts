@@ -13,6 +13,8 @@ import CategoryRouter from "../modules/category/category.routes";
 import OccasionRouter from "../modules/occasion/occasion.routes";
 //import PrintRouter from "../modules/print/print.routes";
 import EpsonRoute from "../modules/printing/printing.route";
+import stickerRoutes from "../modules/sticker/sticker.routes";
+import bannerRoutes from "../modules/banner/banner.routes";
 
 const Routes = express.Router();
 
@@ -60,7 +62,15 @@ const moduleRouts = [
     {
     path: "/printing",
     router: EpsonRoute,
-  }
+  },
+  {
+    path: "/sticker",
+    router: stickerRoutes,
+  },
+    {
+    path: "/banner",
+    router: bannerRoutes,
+  },
 ];
 
 moduleRouts.forEach(({ path, router }) => {

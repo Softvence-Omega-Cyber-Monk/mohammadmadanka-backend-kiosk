@@ -1,12 +1,16 @@
-import { Router } from 'express';
-    import stickerController from './sticker.controller';
+import { Router } from "express";
+import stickerController from "./sticker.controller";
+import { upload } from "../../util/uploadImgToCloudinary";
 
-    const router = Router();
+const stickerRoutes = Router();
 
-    router.post('/create', stickerController.create);
-    router.get('/getAll', stickerController.getAll);
-    router.get('/getSingle/:id', stickerController.getById);
-    router.put('/update/:id', stickerController.update);
-    router.delete('/delete/:id', stickerController.softDelete);
+stickerRoutes.post(
+  "/upoload-sticker",
+  upload.single("file"),
+  stickerController.create
+);
+stickerRoutes.get("/getAll", stickerController.getAll);
+stickerRoutes.get("/getSingle/:id", stickerController.getById);
+stickerRoutes.delete("/delete/:id", stickerController.Delete);
 
-    export default router;
+export default stickerRoutes;

@@ -1,6 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 
-    const stickerSchema = new Schema(
+    const bannerSchema = new Schema(
       {
         link: {
           type: String,
@@ -20,5 +20,5 @@ import mongoose, { Schema } from 'mongoose';
       }
     );
 
-    const stickerModel = mongoose.model('sticker', stickerSchema);
-    export default stickerModel;
+    const bannerModel = mongoose.model('banner', bannerSchema);
+    export default bannerModel;
