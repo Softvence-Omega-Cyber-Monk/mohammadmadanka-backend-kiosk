@@ -13,7 +13,7 @@ import bodyParser from "body-parser";
 // middleWares
 app.use(express.json());
 app.use(cookieParser());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
 
 // app.use(cors());
 app.use(
@@ -21,7 +21,7 @@ app.use(
     origin: [
       "*",
       "http://localhost:5173",
-      "https://chimerical-genie-ac461a.netlify.app",
+      "https://velvety-quokka-7b3cf9.netlify.app/",
     ],
     methods: "GET,POST,PUT,PATCH,DELETE",
     allowedHeaders: "Content-Type, Authorization",
@@ -46,38 +46,43 @@ app.get("/epson/auth", (req, res) => {
 });
 
 // Epson OAuth callback
-app.get("/api/epson/callback", catchAsync(async (req: Request, res: Response) => {
-  console.log('Epson callback hit');
-  const code = req.query.code as string;
-  console.log(code);
+app.get(
+  "/api/epson/callback",
+  catchAsync(async (req: Request, res: Response) => {
+    console.log("Epson callback hit");
+    const code = req.query.code as string;
+    console.log(code);
 
-  if (!code) {
-    return res.status(400).send("Missing code");
-  }
+    if (!code) {
+      return res.status(400).send("Missing code");
+    }
 
-  // Exchange code for token
-  const tokenResponse = await fetch("https://auth.epsonconnect.com/api/token", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      grant_type: "authorization_code",
-      code,
-      redirect_uri: process.env.REDIRECT_URI!,
-      client_id: process.env.CLIENT_ID!,
-      client_secret: process.env.CLIENT_SECRET!
-    })
-  });
+    // Exchange code for token
+    const tokenResponse = await fetch(
+      "https://auth.epsonconnect.com/api/token",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          grant_type: "authorization_code",
+          code,
+          redirect_uri: process.env.REDIRECT_URI!,
+          client_id: process.env.CLIENT_ID!,
+          client_secret: process.env.CLIENT_SECRET!,
+        }),
+      }
+    );
 
-  const tokenData = await tokenResponse.json();
+    const tokenData = await tokenResponse.json();
 
-  // Save deviceToken in session
-  // Make sure req.session exists and is typed correctly in your project setup
-  (req as any).session.deviceToken = tokenData.device_token;
+    // Save deviceToken in session
+    // Make sure req.session exists and is typed correctly in your project setup
+    (req as any).session.deviceToken = tokenData.device_token;
 
-  // Redirect back to frontend
-  res.redirect("http://localhost:5173?auth=success");
-}));
-
+    // Redirect back to frontend
+    res.redirect("http://localhost:5173?auth=success");
+  })
+);
 
 // route not found
 app.use(routeNotFound);
