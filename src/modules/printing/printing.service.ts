@@ -5,7 +5,7 @@ import fs from 'fs';
 import { Request, Response } from 'express';
 
 // Epson Connect API credentials
-const API_KEY = 'your_api_key_here';  // Replace with your API key
+const API_KEY = process.env.API_KEY;  // Replace with your API key
 
 // Create a printing job on EpsonConnect
 export const createPrintJob = async (deviceToken: string, jobName: string, printMode: string) => {
