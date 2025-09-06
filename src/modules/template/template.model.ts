@@ -56,7 +56,7 @@ const TemplateSchema = new Schema(
     occasion: { type: mongoose.Schema.Types.ObjectId,
           ref: "Occasion",
           required: true },
-    targetUser: { type: String, required: true },
+    tags: { type: [String], required: true },
     rudeContent: { type: Boolean, required: true, default: false },
     price: { type: Number, required: true },
     holesInfo: [HolesInfoSchema],
