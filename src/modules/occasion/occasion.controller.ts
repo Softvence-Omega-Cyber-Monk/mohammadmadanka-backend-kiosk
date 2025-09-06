@@ -19,7 +19,8 @@ const create = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getAll = catchAsync(async (req: Request, res: Response) => {
-  const result = await OccasionService.getAll();
+  const Cid = req.params.Cid;
+  const result = await OccasionService.getAll(Cid);
   sendResponse(res, {
     statusCode: 200,
     success: true,
