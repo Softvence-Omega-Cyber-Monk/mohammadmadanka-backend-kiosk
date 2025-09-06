@@ -5,6 +5,7 @@ export type Category = {
   iconUrl: string;
   type: CategoryType;
   public_id: string;
+  occations?: string[];
   isDeleted: boolean;
   createdAt?: Date;
   updatedAt?: Date;
