@@ -54,7 +54,6 @@ app.get("/epson/auth", (req, res) => {
 app.get(
   "/api/epson/callback",
   catchAsync(async (req: Request, res: Response) => {
-
     const code = req.query.code as string;
     if (!code) {
       return res.status(400).send("Missing code");
@@ -68,17 +67,18 @@ app.get(
 
     // Exchange code for token
     const tokenResponse = await fetch(
-      "https://auth.epsonconnect.com/api/token",
+      "https://auth.epsonconnect.com/auth/token",
       {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
-          Authorization: `Basic ${credentials}`,
+          Authorization: `Basic`,
         },
         body: new URLSearchParams({
           grant_type: "authorization_code",
           code,
           redirect_uri: process.env.REDIRECT_URI!,
+          client_id: process.env.CLIENT_ID!,
         }),
       }
     );
