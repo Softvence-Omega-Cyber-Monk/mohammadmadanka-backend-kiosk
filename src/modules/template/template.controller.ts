@@ -155,7 +155,9 @@ const filterTemplates = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getTags = catchAsync(async (req: Request, res: Response) => {
-  const result = await TemplateService.getTags();
+  const categoryId = req.params;
+  console.log("controller categroyId ", categoryId);
+  const result = await TemplateService.getTags(categoryId);
   sendResponse(res, {
     statusCode: 200,
     success: true,
