@@ -35,9 +35,34 @@ export const authCallback = catchAsync(async (req: Request, res: Response) => {
 });
 
 // Print image method with error handling
+// export const printImage = catchAsync(async (req: Request, res: Response) => {
+//   const file = req.file;  // Uploaded file
+//   const token = deviceToken;  // Retrieve deviceToken
+
+//   if (!token) {
+//     return res.status(401).send('Error: User not authenticated.');
+//   }
+
+//   try {
+//     // Step 1: Create the print job
+//     const jobResponse = await createPrintJob(token, 'ImagePrintJob', 'document') as { jobId: string; uploadUri: string };
+//     const { jobId, uploadUri } = jobResponse;
+
+//     // Step 2: Upload the image to Epson Connect
+//     await uploadFileToEpson(uploadUri, file);
+
+//     // Step 3: Start printing the image
+//     await startPrintJob(token, jobId);
+
+//     res.status(200).send({ message: 'Print job started successfully', jobId });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).send({ error: 'An error occurred while processing the print job' });
+//   }
+// });
+
 export const printImage = catchAsync(async (req: Request, res: Response) => {
-  const file = req.file;  // Uploaded file
-  const token = deviceToken;  // Retrieve deviceToken
+  
 
   if (!token) {
     return res.status(401).send('Error: User not authenticated.');
