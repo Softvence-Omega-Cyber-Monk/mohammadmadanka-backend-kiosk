@@ -46,12 +46,13 @@ app.get("/epson/auth", (req, res) => {
 });
 
 // Epson OAuth callback
+
 app.get(
-  "https://mantelworthy.online/api/epson/callback",
+  "/api/epson/callback",
   catchAsync(async (req: Request, res: Response) => {
     console.log("Epson callback hit");
     const code = req.query.code as string;
-    console.log(code);
+    console.log("Auth code:", code);
 
     if (!code) {
       return res.status(400).send("Missing code");
@@ -74,15 +75,14 @@ app.get(
     );
 
     const tokenData = await tokenResponse.json();
+    console.log("Token response:", tokenData);
 
-    // Save deviceToken in session
-    // Make sure req.session exists and is typed correctly in your project setup
     (req as any).session.deviceToken = tokenData.device_token;
 
-    // Redirect back to frontend
     res.redirect("http://localhost:5173?auth=success");
   })
 );
+
 
 // route not found
 app.use(routeNotFound);
