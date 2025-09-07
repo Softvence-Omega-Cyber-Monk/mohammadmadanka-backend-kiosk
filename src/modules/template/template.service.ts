@@ -56,14 +56,16 @@ const filterTemplates = async (filters: {
 
   if (filters.category) query.category = filters.category;
   if (filters.occasion) query.occasion = filters.occasion;
+
   if (filters.tags && filters.tags.length > 0) {
     const tagsArray = filters.tags
-      .map((tag) => tag.split(","))
+      .map((tag) => tag.split(",")) 
       .flat()
       .map((tag) => tag.trim())
       .filter((tag) => tag.length > 0);
 
-    query.tags = { $in: tagsArray };
+    // ✅ Match documents that contain *all* selected tags
+    query.tags = { $all: tagsArray };
   }
 
   console.log("filters", filters);
@@ -75,6 +77,7 @@ const filterTemplates = async (filters: {
 
   return templates;
 };
+
 
 const getTags = async (categoryId: string) => {
   try {
