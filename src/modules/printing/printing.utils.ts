@@ -1,11 +1,11 @@
 import PrintingTokenModel from "./printing.model";
 
-export async function getValidAccessTokenFromDB() {
-  const tokenDoc = await PrintingTokenModel.findOne();
-  if (!tokenDoc) throw new Error("No Epson token found for this user");
+export async function getValidAccessToken(): Promise<string> {
+  let tokenDoc = await PrintingTokenModel.findOne();
+  if (!tokenDoc) throw new Error("No Epson token found");
 
-  if (tokenDoc.createdAt <= new Date()) {
-    console.log("Token expired, refreshing...");
+  if (tokenDoc.expires_in <= new Date()) {
+    console.log("Access token expired, refreshing...");
 
     const credentials = Buffer.from(
       `${process.env.CLIENT_ID}:${process.env.CLIENT_SECRET}`
@@ -27,7 +27,8 @@ export async function getValidAccessTokenFromDB() {
     );
 
     const newToken = await refreshResponse.json();
-    if (!newToken.access_token) throw new Error("Failed to refresh token");
+
+    if (!newToken.access_token) throw new Error("Failed to refresh Epson token");
 
     tokenDoc.access_token = newToken.access_token;
     tokenDoc.refresh_token = newToken.refresh_token;

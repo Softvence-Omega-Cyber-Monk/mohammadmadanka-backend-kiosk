@@ -2,8 +2,7 @@
 
 import { Router, Request, Response } from 'express';
 import multer from 'multer';
-import { printImage } from './printing.controller'; // Ensure correct import
-import { ensureAuthenticated } from '../../middleware/epsonAuth'; // Ensure middleware is working
+import { printDocument } from './printing.controller'; // Ensure correct import
 
 // Extend express-session types to include deviceToken
 declare module 'express-session' {
@@ -13,19 +12,11 @@ declare module 'express-session' {
 }
 
 const EpsonRoute = Router();
-const upload = multer({ dest: 'uploads/' });  // Handle file upload
 
-// Use the ensureAuthenticated middleware to check if the user is authenticated
+// const upload = multer({ dest: 'uploads/' });  // Handle file upload
 
-EpsonRoute.get("/check-auth", (req: Request, res: Response): void => {
-  if (req.session?.deviceToken) {
-    res.json({ isAuthenticated: true });
-    return;
-  }
-  res.json({ isAuthenticated: false });
-});
-// EpsonRoute.post('/print', ensureAuthenticated, upload.single('file'), printImage); // Correct callback function
-EpsonRoute.post('/epson/print', upload.single('file'), printImage); // Correct callback function
+
+EpsonRoute.post("/print", printDocument);
 
 
 export default EpsonRoute;
