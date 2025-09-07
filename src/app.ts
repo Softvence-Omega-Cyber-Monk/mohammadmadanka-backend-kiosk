@@ -102,6 +102,7 @@ app.get(
     );
 
     // Redirect back to frontend
+   
     res.redirect("http://localhost:5173?auth=success");
   })
 );
