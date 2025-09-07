@@ -36,7 +36,6 @@ app.get("/", (req, res) => {
 //  Routes
 app.use("/api/v1", Routes);
 
-
 app.use((req, res, next) => {
   console.log("Incoming request:", req.method, req.originalUrl);
   next();
@@ -55,28 +54,31 @@ app.get("/epson/auth", (req, res) => {
 app.get(
   "/api/epson/callback",
   catchAsync(async (req: Request, res: Response) => {
-    console.log("Epson callback hit");
-    console.log("Full query:", req.query);
 
     const code = req.query.code as string;
-    console.log("Auth code:", code);
-
     if (!code) {
       return res.status(400).send("Missing code");
     }
+    console.log("Auth code:", code);
+
+    // Prepare Basic Auth header
+    const credentials = Buffer.from(
+      `${process.env.CLIENT_ID}:${process.env.CLIENT_SECRET}`
+    ).toString("base64");
 
     // Exchange code for token
     const tokenResponse = await fetch(
       "https://auth.epsonconnect.com/api/token",
       {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: `Basic ${credentials}`,
+        },
         body: new URLSearchParams({
           grant_type: "authorization_code",
           code,
           redirect_uri: process.env.REDIRECT_URI!,
-          client_id: process.env.CLIENT_ID!,
-          client_secret: process.env.CLIENT_SECRET!,
         }),
       }
     );
@@ -84,19 +86,19 @@ app.get(
     const tokenData = await tokenResponse.json();
     console.log("Token response:", tokenData);
 
+    if (!tokenData.device_token) {
+      return res
+        .status(400)
+        .send(`Failed to get token: ${JSON.stringify(tokenData)}`);
+    }
+
+    // Save device token in session
     (req as any).session.deviceToken = tokenData.device_token;
 
+    // Redirect back to frontend
     res.redirect("http://localhost:5173?auth=success");
   })
 );
-
-// 🚨 wildcard must be LAST
-app.get("*", (req, res) => {
-  console.log("Hit URL:", req.originalUrl);
-  res.send("Got it");
-});
-
-
 
 // route not found
 app.use(routeNotFound);
