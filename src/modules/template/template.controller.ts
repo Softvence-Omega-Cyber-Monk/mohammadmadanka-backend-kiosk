@@ -33,7 +33,15 @@ const uploadTemplateImage = catchAsync(async (req: Request, res: Response) => {
 });
 
 const create = catchAsync(async (req: Request, res: Response) => {
-  const { localImagePath, localpreviewLink,localProductPath, name, ...restData } = req.body;
+  const {
+    localImagePath,
+    localpreviewLink,
+    localProductPath,
+    name,
+    ...restData
+  } = req.body;
+
+  console.log(req.body);
 
   const [templateUrl, previewUrl] = await uploadMultipleImages([
     localImagePath,
@@ -130,11 +138,12 @@ const getByAdmin = catchAsync(async (req: Request, res: Response) => {
 });
 
 const filterTemplates = catchAsync(async (req: Request, res: Response) => {
-  const { category, occasion } = req.query;
+  const { category, occasion, tags } = req.query;
 
   const result = await TemplateService.filterTemplates({
     category: category as string,
     occasion: occasion as string,
+    tags : tags ? (Array.isArray(tags) ? tags : [tags]) : undefined,
   });
 
   sendResponse(res, {
@@ -145,8 +154,10 @@ const filterTemplates = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const getTargetUser = catchAsync(async (req: Request, res: Response) => {
-  const result = await TemplateService.getTargetUser();
+const getTags = catchAsync(async (req: Request, res: Response) => {
+  const categoryId = req.query.categoryID as string;
+
+  const result = await TemplateService.getTags(categoryId);
   sendResponse(res, {
     statusCode: 200,
     success: true,
@@ -155,22 +166,24 @@ const getTargetUser = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-export const deleteLocalImage = catchAsync(async (req: Request, res: Response) => {
-  // Example request: DELETE /api/v1/images/delete-local/uploads/abc.png
-  const filePath = req.params.filePath;
+export const deleteLocalImage = catchAsync(
+  async (req: Request, res: Response) => {
+    // Example request: DELETE /api/v1/images/delete-local/uploads/abc.png
+    const filePath = req.params.filePath;
 
-  // ✅ ensure the path is always inside "uploads" folder
-  //const safePath = path.join(process.cwd(), filePath);
+    // ✅ ensure the path is always inside "uploads" folder
+    //const safePath = path.join(process.cwd(), filePath);
 
-  await deleteFile(filePath);
+    await deleteFile(filePath);
 
-  sendResponse(res, {
-    statusCode: 200,
-    success: true,
-    message: "Local image deleted successfully",
-    data: { path: filePath },
-  });
-});
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "Local image deleted successfully",
+      data: { path: filePath },
+    });
+  }
+);
 
 const templateController = {
   create,
@@ -181,7 +194,7 @@ const templateController = {
   getByAdmin,
   filterTemplates,
   uploadTemplateImage,
-  getTargetUser,
+  getTags,
 };
 
 export default templateController;

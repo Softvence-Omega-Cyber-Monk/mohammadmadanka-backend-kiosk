@@ -2,29 +2,33 @@
 
 import { Router, Request, Response } from 'express';
 import multer from 'multer';
-import { printImage } from './printing.controller'; // Ensure correct import
-import { ensureAuthenticated } from '../../middleware/epsonAuth'; // Ensure middleware is working
+import { printDocument } from './printing.controller'; // Ensure correct import
 
-// Extend express-session types to include deviceToken
-declare module 'express-session' {
-  interface SessionData {
-    deviceToken?: string;
-  }
-}
 
 const EpsonRoute = Router();
-const upload = multer({ dest: 'uploads/' });  // Handle file upload
+// const upload = multer({ dest: 'uploads/' });  // Handle file upload
 
-// Use the ensureAuthenticated middleware to check if the user is authenticated
+// // Use the ensureAuthenticated middleware to check if the user is authenticated
 
-EpsonRoute.get("/check-auth", (req: Request, res: Response): void => {
-  if (req.session?.deviceToken) {
-    res.json({ isAuthenticated: true });
-    return;
-  }
-  res.json({ isAuthenticated: false });
-});
-EpsonRoute.post('/print', ensureAuthenticated, upload.single('file'), printImage); // Correct callback function
+// EpsonRoute.get("/check-auth", (req: Request, res: Response): void => {
+//   if (req.session?.deviceToken) {
+//     res.json({ isAuthenticated: true });
+//     return;
+//   }
+//   res.json({ isAuthenticated: false });
+// });
+// // EpsonRoute.post('/print', ensureAuthenticated, upload.single('file'), printImage); // Correct callback function
+// EpsonRoute.post('/epson/print', ensureAuthenticated, upload.single('file'), printImage); // Correct callback function
+
+
+
+
+const upload = multer({ dest: "uploads/" }); // files stored in uploads folder
+
+
+
+EpsonRoute.post("/print", upload.single("file"), printDocument);
+
 
 export default EpsonRoute;
 
