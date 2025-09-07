@@ -7,7 +7,7 @@ import { upload } from '../../util/uploadImgToCloudinary';
     CategoryRouter.post('/create',upload.single('file'), categoryController.create);
     CategoryRouter.get('/getAll', categoryController.getAll);
     CategoryRouter.get('/names', categoryController.getAllname);
-
+    CategoryRouter.get('/getAllOccasion/:Cid', categoryController.getAllOccasion);
     CategoryRouter.get('/getSingle/:id', categoryController.getById);
     CategoryRouter.put('/update/:id', categoryController.update);
     CategoryRouter.delete('/delete/:id', categoryController.softDelete);

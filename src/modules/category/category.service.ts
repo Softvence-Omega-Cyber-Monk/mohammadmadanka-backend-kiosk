@@ -23,7 +23,7 @@ const create = async (imgFile: Express.Multer.File, data: Category) => {
 };
 
 const getAll = async () => {
-  const categorys = await CategoryModel.find({ isDeleted: false });
+  const categorys = await CategoryModel.find({ isDeleted: false }).populate('occasions');
   return categorys;
 };
 
@@ -31,8 +31,16 @@ const getAllname = async () => {
   const categoryName = await CategoryModel.find(
     { isDeleted: false },
     { name: 1, type: 1 }
-  );
+  ).populate('occasions', 'name');
   return categoryName;
+};
+
+const getAllOccasion = async (Cid :string ) => {
+  const category = await CategoryModel.findOne({ _id: Cid, isDeleted: false }).populate('occasions', 'name');
+  if (!category) {
+    throw new Error("Category not found");
+  }
+  return category.occasions;
 };
 
 const getById = async (id: string) => {
@@ -74,6 +82,7 @@ const categoryService = {
   update,
   softDelete,
   getAllname,
+  getAllOccasion,
 };
 
 export default categoryService;
