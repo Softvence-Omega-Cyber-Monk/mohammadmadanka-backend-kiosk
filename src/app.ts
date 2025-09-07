@@ -47,7 +47,7 @@ app.get("/epson/auth", (req, res) => {
 
 // Epson OAuth callback
 app.get(
-  "/api/epson/callback",
+  "https://mantelworthy.online/api/epson/callback",
   catchAsync(async (req: Request, res: Response) => {
     console.log("Epson callback hit");
     const code = req.query.code as string;
