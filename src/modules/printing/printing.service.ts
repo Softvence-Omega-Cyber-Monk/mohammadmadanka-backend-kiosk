@@ -13,7 +13,6 @@ const EPSON_API_KEY = process.env.API_KEY;  // Replace with your API key
 // Create Epson print job
 export async function createPrintJob(jobName: string) {
   const accessToken = await getValidAccessToken();
-  console.log('access token from service ',accessToken)
 
   const response = await fetch(
     "https://api.epsonconnect.com/api/2/printing/jobs",
@@ -41,6 +40,7 @@ export async function createPrintJob(jobName: string) {
   );
 
   const jobData = await response.json();
+  console.log('job data from service ',jobData)
 
   if (!jobData.uploadUri || !jobData.jobId)
     throw new Error("Failed to create print job");
@@ -53,6 +53,9 @@ export async function uploadFileToEpson(uploadUri: string, filePath: string) {
   if (!fs.existsSync(filePath)) throw new Error("File does not exist");
 
   const fileBuffer = fs.readFileSync(filePath);
+
+
+  console.log('uploadUri  and filepath from service ',uploadUri,filePath)
 
   const response = await fetch(uploadUri, {
     method: "PUT",

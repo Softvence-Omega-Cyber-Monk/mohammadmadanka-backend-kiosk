@@ -41,6 +41,7 @@ app.use((req, res, next) => {
   console.log("Incoming request:", req.method, req.originalUrl);
   next();
 });
+
 // Authentication callback route (Epson authorization)j
 // Epson OAuth start
 app.get("/epson/auth", (req, res) => {
