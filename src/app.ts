@@ -72,13 +72,12 @@ app.get(
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
-          Authorization: `Basic`,
+          Authorization: `Basic ${credentials}`,
         },
         body: new URLSearchParams({
           grant_type: "authorization_code",
           code,
           redirect_uri: process.env.REDIRECT_URI!,
-          client_id: process.env.CLIENT_ID!,
         }),
       }
     );
@@ -87,9 +86,7 @@ app.get(
     console.log("Token response:", tokenData);
 
     if (!tokenData.device_token) {
-      return res
-        .status(400)
-        .send(`Failed to get token: ${JSON.stringify(tokenData)}`);
+      return res.status(400).send(`Failed to get token: `);
     }
 
     // Save device token in session
