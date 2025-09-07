@@ -103,7 +103,7 @@ app.get(
 
     // Redirect back to frontend
    
-    res.redirect("http://localhost:5173/shopping/68bd561b639ad392403a8a5a?auth=success");
+    res.json({ success: true, message: "Epson authentication successful" });
   })
 );
 
