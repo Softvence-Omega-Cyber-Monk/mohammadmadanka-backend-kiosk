@@ -44,7 +44,7 @@ export type Template = {
   config?: TemplateCofig;
   category: Category;
   occasion: Occasion;
-  targetUser: string;
+  tags: string[];
   rudeContent: boolean;
   price: number;
   aspectRatio: number;

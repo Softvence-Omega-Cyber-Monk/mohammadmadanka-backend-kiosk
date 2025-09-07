@@ -15,6 +15,7 @@ import OccasionRouter from "../modules/occasion/occasion.routes";
 import EpsonRoute from "../modules/printing/printing.route";
 import stickerRoutes from "../modules/sticker/sticker.routes";
 import bannerRoutes from "../modules/banner/banner.routes";
+import QRrouter from "../modules/template/QrcodeImageUpload";
 
 const Routes = express.Router();
 
@@ -71,6 +72,11 @@ const moduleRouts = [
     path: "/banner",
     router: bannerRoutes,
   },
+    {
+    
+    path: "/qr-upload",
+    router: QRrouter,
+  }
 ];
 
 moduleRouts.forEach(({ path, router }) => {

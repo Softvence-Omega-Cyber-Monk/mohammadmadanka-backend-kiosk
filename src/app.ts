@@ -9,6 +9,7 @@ import path from "path";
 import catchAsync from "./util/catchAsync";
 import qs from "qs";
 import bodyParser from "body-parser";
+import PrintingTokenModel from "./modules/printing/printing.model";
 
 // middleWares
 app.use(express.json());
@@ -21,7 +22,7 @@ app.use(
     origin: [
       "*",
       "http://localhost:5173",
-      "https://chimerical-genie-ac461a.netlify.app",
+      "https://velvety-quokka-7b3cf9.netlify.app",
     ],
     methods: "GET,POST,PUT,PATCH,DELETE",
     allowedHeaders: "Content-Type, Authorization",
@@ -35,6 +36,12 @@ app.get("/", (req, res) => {
 
 //  Routes
 app.use("/api/v1", Routes);
+
+app.use((req, res, next) => {
+  console.log("Incoming request:", req.method, req.originalUrl);
+  next();
+});
+
 // Authentication callback route (Epson authorization)j
 // Epson OAuth start
 app.get("/epson/auth", (req, res) => {
@@ -49,35 +56,50 @@ app.get("/epson/auth", (req, res) => {
 app.get(
   "/api/epson/callback",
   catchAsync(async (req: Request, res: Response) => {
-    console.log("Epson callback hit");
     const code = req.query.code as string;
-    console.log(code);
-
     if (!code) {
       return res.status(400).send("Missing code");
     }
+    console.log("Auth code:", code);
+
+    // Prepare Basic Auth header
+    const credentials = Buffer.from(
+      `${process.env.CLIENT_ID}:${process.env.CLIENT_SECRET}`
+    ).toString("base64");
 
     // Exchange code for token
     const tokenResponse = await fetch(
-      "https://auth.epsonconnect.com/api/token",
+      "https://auth.epsonconnect.com/auth/token",
       {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: `Basic ${credentials}`,
+        },
         body: new URLSearchParams({
           grant_type: "authorization_code",
           code,
           redirect_uri: process.env.REDIRECT_URI!,
-          client_id: process.env.CLIENT_ID!,
-          client_secret: process.env.CLIENT_SECRET!,
         }),
       }
     );
 
     const tokenData = await tokenResponse.json();
+    console.log("Token response:", tokenData);
 
-    // Save deviceToken in session
-    // Make sure req.session exists and is typed correctly in your project setup
-    (req as any).session.deviceToken = tokenData.device_token;
+ 
+    // Save to database
+    await PrintingTokenModel.findOneAndUpdate(
+      {},
+      {
+        access_token: tokenData.access_token,
+        refresh_token: tokenData.refresh_token,
+        expires_in: new Date(Date.now() + tokenData.expires_in * 1000),
+        scope: tokenData.scope,
+        token_type: tokenData.token_type,
+      },
+      { upsert: true, new: true }
+    );
 
     // Redirect back to frontend
     res.redirect("http://localhost:5173?auth=success");
