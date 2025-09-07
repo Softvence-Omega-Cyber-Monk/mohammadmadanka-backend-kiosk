@@ -40,6 +40,17 @@ const getAllname = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getAllOccasion = catchAsync(async (req: Request, res: Response) => {
+  const Cid = req.params.Cid || req.body.Cid || "";
+  const result = await CategoryService.getAllOccasion(Cid);
+  sendResponse(res, {
+    statusCode: 200, 
+    success: true,
+    message: "Occasions retrieved successfully",
+    data: result,
+  });
+});
+
 const getById = catchAsync(async (req: Request, res: Response) => {
   const result = await CategoryService.getById(req.params.id);
   sendResponse(res, {
@@ -78,6 +89,7 @@ const categoryController = {
   update,
   softDelete,
   getAllname,
+  getAllOccasion,
 };
 
 export default categoryController;

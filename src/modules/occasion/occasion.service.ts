@@ -22,9 +22,9 @@ const create = async (imgFile: Express.Multer.File, data: Occasion) => {
   return category;
 };
 
-const getAll = async () => {
-  const categorys = await OccasionModel.find({ isDeleted: false });
-  return categorys;
+const getAll = async (Cid :string ) => {
+  const occasion = await OccasionModel.find({ isDeleted: false });
+  return occasion;
 };
 
 const getAllname = async () => {

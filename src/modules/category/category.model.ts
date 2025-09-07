@@ -22,6 +22,13 @@ import mongoose, { Schema } from 'mongoose';
           type: String,
           required: true,
         },
+        occasions: [
+          {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Occasion',
+            required: false,
+          },
+        ],
         isDeleted: {
           type: Boolean,
           default: false,
