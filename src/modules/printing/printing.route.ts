@@ -1,22 +1,17 @@
 // src/modules/printing/printing.route.ts
 
-import { Router, Request, Response } from 'express';
+import { Router } from 'express';
 import multer from 'multer';
 import { printDocument } from './printing.controller'; // Ensure correct import
 
-// Extend express-session types to include deviceToken
-declare module 'express-session' {
-  interface SessionData {
-    deviceToken?: string;
-  }
-}
 
 const EpsonRoute = Router();
 
-// const upload = multer({ dest: 'uploads/' });  // Handle file upload
+const upload = multer({ dest: "uploads/" }); // files stored in uploads folder
 
 
-EpsonRoute.post("/print", printDocument);
+
+EpsonRoute.post("/print", upload.single("file"), printDocument);
 
 
 export default EpsonRoute;
