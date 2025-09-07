@@ -4,7 +4,7 @@ import { createPrintJob, uploadFileToEpson } from "./printing.service";
 
 
 export const printDocument = catchAsync(async (req: Request, res: Response) => {
-  const jobName = "tamim"
+  const jobName = req.body.jobName 
   const filePath = req.file?.path; // multer stores uploaded file path
 
 
