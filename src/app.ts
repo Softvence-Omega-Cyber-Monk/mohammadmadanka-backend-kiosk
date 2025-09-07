@@ -87,7 +87,6 @@ app.get(
     const tokenData = await tokenResponse.json();
     console.log("Token response:", tokenData);
 
- 
     // Save to database
     await PrintingTokenModel.findOneAndUpdate(
       {},
@@ -102,7 +101,7 @@ app.get(
     );
 
     // Redirect back to frontend
-   
+
     res.json({ success: true, message: "Epson authentication successful" });
   })
 );
