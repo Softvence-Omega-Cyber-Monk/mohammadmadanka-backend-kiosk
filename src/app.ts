@@ -35,6 +35,12 @@ app.get("/", (req, res) => {
 
 //  Routes
 app.use("/api/v1", Routes);
+
+
+app.use((req, res, next) => {
+  console.log("Incoming request:", req.method, req.originalUrl);
+  next();
+});
 // Authentication callback route (Epson authorization)j
 // Epson OAuth start
 app.get("/epson/auth", (req, res) => {
@@ -46,11 +52,12 @@ app.get("/epson/auth", (req, res) => {
 });
 
 // Epson OAuth callback
-
 app.get(
   "/api/epson/callback",
   catchAsync(async (req: Request, res: Response) => {
     console.log("Epson callback hit");
+    console.log("Full query:", req.query);
+
     const code = req.query.code as string;
     console.log("Auth code:", code);
 
@@ -82,6 +89,13 @@ app.get(
     res.redirect("http://localhost:5173?auth=success");
   })
 );
+
+// 🚨 wildcard must be LAST
+app.get("*", (req, res) => {
+  console.log("Hit URL:", req.originalUrl);
+  res.send("Got it");
+});
+
 
 
 // route not found
