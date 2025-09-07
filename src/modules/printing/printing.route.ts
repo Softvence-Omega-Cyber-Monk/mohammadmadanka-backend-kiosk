@@ -24,7 +24,8 @@ EpsonRoute.get("/check-auth", (req: Request, res: Response): void => {
   }
   res.json({ isAuthenticated: false });
 });
-EpsonRoute.post('/print', ensureAuthenticated, upload.single('file'), printImage); // Correct callback function
+// EpsonRoute.post('/print', ensureAuthenticated, upload.single('file'), printImage); // Correct callback function
+EpsonRoute.post('/epson/print', upload.single('file'), printImage); // Correct callback function
 
 
 export default EpsonRoute;
