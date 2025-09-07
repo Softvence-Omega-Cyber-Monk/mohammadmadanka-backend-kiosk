@@ -9,6 +9,7 @@ import path from "path";
 import catchAsync from "./util/catchAsync";
 import qs from "qs";
 import bodyParser from "body-parser";
+import PrintingTokenModel from "./modules/printing/printing.model";
 
 // middleWares
 app.use(express.json());
@@ -85,12 +86,19 @@ app.get(
     const tokenData = await tokenResponse.json();
     console.log("Token response:", tokenData);
 
-    if (!tokenData.device_token) {
-      return res.status(400).send(`Failed to get token: `);
-    }
-
-    // Save device token in session
-    (req as any).session.deviceToken = tokenData.device_token;
+ 
+    // Save to database
+    await PrintingTokenModel.findOneAndUpdate(
+      {},
+      {
+        access_token: tokenData.access_token,
+        refresh_token: tokenData.refresh_token,
+        expires_in: new Date(Date.now() + tokenData.expires_in * 1000),
+        scope: tokenData.scope,
+        token_type: tokenData.token_type,
+      },
+      { upsert: true, new: true }
+    );
 
     // Redirect back to frontend
     res.redirect("http://localhost:5173?auth=success");
