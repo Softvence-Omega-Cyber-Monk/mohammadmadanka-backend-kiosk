@@ -1,8 +1,8 @@
 
-type TPrinting ={
-    accessToken: string;
-    refreshToken: string;
+export type TPrintingToken ={
+    access_token: string;
+    refresh_token: string;
     scope: string;
-    tokenType: string;
-    expiresIn: number;
+   token_type: string;
+    expires_in: number;
 }
