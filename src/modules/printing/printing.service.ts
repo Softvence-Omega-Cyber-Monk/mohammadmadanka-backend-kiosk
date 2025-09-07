@@ -12,7 +12,9 @@ const EPSON_API_KEY = process.env.API_KEY;  // Replace with your API key
 
 // Create Epson print job
 export async function createPrintJob(jobName: string) {
+  console.log('job name from service ',jobName)
   const accessToken = await getValidAccessToken();
+  console.log('access token from service ',accessToken)
 
   const response = await fetch(
     "https://api.epsonconnect.com/api/2/printing/jobs",

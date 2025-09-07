@@ -4,12 +4,12 @@ import { createPrintJob, uploadFileToEpson } from "./printing.service";
 
 
 export const printDocument = catchAsync(async (req: Request, res: Response) => {
-  const jobName = req.body.jobName;
+  const jobName = "tamim"
   const filePath = req.file?.path; // multer stores uploaded file path
 
 
   console.log(jobName, filePath);
-  
+
   if (!jobName || !filePath) {
     return res.status(400).send({ error: "jobName and file are required" });
   }
