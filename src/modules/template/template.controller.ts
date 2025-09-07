@@ -143,7 +143,7 @@ const filterTemplates = catchAsync(async (req: Request, res: Response) => {
   const result = await TemplateService.filterTemplates({
     category: category as string,
     occasion: occasion as string,
-    tags: tags ? (Array.isArray(tags) ? tags : [tags]) : undefined,
+    tags : tags ? (Array.isArray(tags) ? tags : [tags]) : undefined,
   });
 
   sendResponse(res, {
@@ -155,8 +155,8 @@ const filterTemplates = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getTags = catchAsync(async (req: Request, res: Response) => {
-  const categoryId = req.params;
-  console.log("controller categroyId ", categoryId);
+  const categoryId = req.query.categoryID as string;
+
   const result = await TemplateService.getTags(categoryId);
   sendResponse(res, {
     statusCode: 200,

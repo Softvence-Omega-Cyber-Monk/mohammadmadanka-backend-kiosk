@@ -77,11 +77,10 @@ const filterTemplates = async (filters: {
 };
 
 const getTags = async (categoryId: string) => {
-  console.log("categoryId", categoryId);
   try {
     const tags = await TemplateModel.distinct("tags", {
       isDeleted: false,
-      // category: categoryId,
+      category: categoryId,
     });
 
     return tags;

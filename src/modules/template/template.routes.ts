@@ -12,7 +12,7 @@ templaterouter.put("/update/:id", templateController.update);
 templaterouter.delete("/delete/:id", templateController.softDelete);
 // templaterouter.get('/getByAdmin',auth(userRole.admin), templateController.getByAdmin);
 templaterouter.get("/filter", templateController.filterTemplates);
-templaterouter.get("/getTags/:categoryID", templateController.getTags);
+templaterouter.get("/getTags", templateController.getTags);
 templaterouter.post(
   "/upload",
   upload.single("file"),
