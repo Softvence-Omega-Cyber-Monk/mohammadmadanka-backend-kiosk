@@ -1,8 +1,8 @@
 // src/modules/printing/printing.route.ts
 
 import { Router, Request, Response } from "express";
-import multer from "multer";
-import { printDocument } from "./printing.controller"; // Ensure correct import
+
+import { checkAccessToken, printDocument } from "./printing.controller"; // Ensure correct import
 
 const EpsonRoute = Router();
 
@@ -14,8 +14,9 @@ EpsonRoute.get("/check-auth", (req: Request, res: Response): void => {
   res.json({ isAuthenticated: false });
 });
 
-const upload = multer({ dest: "uploads/" }); // files stored in uploads folder
+// Route
+EpsonRoute.post("/print", printDocument);
 
-EpsonRoute.post("/print", upload.single("file"), printDocument);
+EpsonRoute.get("/check-token", checkAccessToken);
 
 export default EpsonRoute;
