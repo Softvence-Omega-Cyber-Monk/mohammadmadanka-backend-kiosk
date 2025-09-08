@@ -43,8 +43,11 @@ export type Template = {
   productlink?:string;
   config?: TemplateCofig;
   category: Category;
+
   occasion?: Occasion;
-  targetUser: string;
+ 
+  tags: string[];
+
   rudeContent: boolean;
   price: number;
   aspectRatio: number;

@@ -1,82 +1,72 @@
 // src/modules/printing/printing.service.ts
 
-import axios from 'axios';
 import fs from 'fs';
-import { Request, Response } from 'express';
 
-// Epson Connect API credentials
-const API_KEY = process.env.API_KEY;  // Replace with your API key
+import { getValidAccessToken } from './printing.utils';
 
-// Create a printing job on EpsonConnect
-export const createPrintJob = async (deviceToken: string, jobName: string, printMode: string) => {
-  const printSettings = {
-    paperSize: 'ps_a4',
-    paperType: 'pt_plainpaper',
-    borderless: false,
-    printQuality: 'normal',
-    paperSource: 'front2',
-    colorMode: 'color',
-    doubleSided: 'none',
-    reverseOrder: false,
-    copies: 1,
-    collate: false,
-  };
+// // Epson Connect API credentials
+const EPSON_API_KEY = process.env.API_KEY;  // Replace with your API key
 
-  try {
-    const response = await axios.post(
-      'https://api.epsonconnect.com/api/2/printing/jobs',
-      {
-        jobName,
-        printMode,
-        printSettings,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${deviceToken}`,
-          'x-api-key': API_KEY,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
 
-    return response.data;
-  } catch (error) {
-    console.error('Error creating print job', error);
-    throw error;
-  }
-};
 
-// Upload the file to Epson Connect
-export const uploadFileToEpson = async (uploadUri: string, file: any) => {
-  try {
-    const filePath = file.path;  // Path to the uploaded file
 
-    await axios.post(uploadUri, fs.createReadStream(filePath), {
+// Create Epson print job
+export async function createPrintJob(jobName: string) {
+  console.log('job name from service ',jobName)
+  const accessToken = await getValidAccessToken();
+  console.log('access token from service ',accessToken)
+
+  const response = await fetch(
+    "https://api.epsonconnect.com/api/2/printing/jobs",
+    {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/octet-stream',
+        Authorization: `Bearer ${accessToken}`,
+        "x-api-key": EPSON_API_KEY,
+        "Content-Type": "application/json",
       },
-    });
-  } catch (error) {
-    console.error('Error uploading file to Epson Connect', error);
-    throw error;
-  }
-};
-
-// Start the print job
-export const startPrintJob = async (deviceToken: string, jobId: string) => {
-  try {
-    await axios.post(
-      `https://api.epsonconnect.com/api/2/printing/jobs/${jobId}/print`,
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${deviceToken}`,
-          'x-api-key': API_KEY,
+      body: JSON.stringify({
+        jobName,
+        printMode: "document",
+        printSettings: {
+          paperSize: "ps_a4",
+          paperType: "pt_plainpaper",
+          borderless: false,
+          printQuality: "normal",
+          paperSource: "rear",
+          colorMode: "color",
+          copies: 1,
         },
-      }
-    );
-  } catch (error) {
-    console.error('Error starting print job', error);
-    throw error;
-  }
-};
+      }),
+    }
+  );
+
+  const jobData = await response.json();
+  console.log('job data from service ',jobData)
+
+  if (!jobData.uploadUri || !jobData.jobId)
+    throw new Error("Failed to create print job");
+
+  return jobData; // { jobId, uploadUri }
+}
+
+// Upload file to Epson uploadUri
+export async function uploadFileToEpson(uploadUri: string, filePath: string) {
+  if (!fs.existsSync(filePath)) throw new Error("File does not exist");
+
+  const fileBuffer = fs.readFileSync(filePath);
+
+
+  console.log('uploadUri  and filepath from service ',uploadUri,filePath)
+
+  const response = await fetch(uploadUri, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/pdf", // change if image
+      "Content-Length": fileBuffer.length.toString(),
+    },
+    body: fileBuffer,
+  });
+
+  if (!response.ok) throw new Error(`File upload failed: ${response.status}`);
+}
