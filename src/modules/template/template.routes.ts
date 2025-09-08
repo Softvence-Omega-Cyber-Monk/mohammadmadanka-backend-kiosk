@@ -8,7 +8,7 @@ const templaterouter = Router();
 
 templaterouter.get("/getAll", templateController.getAll);
 templaterouter.get("/getSingle/:id", templateController.getById);
-templaterouter.put("/update/:id", templateController.update);
+templaterouter.patch("/update/:id", templateController.update);
 templaterouter.delete("/delete/:id", templateController.softDelete);
 // templaterouter.get('/getByAdmin',auth(userRole.admin), templateController.getByAdmin);
 templaterouter.get("/filter", templateController.filterTemplates);
