@@ -200,6 +200,24 @@ export const bulkUpdateTemplates = catchAsync(async (req: Request, res: Response
   }
 });
 
+export const bulkUpdateTemplateTags = catchAsync(async (req: Request, res: Response) => {
+  try {
+    const { ids, action, tags } = req.body; 
+    // action = "add" | "remove"
+    // tags = ["newTag1", "newTag2"]
+
+    if (!ids?.length || !tags?.length) {
+      return res.status(400).json({ message: "Invalid request" });
+    }
+
+    const result = await TemplateService.bulkUpdateTemplateTagsService(ids, action, tags);
+    res.json({ success: true, result });
+  } catch (error) {
+    console.error("Bulk tag update error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 const templateController = {
   create,
   getAll,
@@ -210,7 +228,8 @@ const templateController = {
   filterTemplates,
   uploadTemplateImage,
   getTags,
-  bulkUpdateTemplates
+  bulkUpdateTemplates,
+  bulkUpdateTemplateTags,
 };
 
 export default templateController;

@@ -20,6 +20,7 @@ templaterouter.post(
 );
 templaterouter.post("/create", templateController.create);
 templaterouter.delete("/delete-local/:filePath(*)", deleteLocalImage);
-    templaterouter.patch("/bulk-update", templateController.bulkUpdateTemplates);
+templaterouter.patch("/bulk-update", templateController.bulkUpdateTemplates);
+templaterouter.patch("/bulk-update-tags", templateController.bulkUpdateTemplateTags);
 
 export default templaterouter;
