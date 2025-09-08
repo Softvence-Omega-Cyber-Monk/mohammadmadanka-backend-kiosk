@@ -69,6 +69,17 @@ const getTargetUser = async () => {
   }
 };
 
+export const bulkUpdateTemplatesService = async (ids : string, type:string, amount: number) => {
+  const adjustment = type === "increase" ? amount : -amount;
+
+  const result = await TemplateModel.updateMany(
+    { _id: { $in: ids } },
+    { $inc: { price: adjustment } }
+  );
+
+  return result;
+};
+
 
 const templateService = {
   create,
@@ -79,6 +90,7 @@ const templateService = {
   getByCreatedBy,
   filterTemplates,
   getTargetUser,
+  bulkUpdateTemplatesService,
 };
 
 export default templateService;

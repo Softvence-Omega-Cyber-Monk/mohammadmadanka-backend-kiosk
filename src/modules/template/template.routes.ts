@@ -17,6 +17,7 @@ import { upload } from '../../util/uploadImgToCloudinary';
     templaterouter.post('/upload', upload.single('file'), templateController.uploadTemplateImage);
     templaterouter.post('/create', templateController.create);
     templaterouter.delete("/delete-local/:filePath(*)", deleteLocalImage);
+    templaterouter.patch("/bulk-update", templateController.bulkUpdateTemplates);
 
     
     

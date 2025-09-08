@@ -172,6 +172,22 @@ export const deleteLocalImage = catchAsync(async (req: Request, res: Response) =
   });
 });
 
+export const bulkUpdateTemplates = catchAsync(async (req: Request, res: Response) => {
+  try {
+    const { ids, type, amount } = req.body;
+
+    if (!ids?.length || !amount) {
+      return res.status(400).json({ message: "Invalid request" });
+    }
+
+    const result = await TemplateService.bulkUpdateTemplatesService(ids, type, amount);
+    res.json({ success: true, result });
+  } catch (error) {
+    console.error("Bulk update error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 const templateController = {
   create,
   getAll,
@@ -182,6 +198,7 @@ const templateController = {
   filterTemplates,
   uploadTemplateImage,
   getTargetUser,
+  bulkUpdateTemplates
 };
 
 export default templateController;
