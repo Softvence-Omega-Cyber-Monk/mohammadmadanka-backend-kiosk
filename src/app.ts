@@ -10,6 +10,8 @@ import catchAsync from "./util/catchAsync";
 import qs from "qs";
 import bodyParser from "body-parser";
 import PrintingTokenModel from "./modules/printing/printing.model";
+import auth from "./middleware/auth";
+import { userRole } from "./constents";
 
 // middleWares
 app.use(express.json());
@@ -55,7 +57,10 @@ app.get("/epson/auth", (req, res) => {
 // Epson OAuth callback
 app.get(
   "/api/epson/callback",
+  // auth(userRole.shopAdmin, userRole.superAdmin),
   catchAsync(async (req: Request, res: Response) => {
+    console.log(req.user, "user---");
+
     const code = req.query.code as string;
     if (!code) {
       return res.status(400).send("Missing code");
@@ -87,7 +92,6 @@ app.get(
     const tokenData = await tokenResponse.json();
     console.log("Token response:", tokenData);
 
- 
     // Save to database
     await PrintingTokenModel.findOneAndUpdate(
       {},
@@ -102,6 +106,7 @@ app.get(
     );
 
     // Redirect back to frontend
+
     res.redirect("http://localhost:5173?auth=success");
   })
 );
