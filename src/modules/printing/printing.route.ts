@@ -2,7 +2,7 @@
 
 import { Router, Request, Response } from "express";
 
-import { checkAccessToken, printDocument } from "./printing.controller"; // Ensure correct import
+import { checkAccessToken, printDocument, printJobController } from "./printing.controller"; // Ensure correct import
 
 const EpsonRoute = Router();
 
@@ -18,5 +18,7 @@ EpsonRoute.get("/check-auth", (req: Request, res: Response): void => {
 EpsonRoute.post("/print", printDocument);
 
 EpsonRoute.get("/check-token/:userId", checkAccessToken);
+// EpsonRoute.post("/print-job", printJobController);
+
 
 export default EpsonRoute;

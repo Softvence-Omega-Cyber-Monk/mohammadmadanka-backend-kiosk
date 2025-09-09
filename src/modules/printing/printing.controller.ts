@@ -1,37 +1,34 @@
 import { Request, Response } from "express";
 import catchAsync from "../../util/catchAsync";
-import { createPrintJob, isAccessTokenValid, uploadFileToEpson } from "./printing.service";
+import {
+  createPrintJob,
+  isAccessTokenValid,
+  printJobService,
+  uploadFileToEpson,
+} from "./printing.service";
 
 export const printDocument = catchAsync(async (req: Request, res: Response) => {
- 
-     const { fileUrl, jobName ,userId} = req.body;
-
-
-console.log(fileUrl,jobName,userId,'--------------------')
+  const { fileUrl, jobName, userId } = req.body;
 
   if (!jobName || !fileUrl) {
     return res.status(400).send({ error: "jobName and file are required" });
   }
 
-  const jobData = await createPrintJob(jobName,userId);
-  
-  await uploadFileToEpson(jobData.uploadUri, fileUrl);
+  const jobData = await createPrintJob(jobName, userId);
+
+  console.log(jobData, "-------job data from controller");
+
+  await uploadFileToEpson(jobData.jobData.uploadUri, fileUrl);
 
   res.status(200).send({
     message: "Print job created and file uploaded successfully",
-    jobId: jobData.jobId,
+    jobId: jobData.jobData.jobId,
+    PrinterAccessToken: jobData.accessToken,
+    EPSON_API_KEY: jobData.EPSON_API_KEY,
   });
 });
 
-
-
-
-
-
 export async function checkAccessToken(req: Request, res: Response) {
-
-  console.log(req.params.userId,'------------------')
-
   const userId = req.params.userId;
 
   try {
@@ -43,3 +40,20 @@ export async function checkAccessToken(req: Request, res: Response) {
     return res.status(500).json({ valid: false, error: "Server error" });
   }
 }
+
+// export const printJobController = async (req: Request, res: Response) => {
+//   try {
+
+//     console.log('inside print job controller')
+//     const userId = req.query.userId;
+//     const { jobId } = req.body;
+
+//     console.log(userId, jobId, "---------------from controller ---");
+//     if (!jobId) return res.status(400).json({ error: "jobId is required" });
+
+//     const result = await printJobService(jobId, userId as string);
+//     res.json(result);
+//   } catch (error: any) {
+//     res.status(500).json({ error: error.message || "Printing failed" });
+//   }
+// };

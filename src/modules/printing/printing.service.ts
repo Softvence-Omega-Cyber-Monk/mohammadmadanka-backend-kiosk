@@ -52,7 +52,9 @@ export async function createPrintJob(
     throw new Error("Failed to create print job");
   }
 
-  return jobData; // { jobId, uploadUri }
+
+
+  return {jobData,accessToken,EPSON_API_KEY}; // { jobId, uploadUri }
 }
 
 export async function uploadFileToEpson(
@@ -199,3 +201,41 @@ export async function isAccessTokenValid(userId) {
     }
   }
 }
+
+
+// export const printJobService = async (jobId: string,userId:string) => {
+
+//   console.log('from service of printing ',jobId,userId,'------------------')
+
+//   const token = await PrintingTokenModel.findOne({userId:userId});
+
+
+
+//   try {
+//     const EPSON_API_KEY = process.env.EPSON_API_KEY!;
+//     const deviceToken = token?.access_token;
+
+//     const response = await axios.post(
+//       `https://api.epsonconnect.com/api/2/printing/jobs/${jobId}/print`,
+//       {}, // empty body
+//       {
+//         headers: {
+//           "Content-Type": "application/json",
+//           Authorization: `Bearer ${deviceToken}`,
+//           "x-api-key": EPSON_API_KEY,
+//         },
+//       }
+//     );
+
+
+//     console.log('finished prinsting',response.data )
+
+//     return response.data;
+//   } catch (error: any) {
+//     console.error(
+//       "Printing Service Error:",
+//       error.response?.data || error.message
+//     );
+//     throw new Error("Printing failed");
+//   }
+// };
