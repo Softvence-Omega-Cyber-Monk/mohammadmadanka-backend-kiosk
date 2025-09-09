@@ -1,11 +1,14 @@
 import { Request, Response } from "express";
 import catchAsync from "../../util/catchAsync";
 import {
+  createA4WithTwoA5,
   createPrintJob,
   isAccessTokenValid,
-  printJobService,
+  // printJobService,
   uploadFileToEpson,
 } from "./printing.service";
+import fs from "fs";
+import path from "path";
 
 export const printDocument = catchAsync(async (req: Request, res: Response) => {
   const { fileUrl, jobName, userId } = req.body;
@@ -14,11 +17,13 @@ export const printDocument = catchAsync(async (req: Request, res: Response) => {
     return res.status(400).send({ error: "jobName and file are required" });
   }
 
-  const jobData = await createPrintJob(jobName, userId);
+  const editedImgPathOrUrl = "https://res.cloudinary.com/dbt83nrhl/image/upload/v1757415743/photo_2025-09-09_17-02-01_kagxv2.jpg"; // Assuming fileUrl is the path or URL of the edited image
+
+  const jobData = await createPrintJob(jobName, userId,editedImgPathOrUrl);
 
   console.log(jobData, "-------job data from controller");
 
-  await uploadFileToEpson(jobData.jobData.uploadUri, fileUrl);
+  // await uploadFileToEpson(jobData.jobData.uploadUri, fileUrl);
 
   res.status(200).send({
     message: "Print job created and file uploaded successfully",
@@ -27,6 +32,7 @@ export const printDocument = catchAsync(async (req: Request, res: Response) => {
     EPSON_API_KEY: jobData.EPSON_API_KEY,
   });
 });
+
 
 export async function checkAccessToken(req: Request, res: Response) {
   const userId = req.params.userId;

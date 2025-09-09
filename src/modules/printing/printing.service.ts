@@ -2,24 +2,80 @@
 import fs from "fs";
 import path from "path";
 import axios from "axios";
-import { PDFDocument } from "pdf-lib";
+import { degrees, PDFDocument } from "pdf-lib";
 import { getValidAccessToken } from "./printing.utils";
 import PrintingTokenModel from "./printing.model";
-import jwt from "jsonwebtoken";
 
 const EPSON_API_KEY = process.env.EPSON_API_KEY; // Epson API key
+const BRAND_IMAGE_URL =
+  process.env.BRAND_IMAGE_URL ||
+  "https://res.cloudinary.com/dbt83nrhl/image/upload/v1757415535/back-Card_lownyt.jpg"; // fixed brand image URL
 
-// Create Epson print job
+// 🔹 Helper: download remote file as Buffer
+async function fetchRemoteFile(url: string): Promise<Buffer> {
+  const res = await axios.get(url, { responseType: "arraybuffer" });
+  return Buffer.from(res.data);
+}
+
+// 🔹 Helper: merge fixed brand image + edited image into one A4 PDF
+async function createA4WithTwoA5(editedImgPathOrUrl: string): Promise<Buffer> {
+  const A4_WIDTH = 595.28;
+  const A4_HEIGHT = 841.89;
+  const HALF_A4_HEIGHT = A4_HEIGHT / 2; // Each A5's width after rotation
+
+  const pdfDoc = await PDFDocument.create();
+  const page = pdfDoc.addPage([A4_WIDTH, A4_HEIGHT]);
+
+  // Fetch brand image (URL)
+  const brandImgBytes = await fetchRemoteFile(BRAND_IMAGE_URL);
+
+  // Fetch edited image (URL or local)
+  let editedImgBytes: Buffer;
+  if (editedImgPathOrUrl.startsWith("http")) {
+    editedImgBytes = await fetchRemoteFile(editedImgPathOrUrl);
+  } else {
+    editedImgBytes = fs.readFileSync(editedImgPathOrUrl);
+  }
+
+  const brandImage = await pdfDoc.embedJpg(brandImgBytes);
+  const editedImage = await pdfDoc.embedJpg(editedImgBytes);
+
+  // Draw first image (rotated to fit half of the A4 height)
+  page.drawImage(brandImage, {
+  x: 0,
+  y: HALF_A4_HEIGHT,  // top half
+  width: A4_WIDTH,
+  height: HALF_A4_HEIGHT,
+
+  });
+
+  // Draw second image next to it
+  page.drawImage(editedImage, {
+  x: 0,
+  y: 0,  // bottom half
+  width: A4_WIDTH,
+  height: HALF_A4_HEIGHT,
+  
+  });
+
+  const pdfBytes = await pdfDoc.save();
+  return Buffer.from(pdfBytes);
+}
+
+// 🔹 Create Epson print job
 export async function createPrintJob(
   jobName: string,
   userId: string,
+  editedImgPathOrUrl: string,
   printMode: "document" | "photo" = "document"
 ) {
   console.log("Creating print job:", jobName);
 
   const accessToken = await getValidAccessToken(userId);
-  console.log("Access token:", accessToken);
 
+  console.log(accessToken, "-------access token from service");
+
+  // Step 1: Create job
   const response = await fetch(
     "https://api.epsonconnect.com/api/2/printing/jobs",
     {
@@ -37,7 +93,7 @@ export async function createPrintJob(
           paperType: "pt_plainpaper",
           borderless: false,
           printQuality: "normal",
-          paperSource: "rear",
+          paperSource: "rear",//threat 
           colorMode: "color",
           copies: 1,
         },
@@ -46,96 +102,36 @@ export async function createPrintJob(
   );
 
   const jobData = await response.json();
-  console.log("Print job created:", jobData);
 
+  console.log(jobData, "-------job data from service");
   if (!jobData.uploadUri || !jobData.jobId) {
     throw new Error("Failed to create print job");
   }
 
+  // Step 2: Merge brand + edited image
+  const pdfBuffer = await createA4WithTwoA5(editedImgPathOrUrl);
+  console.log("✅ Merged PDF created, size:", pdfBuffer);
 
+  // Step 3: Upload PDF
+  await uploadFileToEpson(jobData.uploadUri, pdfBuffer, "combined.pdf");
 
-  return {jobData,accessToken,EPSON_API_KEY}; // { jobId, uploadUri }
+  return { jobData, accessToken, EPSON_API_KEY };
 }
 
+// 🔹 Upload merged PDF buffer to Epson
 export async function uploadFileToEpson(
   uploadUri: string,
-  filePathOrUrl: string,
+  pdfBuffer: Buffer,
   fileName = "1.pdf"
 ) {
-  // 1) prepare PDF bytes (Buffer)
-  let pdfBuffer: Buffer;
-
-  const ext = path.extname(filePathOrUrl).toLowerCase();
-
-  if (
-    filePathOrUrl.startsWith("http://") ||
-    filePathOrUrl.startsWith("https://")
-  ) {
-    // remote file -> download
-    const res = await axios.get(filePathOrUrl, { responseType: "arraybuffer" });
-    const downloaded = Buffer.from(res.data);
-
-    if (ext === ".pdf") {
-      // already a PDF
-      pdfBuffer = downloaded;
-    } else {
-      // it's an image -> convert to PDF in-memory
-      const pdfDoc = await PDFDocument.create();
-      const embeddedImage =
-        ext === ".jpg" || ext === ".jpeg" || ext === "png"
-          ? await pdfDoc.embedJpg(downloaded)
-          : await pdfDoc.embedPng(downloaded);
-      const page = pdfDoc.addPage([embeddedImage.width, embeddedImage.height]);
-      page.drawImage(embeddedImage, {
-        x: 0,
-        y: 0,
-        width: embeddedImage.width,
-        height: embeddedImage.height,
-      });
-      const pdfBytes = await pdfDoc.save();
-      pdfBuffer = Buffer.from(pdfBytes);
-    }
-  } else {
-    // local path -> read from disk
-    if (!fs.existsSync(filePathOrUrl))
-      throw new Error("Local file not found: " + filePathOrUrl);
-    const fileData = fs.readFileSync(filePathOrUrl);
-
-    if (ext === ".pdf") {
-      pdfBuffer = Buffer.from(fileData);
-    } else {
-      // convert image to PDF
-      const pdfDoc = await PDFDocument.create();
-      const embeddedImage =
-        ext === ".jpg" || ext === ".jpeg"
-          ? await pdfDoc.embedJpg(fileData)
-          : await pdfDoc.embedPng(fileData);
-      const page = pdfDoc.addPage([embeddedImage.width, embeddedImage.height]);
-      page.drawImage(embeddedImage, {
-        x: 0,
-        y: 0,
-        width: embeddedImage.width,
-        height: embeddedImage.height,
-      });
-      const pdfBytes = await pdfDoc.save();
-      pdfBuffer = Buffer.from(pdfBytes);
-    }
-  }
-
-  // 2) Build upload URL exactly as docs: <uploadUri>&File=1.pdf
-  // Do NOT alter or encode the full uploadUri; only encode the filename.
   const uploadUrlWithFile =
     uploadUri +
     (uploadUri.includes("?") ? "&" : "?") +
     "File=" +
     encodeURIComponent(fileName);
 
-  console.log("Uploading to Epson URL:", uploadUrlWithFile);
-  console.log("PDF size (bytes):", pdfBuffer.length);
-
-  // 3) POST binary PDF to that URL per Epson docs
   const putRes = await fetch(uploadUrlWithFile, {
-    method: "POST", // IMPORTANT: POST, not PUT
+    method: "POST",
     headers: {
       "Content-Type": "application/pdf",
       "Content-Length": pdfBuffer.length.toString(),
@@ -143,8 +139,6 @@ export async function uploadFileToEpson(
     body: pdfBuffer,
   });
 
-  console.log(putRes, "putRes");
-  // helpful debug output
   const bodyText = await putRes.text();
   console.log("Epson upload status:", putRes.status, putRes.statusText);
   console.log("Epson upload body:", bodyText);
@@ -202,14 +196,11 @@ export async function isAccessTokenValid(userId) {
   }
 }
 
-
 // export const printJobService = async (jobId: string,userId:string) => {
 
 //   console.log('from service of printing ',jobId,userId,'------------------')
 
 //   const token = await PrintingTokenModel.findOne({userId:userId});
-
-
 
 //   try {
 //     const EPSON_API_KEY = process.env.EPSON_API_KEY!;
@@ -226,7 +217,6 @@ export async function isAccessTokenValid(userId) {
 //         },
 //       }
 //     );
-
 
 //     console.log('finished prinsting',response.data )
 
