@@ -37,21 +37,19 @@ export type TemplateCofig= {
 export type Template = {
   _id?: string;
   previewLink: string;
-  SKU?: string;
+  SKU: string;
   name: string;
-  link: string;
+  link?: string;
   productlink?:string;
   config?: TemplateCofig;
   category: Category;
-
   occasion?: Occasion;
- 
   tags: string[];
-
+  isPersonalizable: boolean;
   rudeContent: boolean;
   price: number;
   aspectRatio: number;
-  holesInfo: HolesInfo[];
+  holesInfo?: HolesInfo[];
   isDeleted?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
