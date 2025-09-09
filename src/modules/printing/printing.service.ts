@@ -5,22 +5,19 @@ import axios from "axios";
 import { PDFDocument } from "pdf-lib";
 import { getValidAccessToken } from "./printing.utils";
 import PrintingTokenModel from "./printing.model";
+import jwt from "jsonwebtoken";
 
-const EPSON_API_KEY  = process.env.EPSON_API_KEY; // Epson API key
-
-const EPSON_CLIENT_ID = process.env.EPSON_CLIENT_ID!;
-const EPSON_CLIENT_SECRET = process.env.EPSON_CLIENT_SECRET!;
-const EPSON_TOKEN_URL = "https://api.epsonconnect.com/api/1/printing/oauth2/token";
-
+const EPSON_API_KEY = process.env.EPSON_API_KEY; // Epson API key
 
 // Create Epson print job
 export async function createPrintJob(
   jobName: string,
+  userId: string,
   printMode: "document" | "photo" = "document"
 ) {
   console.log("Creating print job:", jobName);
 
-  const accessToken = await getValidAccessToken();
+  const accessToken = await getValidAccessToken(userId);
   console.log("Access token:", accessToken);
 
   const response = await fetch(
@@ -157,50 +154,48 @@ export async function uploadFileToEpson(
   console.log("✅ Epson upload successful");
 }
 
+export async function isAccessTokenValid(userId) {
+  let tokenDoc = await PrintingTokenModel.findOne({ userId: userId });
 
-
-
-
-
-
-
-export async function isAccessTokenValid(): Promise<boolean> {
-  const tokenDoc = await PrintingTokenModel.findOne();
   if (!tokenDoc) return false;
 
-  const now = new Date();
+  if (tokenDoc.expires_in >= new Date()) return true;
 
-  // ✅ Token is still valid
-  if (tokenDoc.expires_in > now) {
-    return true;
-  }
+  if (tokenDoc.expires_in <= new Date()) {
+    console.log("Access token expired, refreshing...");
 
-  // ❌ Token expired — attempt refresh
-  if (!tokenDoc.refresh_token) return false; // can't refresh
+    try {
+      const credentials = Buffer.from(
+        `${process.env.CLIENT_ID}:${process.env.CLIENT_SECRET}`
+      ).toString("base64");
 
-  try {
-    const res = await axios.post(
-      EPSON_TOKEN_URL,
-      new URLSearchParams({
-        grant_type: "refresh_token",
-        refresh_token: tokenDoc.refresh_token,
-        client_id: EPSON_CLIENT_ID,
-        client_secret: EPSON_CLIENT_SECRET,
-      }),
-      { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
-    );
+      const res = await fetch("https://auth.epsonconnect.com/auth/token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: `Basic ${credentials}`,
+        },
+        body: new URLSearchParams({
+          grant_type: "refresh_token",
+          refresh_token: tokenDoc.refresh_token,
+        }),
+      });
 
-    const newToken = res.data;
+      const newToken = await res.json();
 
-    // Update DB
-    tokenDoc.access_token = newToken.access_token;
-    tokenDoc.refresh_token = newToken.refresh_token ?? tokenDoc.refresh_token;
-    tokenDoc.expires_in = new Date(Date.now() + newToken.expires_in * 1000);
-    await tokenDoc.save();
+      console.log("new token ", newToken);
 
-    return true; // refreshed successfully
-  } catch (err) {
-    console.error("Failed to refresh Epson token:", err);
-    return false;
+      // Update DB
+      tokenDoc.access_token = newToken.access_token;
+      tokenDoc.refresh_token = newToken.refresh_token;
+      tokenDoc.expires_in = new Date(Date.now() + newToken.expires_in * 1000);
+
+      await tokenDoc.save();
+
+      return true; // refreshed successfully
+    } catch (err: any) {
+      console.error("Failed to refresh Epson token:", err.response);
+      return false;
+    }
   }
 }

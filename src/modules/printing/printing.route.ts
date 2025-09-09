@@ -17,6 +17,6 @@ EpsonRoute.get("/check-auth", (req: Request, res: Response): void => {
 // Route
 EpsonRoute.post("/print", printDocument);
 
-EpsonRoute.get("/check-token", checkAccessToken);
+EpsonRoute.get("/check-token/:userId", checkAccessToken);
 
 export default EpsonRoute;

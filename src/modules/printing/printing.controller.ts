@@ -4,16 +4,16 @@ import { createPrintJob, isAccessTokenValid, uploadFileToEpson } from "./printin
 
 export const printDocument = catchAsync(async (req: Request, res: Response) => {
  
-     const { fileUrl, jobName } = req.body;
+     const { fileUrl, jobName ,userId} = req.body;
 
 
-console.log(fileUrl,jobName,'--------------------')
+console.log(fileUrl,jobName,userId,'--------------------')
 
   if (!jobName || !fileUrl) {
     return res.status(400).send({ error: "jobName and file are required" });
   }
 
-  const jobData = await createPrintJob(jobName);
+  const jobData = await createPrintJob(jobName,userId);
   
   await uploadFileToEpson(jobData.uploadUri, fileUrl);
 
@@ -29,9 +29,14 @@ console.log(fileUrl,jobName,'--------------------')
 
 
 export async function checkAccessToken(req: Request, res: Response) {
+
+  console.log(req.params.userId,'------------------')
+
+  const userId = req.params.userId;
+
   try {
-    const valid = await isAccessTokenValid();
-    console.log("Token valid:", valid);
+    const valid = await isAccessTokenValid(userId);
+    // console.log("Token valid:", valid);
     return res.json({ valid });
   } catch (err) {
     console.error("Error checking Epson token:", err);
