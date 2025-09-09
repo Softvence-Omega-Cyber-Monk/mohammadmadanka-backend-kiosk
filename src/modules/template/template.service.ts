@@ -93,6 +93,36 @@ const getTags = async (categoryId: string) => {
   }
 };
 
+export const bulkUpdateTemplatesService = async (ids : string, type:string, amount: number) => {
+  const adjustment = type === "increase" ? amount : -amount;
+
+  const result = await TemplateModel.updateMany(
+    { _id: { $in: ids } },
+    { $inc: { price: adjustment } }
+  );
+
+  return result;
+};
+
+export const bulkUpdateTemplateTagsService = async (ids :string, action: string, tags:string[]) => {
+  let updateQuery;
+
+  if (action === "add") {
+    updateQuery = { $addToSet: { tags: { $each: tags } } }; // prevents duplicates
+  } else if (action === "remove") {
+    updateQuery = { $pull: { tags: { $in: tags } } };
+  } else {
+    throw new Error("Invalid action type");
+  }
+
+  const result = await TemplateModel.updateMany(
+    { _id: { $in: ids } },
+    updateQuery
+  );
+
+  return result;
+};
+
 const templateService = {
   create,
   getAll,
@@ -102,6 +132,8 @@ const templateService = {
   getByCreatedBy,
   filterTemplates,
   getTags,
+  bulkUpdateTemplatesService,
+  bulkUpdateTemplateTagsService
 };
 
 export default templateService;
