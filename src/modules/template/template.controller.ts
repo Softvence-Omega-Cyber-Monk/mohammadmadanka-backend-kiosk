@@ -35,7 +35,7 @@ const uploadTemplateImage = catchAsync(async (req: Request, res: Response) => {
 const create = catchAsync(async (req: Request, res: Response) => {
   const {
     localImagePath,
-    localpreviewLink,
+    localpreviewLinks,
     localProductPath,
     name,
     ...restData
@@ -43,10 +43,13 @@ const create = catchAsync(async (req: Request, res: Response) => {
 
   console.log(req.body);
 
-  const [templateUrl, previewUrl] = await uploadMultipleImages([
-    localImagePath,
-    localpreviewLink,
-  ]);
+  const previewUrls = await uploadMultipleImages(localpreviewLinks);
+
+  let templateUrl: string | undefined;
+  if (localImagePath) {
+    // delete only if provided
+    [templateUrl] = await uploadMultipleImages([localImagePath]);
+  }
 
   let productUrl: string | undefined;
   if (localProductPath) {
@@ -57,9 +60,9 @@ const create = catchAsync(async (req: Request, res: Response) => {
   // Prepare full data for DB
   const templateData = {
     name,
-    link: templateUrl,
-    previewLink: previewUrl,
-    ...(productUrl ? { productlink: productUrl } : {}), // add only if exists
+    ...(templateUrl ? { link: templateUrl } : {}), // ✅ fixed
+    previewLink: previewUrls,
+    ...(productUrl ? { productLink: productUrl } : {}), // ✅ fixed key casing
     ...restData,
   };
   // 3. Save to DB

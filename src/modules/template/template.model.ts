@@ -43,10 +43,10 @@ const HolesInfoSchema = new Schema({
 
 const TemplateSchema = new Schema(
   {
-    previewLink: { type: String, required: true },
+    previewLink: { type: [String], required: true },
     name: { type: String, required: true },
     SKU: { type: String, required: true },
-    link: { type: String, required: true },
+    link: { type: String, required: false },
     config: {type: TemplateCofig, required: false},
     productlink: { type: String, required: false},
     category: { 
@@ -60,10 +60,10 @@ const TemplateSchema = new Schema(
     
 
     tags: { type: [String], required: true },
-
+    isPersonalizable: { type: Boolean, required: true, default: true },
     rudeContent: { type: Boolean, required: true, default: false },
     price: { type: Number, required: true },
-    holesInfo: [HolesInfoSchema],
+    holesInfo: { type: [HolesInfoSchema], required: false },
     aspectRatio: { type: Number, require: true },
     isDeleted: { type: Boolean, default: false },
   },
