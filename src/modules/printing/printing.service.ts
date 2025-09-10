@@ -45,23 +45,27 @@ async function createA4WithTwoA5(editedImg: string | Buffer): Promise<Buffer> {
   const brandImage = await pdfDoc.embedJpg(brandImgBytes);
   const editedImage = await pdfDoc.embedJpg(editedImgBytes);
 
+
+  page.drawImage(editedImage, {
+    x: A4_WIDTH,
+    y: 0,
+    width: HALF_A4_HEIGHT,
+    height: A4_WIDTH,
+    rotate:degrees(90),
+  });
+
+  
   // Draw brand image (top half)
   page.drawImage(brandImage, {
-    x: 0,
+    x: A4_WIDTH,
     y: HALF_A4_HEIGHT,
-    width: A4_WIDTH,
-    height: HALF_A4_HEIGHT,
-    rotate:degrees(30),
+    width: HALF_A4_HEIGHT,
+    height: A4_WIDTH,
+    rotate:degrees(90),
   });
 
   // Draw edited image (bottom half)
-  page.drawImage(editedImage, {
-    x: 0,
-    y: 0,
-    width: A4_WIDTH,
-    height: HALF_A4_HEIGHT,
-    rotate:degrees(30),
-  });
+
 
   const pdfBytes = await pdfDoc.save();
   return Buffer.from(pdfBytes);
