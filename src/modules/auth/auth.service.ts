@@ -8,7 +8,6 @@ import config from "../../config";
 import jwt, { JwtPayload } from "jsonwebtoken";
 
 const login = async (payload: { shopId: string; password: string }) => {
-
   if (!payload.shopId) {
     throw new Error("Shop ID is required!");
   }
@@ -18,8 +17,10 @@ const login = async (payload: { shopId: string; password: string }) => {
   }
 
   // Find user by shopId
-  const user: any = await UserModel.findOne({ userUniqueKey: payload.shopId }).select("+password");
-  console.log('user ',user);
+  const user: any = await UserModel.findOne({
+    userUniqueKey: payload.shopId,
+  }).select("+password");
+  console.log("user ", user);
 
   // Check if user exists
   if (!user) {
@@ -32,7 +33,10 @@ const login = async (payload: { shopId: string; password: string }) => {
   }
 
   // Check password
-  const isPasswordMatched = await bcrypt.compare(payload.password, user.password);
+  const isPasswordMatched = await bcrypt.compare(
+    payload.password,
+    user.password
+  );
   if (!isPasswordMatched) {
     throw new Error("Password not matched!");
   }
@@ -44,6 +48,8 @@ const login = async (payload: { shopId: string; password: string }) => {
     email: user.email,
     name: user.name,
     shopId: user.shopId, // include shopId in token if needed
+    categories: user.categories, // include categories in token if needed
+    userUniqueKey: user.userUniqueKey,
   };
   console.log(jwtPayload);
 
@@ -64,7 +70,6 @@ const login = async (payload: { shopId: string; password: string }) => {
     refreshToken,
   };
 };
-
 
 const changePassword = async (
   authorizationToken: string,
