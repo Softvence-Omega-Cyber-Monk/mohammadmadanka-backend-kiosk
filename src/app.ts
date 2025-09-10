@@ -11,6 +11,7 @@ import catchAsync from "./util/catchAsync";
 import qs from "qs";
 import bodyParser from "body-parser";
 import PrintingTokenModel from "./modules/printing/printing.model";
+import session from "express-session";
 import auth from "./middleware/auth";
 import { userRole } from "./constents";
 import multer from "multer";
@@ -37,6 +38,7 @@ io.on("connection", (socket) => {
 });
 
 // middleWares
+
 
 
 // app.use(cors());
@@ -67,26 +69,34 @@ app.use((req, res, next) => {
 
 // Authentication callback route (Epson authorization)j
 // Epson OAuth start
-app.get("/epson/auth", (req, res) => {
-  if (!process.env.REDIRECT_URI) {
-    throw new Error("REDIRECT_URI is not defined in environment variables");
-  }
-  const authUrl = `https://auth.epsonconnect.com/auth/authorize?response_type=code&client_id=${process.env.CLIENT_ID}&redirect_uri=${encodeURIComponent(process.env.REDIRECT_URI)}&scope=device`;
-  res.redirect(authUrl);
-});
+app.get(
+  "/epson/auth/:userId",
+  catchAsync(async (req: Request, res: Response) => {
+    const userId = req.params.userId as string;
+
+    if (!process.env.REDIRECT_URI) {
+      throw new Error("REDIRECT_URI is not defined in environment variables");
+    }
+
+    const authUrl = `https://auth.epsonconnect.com/auth/authorize?response_type=code&client_id=${process.env.CLIENT_ID}&redirect_uri=${encodeURIComponent(
+      process.env.REDIRECT_URI
+    )}&scope=device&state=${userId}`;
+
+    res.redirect(authUrl);
+  })
+);
+// Epson OAuth end
 
 // Epson OAuth callback
 app.get(
   "/api/epson/callback",
-  // auth(userRole.shopAdmin, userRole.superAdmin),
   catchAsync(async (req: Request, res: Response) => {
-    console.log(req.user, "user---");
+    const userId = req.query.state as string;
 
     const code = req.query.code as string;
     if (!code) {
       return res.status(400).send("Missing code");
     }
-    console.log("Auth code:", code);
 
     // Prepare Basic Auth header
     const credentials = Buffer.from(
@@ -111,20 +121,17 @@ app.get(
     );
 
     const tokenData = await tokenResponse.json();
-    console.log("Token response:", tokenData);
+    // console.log("Token response:", tokenData);
 
     // Save to database
-    await PrintingTokenModel.findOneAndUpdate(
-      {},
-      {
-        access_token: tokenData.access_token,
-        refresh_token: tokenData.refresh_token,
-        expires_in: new Date(Date.now() + tokenData.expires_in * 1000),
-        scope: tokenData.scope,
-        token_type: tokenData.token_type,
-      },
-      { upsert: true, new: true }
-    );
+    await PrintingTokenModel.create({
+      userId: userId,
+      access_token: tokenData.access_token,
+      refresh_token: tokenData.refresh_token,
+      expires_in: new Date(Date.now() + tokenData.expires_in * 1000),
+      scope: tokenData.scope,
+      token_type: tokenData.token_type,
+    });
 
     // Redirect back to frontend
 

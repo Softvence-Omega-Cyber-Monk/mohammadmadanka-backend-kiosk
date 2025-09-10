@@ -2,9 +2,9 @@ import catchAsync from "../../util/catchAsync";
 import authServices from "./auth.service";
 
 const logIn = catchAsync(async (req, res) => {
-  const { email, password } = req.body;
-  console.log('body in controlller ',email, password);
-  const result = await authServices.login({ email, password });
+  const { shopId, password } = req.body;
+  console.log('body in controlller ',shopId, password);
+  const result = await authServices.login({ shopId, password });
   const { accessToken, refreshToken } = result;
 
   res.cookie("refreshToken", refreshToken, {

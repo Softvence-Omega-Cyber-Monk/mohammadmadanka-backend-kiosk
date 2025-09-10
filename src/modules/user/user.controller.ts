@@ -26,12 +26,50 @@ const getAllUsers = catchAsync(async (req, res) => {
 
 const getSingleUser = catchAsync(async (req, res) => {
   const user_id = req.query.user_id as string;
-  console.log(user_id);
+  console.log("user id ", user_id);
   const userIdConverted = idConverter(user_id);
+
+  console.log("user id converter ", userIdConverted);
   if (!userIdConverted) {
     throw new Error("user id conversion failed");
   }
   const result = await userServices.getSingleUser(userIdConverted);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "All users",
+    data: result,
+  });
+});
+const updateUserStatus = catchAsync(async (req, res) => {
+  const user_id = req.query.user_id as string;
+  const isAccepted = req.body ;
+  console.log("user id ", user_id);
+  console.log("isAccepted ", isAccepted);
+
+  const userIdConverted = idConverter(user_id);
+  if (!userIdConverted) {
+    throw new Error("user id conversion failed");
+  }
+  const result = await userServices.updateUserStatus(userIdConverted, isAccepted);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "All users",
+    data: result,
+  });
+});
+const updateUser = catchAsync(async (req, res) => {
+  const user_id = req.query.user_id as string;
+  const data = req.body ;
+  console.log("user id ", user_id);
+  console.log("user user data  ", data);
+
+  const userIdConverted = idConverter(user_id);
+  if (!userIdConverted) {
+    throw new Error("user id conversion failed");
+  }
+  const result = await userServices.updateUser(userIdConverted, data);
   sendResponse(res, {
     statusCode: 200,
     success: true,
@@ -59,6 +97,8 @@ const userController = {
   createUser,
   getAllUsers,
   getSingleUser,
+  updateUserStatus,
+  updateUser,
   deleteSingleUser,
 };
 

@@ -7,6 +7,9 @@ export type TUser = {
   password: string;
   userUniqueKey?: string;
   role?: TUserRole;
+  bannerImg?: string;
+  categories?: string[];
   isDeleted?: string;
-  isBlocked?: boolean;
+  isAccepted?: 'pending' | 'approved' | 'rejected';
+
 };

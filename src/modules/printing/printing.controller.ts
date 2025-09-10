@@ -1,40 +1,67 @@
 import { Request, Response } from "express";
 import catchAsync from "../../util/catchAsync";
-import { createPrintJob, isAccessTokenValid, uploadFileToEpson } from "./printing.service";
+import {
+
+  createPrintJob,
+  isAccessTokenValid,
+  // printJobService,
+  uploadFileToEpson,
+} from "./printing.service";
+
 
 export const printDocument = catchAsync(async (req: Request, res: Response) => {
- 
-     const { fileUrl, jobName } = req.body;
+  const { fileUrl, jobName, userId } = req.body;
 
-
-console.log(fileUrl,jobName,'--------------------')
+  console.log(fileUrl, jobName, userId, "-------from controller");
 
   if (!jobName || !fileUrl) {
     return res.status(400).send({ error: "jobName and file are required" });
   }
 
-  const jobData = await createPrintJob(jobName);
-  
-  await uploadFileToEpson(jobData.uploadUri, fileUrl);
+
+  const editedImgPathOrUrl = "https://res.cloudinary.com/dbt83nrhl/image/upload/v1757415743/photo_2025-09-09_17-02-01_kagxv2.jpg"; // Assuming fileUrl is the path or URL of the edited image
+
+  const jobData = await createPrintJob(jobName, userId,fileUrl);
+
+  console.log(jobData, "-------job data from controller");
+
+  // await uploadFileToEpson(jobData.jobData.uploadUri, fileUrl);
 
   res.status(200).send({
     message: "Print job created and file uploaded successfully",
-    jobId: jobData.jobId,
+    jobId: jobData.jobData.jobId,
+    PrinterAccessToken: jobData.accessToken,
+    EPSON_API_KEY: jobData.EPSON_API_KEY,
   });
 });
 
 
-
-
-
-
 export async function checkAccessToken(req: Request, res: Response) {
+  const userId = req.params.userId;
+
   try {
-    const valid = await isAccessTokenValid();
-    console.log("Token valid:", valid);
+    const valid = await isAccessTokenValid(userId);
+    // console.log("Token valid:", valid);
     return res.json({ valid });
   } catch (err) {
     console.error("Error checking Epson token:", err);
     return res.status(500).json({ valid: false, error: "Server error" });
   }
 }
+
+// export const printJobController = async (req: Request, res: Response) => {
+//   try {
+
+//     console.log('inside print job controller')
+//     const userId = req.query.userId;
+//     const { jobId } = req.body;
+
+//     console.log(userId, jobId, "---------------from controller ---");
+//     if (!jobId) return res.status(400).json({ error: "jobId is required" });
+
+//     const result = await printJobService(jobId, userId as string);
+//     res.json(result);
+//   } catch (error: any) {
+//     res.status(500).json({ error: error.message || "Printing failed" });
+//   }
+// };
