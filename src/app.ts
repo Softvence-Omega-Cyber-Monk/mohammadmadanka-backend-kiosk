@@ -1,5 +1,5 @@
-const app = express();
 import express, { Request, Response } from "express";
+const app = express();
 import http from "http";
 import { Server as SocketIOServer } from "socket.io";
 import cors from "cors";
@@ -17,12 +17,15 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 
+app.use(express.json());
+app.use(cookieParser());
+app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
 const server = http.createServer(app);
 
 // --- SOCKET.IO SETUP ---
 const io = new SocketIOServer(server, {
   cors: {
-    origin: ["http://localhost:5173", "https://velvety-quokka-7b3cf9.netlify.app"],
+    origin: ["*","http://localhost:5173", "https://velvety-quokka-7b3cf9.netlify.app"],
     methods: ["GET", "POST"],
     credentials: true,
   },
@@ -34,9 +37,7 @@ io.on("connection", (socket) => {
 });
 
 // middleWares
-app.use(express.json());
-app.use(cookieParser());
-app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
+
 
 // app.use(cors());
 app.use(

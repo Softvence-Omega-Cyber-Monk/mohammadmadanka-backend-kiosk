@@ -36,7 +36,7 @@ export type TemplateCofig= {
 
 export type Template = {
   _id?: string;
-  previewLink: string;
+  previewLink: string[];
   SKU: string;
   name: string;
   link?: string;

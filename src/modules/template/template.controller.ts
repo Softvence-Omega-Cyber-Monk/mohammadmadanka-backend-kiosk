@@ -35,7 +35,7 @@ const uploadTemplateImage = catchAsync(async (req: Request, res: Response) => {
 const create = catchAsync(async (req: Request, res: Response) => {
   const {
     localImagePath,
-    localpreviewLink,
+    localpreviewLinks,
     localProductPath,
     name,
     ...restData
@@ -43,9 +43,7 @@ const create = catchAsync(async (req: Request, res: Response) => {
 
   console.log(req.body);
 
-  const [ previewUrl] = await uploadMultipleImages([
-    localpreviewLink,
-  ]);
+  const previewUrls = await uploadMultipleImages(localpreviewLinks);
 
   let templateUrl: string | undefined;
   if (localImagePath) {
@@ -63,7 +61,7 @@ const create = catchAsync(async (req: Request, res: Response) => {
   const templateData = {
     name,
     ...(templateUrl ? { link: templateUrl } : {}), // ✅ fixed
-    previewLink: previewUrl,
+    previewLink: previewUrls,
     ...(productUrl ? { productLink: productUrl } : {}), // ✅ fixed key casing
     ...restData,
   };
