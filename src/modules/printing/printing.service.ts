@@ -5,6 +5,7 @@ import axios from "axios";
 import { degrees, PDFDocument } from "pdf-lib";
 import { getValidAccessToken } from "./printing.utils";
 import PrintingTokenModel from "./printing.model";
+import sharp from "sharp";
 
 const EPSON_API_KEY = process.env.EPSON_API_KEY; // Epson API key
 const BRAND_IMAGE_URL =
@@ -18,48 +19,70 @@ async function fetchRemoteFile(url: string): Promise<Buffer> {
 }
 
 // 🔹 Helper: merge fixed brand image + edited image into one A4 PDF
-async function createA4WithTwoA5(editedImgPathOrUrl: string): Promise<Buffer> {
+async function createA4WithTwoA5(editedImg: string | Buffer): Promise<Buffer> {
   const A4_WIDTH = 595.28;
   const A4_HEIGHT = 841.89;
-  const HALF_A4_HEIGHT = A4_HEIGHT / 2; // Each A5's width after rotation
+  const HALF_A4_HEIGHT = A4_HEIGHT / 2;
 
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage([A4_WIDTH, A4_HEIGHT]);
 
-  // Fetch brand image (URL)
+  // ✅ Brand image (always from URL)
   const brandImgBytes = await fetchRemoteFile(BRAND_IMAGE_URL);
 
-  // Fetch edited image (URL or local)
+  // ✅ Edited image (Buffer | URL | local path)
   let editedImgBytes: Buffer;
-  if (editedImgPathOrUrl.startsWith("http")) {
-    editedImgBytes = await fetchRemoteFile(editedImgPathOrUrl);
+  if (Buffer.isBuffer(editedImg)) {
+    // Already a buffer (like our JPG conversion step)
+    editedImgBytes = editedImg;
+  } else if (editedImg.startsWith("http")) {
+    editedImgBytes = await fetchRemoteFile(editedImg);
   } else {
-    editedImgBytes = fs.readFileSync(editedImgPathOrUrl);
+    editedImgBytes = fs.readFileSync(editedImg);
   }
 
+  // Embed images
   const brandImage = await pdfDoc.embedJpg(brandImgBytes);
   const editedImage = await pdfDoc.embedJpg(editedImgBytes);
 
-  // Draw first image (rotated to fit half of the A4 height)
+  // Draw brand image (top half)
   page.drawImage(brandImage, {
-  x: 0,
-  y: HALF_A4_HEIGHT,  // top half
-  width: A4_WIDTH,
-  height: HALF_A4_HEIGHT,
-
+    x: 0,
+    y: HALF_A4_HEIGHT,
+    width: A4_WIDTH,
+    height: HALF_A4_HEIGHT,
   });
 
-  // Draw second image next to it
+  // Draw edited image (bottom half)
   page.drawImage(editedImage, {
-  x: 0,
-  y: 0,  // bottom half
-  width: A4_WIDTH,
-  height: HALF_A4_HEIGHT,
-  
+    x: 0,
+    y: 0,
+    width: A4_WIDTH,
+    height: HALF_A4_HEIGHT,
   });
 
   const pdfBytes = await pdfDoc.save();
   return Buffer.from(pdfBytes);
+}
+
+/**
+ * Convert PNG (or any image) to JPG buffer
+ */
+async function convertToJpg(imgPathOrUrl: string): Promise<Buffer> {
+  let imageBuffer: Buffer;
+
+  if (imgPathOrUrl.startsWith("http")) {
+    // Fetch if URL
+    const response = await fetch(imgPathOrUrl);
+    imageBuffer = Buffer.from(await response.arrayBuffer());
+  } else {
+    // Read if local path
+    const fs = await import("fs");
+    imageBuffer = fs.readFileSync(imgPathOrUrl);
+  }
+
+  // Convert with sharp → JPG buffer
+  return sharp(imageBuffer).jpeg().toBuffer();
 }
 
 // 🔹 Create Epson print job
@@ -72,10 +95,17 @@ export async function createPrintJob(
   console.log("Creating print job:", jobName);
 
   const accessToken = await getValidAccessToken(userId);
-
   console.log(accessToken, "-------access token from service");
 
-  // Step 1: Create job
+  // ✅ Step 1: Convert image to JPG
+  const jpgBuffer = await convertToJpg(editedImgPathOrUrl);
+
+
+  // ✅ Step 2: Create merged A4 PDF using JPG buffer
+  const pdfBuffer = await createA4WithTwoA5(jpgBuffer);
+  console.log("✅ Merged PDF created, size:", pdfBuffer.length);
+
+  // ✅ Step 3: Create Epson job
   const response = await fetch(
     "https://api.epsonconnect.com/api/2/printing/jobs",
     {
@@ -93,7 +123,7 @@ export async function createPrintJob(
           paperType: "pt_plainpaper",
           borderless: false,
           printQuality: "normal",
-          paperSource: "rear",//threat 
+          paperSource: "rear", // tray
           colorMode: "color",
           copies: 1,
         },
@@ -102,17 +132,13 @@ export async function createPrintJob(
   );
 
   const jobData = await response.json();
-
   console.log(jobData, "-------job data from service");
+
   if (!jobData.uploadUri || !jobData.jobId) {
     throw new Error("Failed to create print job");
   }
 
-  // Step 2: Merge brand + edited image
-  const pdfBuffer = await createA4WithTwoA5(editedImgPathOrUrl);
-  console.log("✅ Merged PDF created, size:", pdfBuffer);
-
-  // Step 3: Upload PDF
+  // ✅ Step 4: Upload PDF
   await uploadFileToEpson(jobData.uploadUri, pdfBuffer, "combined.pdf");
 
   return { jobData, accessToken, EPSON_API_KEY };

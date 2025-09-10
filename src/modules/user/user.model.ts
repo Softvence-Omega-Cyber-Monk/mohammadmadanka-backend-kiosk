@@ -26,8 +26,15 @@ const UserSchema = new Schema<TUser>(
       enum: ["superAdmin", "shopAdmin"],
       default: userRole.shopAdmin,
     },
+    bannerImg: { type: String },
+    categories: { type: [String], default: [] },
     isDeleted: { type: Boolean, default: false },
-    isBlocked: { type: Boolean, default: false },
+    isAccepted: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
+      unique: false,
+    },
   },
   { timestamps: true }
 );
