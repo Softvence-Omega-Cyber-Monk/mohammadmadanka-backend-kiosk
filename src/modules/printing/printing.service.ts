@@ -51,6 +51,7 @@ async function createA4WithTwoA5(editedImg: string | Buffer): Promise<Buffer> {
     y: HALF_A4_HEIGHT,
     width: A4_WIDTH,
     height: HALF_A4_HEIGHT,
+    rotate:degrees(30),
   });
 
   // Draw edited image (bottom half)
@@ -59,6 +60,7 @@ async function createA4WithTwoA5(editedImg: string | Buffer): Promise<Buffer> {
     y: 0,
     width: A4_WIDTH,
     height: HALF_A4_HEIGHT,
+    rotate:degrees(30),
   });
 
   const pdfBytes = await pdfDoc.save();
