@@ -1,21 +1,44 @@
 import express, { Request, Response } from "express";
 const app = express();
+import http from "http";
+import { Server as SocketIOServer } from "socket.io";
 import cors from "cors";
 import globalErrorHandler from "./middleware/globalErrorHandler";
 import routeNotFound from "./middleware/routeNotFound";
 import Routes from "./routes";
 import cookieParser from "cookie-parser";
-import path from "path";
 import catchAsync from "./util/catchAsync";
 import qs from "qs";
 import bodyParser from "body-parser";
 import PrintingTokenModel from "./modules/printing/printing.model";
 import session from "express-session";
+import auth from "./middleware/auth";
+import { userRole } from "./constents";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
 
-// middleWares
 app.use(express.json());
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
+const server = http.createServer(app);
+
+// --- SOCKET.IO SETUP ---
+const io = new SocketIOServer(server, {
+  cors: {
+    origin: ["*","http://localhost:5173", "https://velvety-quokka-7b3cf9.netlify.app"],
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+});
+
+// Broadcast on new file uploaded
+io.on("connection", (socket) => {
+  console.log("Socket connected:", socket.id);
+});
+
+// middleWares
+
 
 
 // app.use(cors());
@@ -115,6 +138,55 @@ app.get(
     res.redirect("http://localhost:5173?auth=success");
   })
 );
+
+
+// ============ QR UPLOAD + FILE SHARING ============
+const UPLOAD_DIR = path.join(__dirname, "..", "uploads");
+fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+
+const storage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, UPLOAD_DIR),
+  filename: (_req, file, cb) => {
+    const ext = path.extname(file.originalname || "");
+    const name = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
+    cb(null, name);
+  },
+});
+
+const upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } });
+const fileMap = new Map<string, string>();
+
+// Upload endpoint
+app.post(
+  "/api/uploadqr/:holeId",
+  upload.single("file"),
+  catchAsync(async (req, res) => {
+    const { holeId } = req.params;
+    if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+
+    const publicUrl = `/uploads/${req.file.filename}`;
+    fileMap.set(holeId, publicUrl);
+
+    // 🔴 Broadcast event to all connected clients
+    io.emit("fileUploaded", { holeId, url: publicUrl });
+
+    return res.json({ holeId, url: publicUrl });
+  })
+);
+
+// Fetch uploaded file by holeId
+app.get(
+  "/api/file/:holeId",
+  catchAsync(async (req, res) => {
+    const { holeId } = req.params;
+    const url = fileMap.get(holeId);
+    return res.json(url ? { url } : {});
+  })
+);
+
+// Serve uploaded files statically
+app.use("/uploads", express.static(UPLOAD_DIR));
+
 
 // route not found
 app.use(routeNotFound);
