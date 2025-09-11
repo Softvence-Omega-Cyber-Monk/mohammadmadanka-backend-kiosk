@@ -4,25 +4,38 @@ import { uploadImgToCloudinary, deleteImageFromCloudinary } from "../../util/upl
 import { v2 as cloudinary } from 'cloudinary';
 
 
-const create = async (imgFile: Express.Multer.File, userId: string) => {
-  const result = await uploadImgToCloudinary(imgFile.filename, imgFile.path);
+const create = async ( userId: string, photo1: Express.Multer.File,photo2: Express.Multer.File ) => {
+   const result1 = await uploadImgToCloudinary(photo1.filename, photo1.path);
 
-  console.log(result);
-
-  if (!result.secure_url) {
-    throw new Error("Image upload failed.");
+  if (!result1.secure_url) {
+    throw new Error("Photo1 upload failed.");
   }
 
-  const PrintHistoryer = await PrintHistoryerModel.create({
+  // Initialize print history data
+  const printHistoryData: any = {
     shopId: userId,
-    link: result.secure_url,
-    public_id: result.public_id,
-  });
+    Imglink: result1.secure_url,
+    Imgpublic_id: result1.public_id,
+  };
+
+  // Upload photo2 if provided
+  if (photo2) {
+    const result2 = await uploadImgToCloudinary(photo2.filename, photo2.path);
+    if (!result2.secure_url) {
+      throw new Error("Photo2 upload failed.");
+    }
+
+    printHistoryData.insideImgLink = result2.secure_url;
+    printHistoryData.insideImgPublic_id = result2.public_id;
+  }
+
+  // Save to DB
+  const PrintHistoryer = await PrintHistoryerModel.create(printHistoryData);
   return PrintHistoryer;
 };
 
 const getAll = async (userId: string) => {
-  const PrintHistoryers = await PrintHistoryerModel.find({userId, isDeleted: false });
+  const PrintHistoryers = await PrintHistoryerModel.find({ isDeleted: false });
   return PrintHistoryers;
 };
 

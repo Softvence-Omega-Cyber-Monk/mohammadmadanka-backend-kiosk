@@ -147,6 +147,7 @@ export async function createPrintJob(
   userId: string,
   editedImgPathOrUrl: string,
   insideImage?: string,
+  copies: number,
   printMode: "document" | "photo" = "document"
 ) {
   console.log("Creating print job:", jobName);
@@ -169,7 +170,7 @@ export async function createPrintJob(
   console.log("✅ Merged PDF created, size:", pdfBuffer.length);
   if (insideJpgBuffer) {
   const insidePdfBuffer = await createA4WithInside(insideJpgBuffer);
-  const finalPdfBuffer = await mergePdfBuffers([pdfBuffer, insidePdfBuffer]);
+  finalPdfBuffer = await mergePdfBuffers([pdfBuffer, insidePdfBuffer]);
   }
 
   // ✅ Step 3: Create Epson job
@@ -183,19 +184,21 @@ export async function createPrintJob(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        jobName,
-        printMode,
-        printSettings: {
-          paperSize: "ps_a4",
-          paperType: "pt_hagakiphoto",
-          borderless: true,
-          printQuality: "high",
-          paperSource: "rear", // tray
-          colorMode: "color",
-          copies: 1,
-          doubleSided: finalPdfBuffer ? "long" : "none"
-        },
-      }),
+      jobName: jobName, // required
+      printMode: "document", // or "photo"
+      printSettings: {
+        paperSize: "ps_a4", // required
+        paperType: "pt_hagakiphoto", // required
+        borderless: false,
+        printQuality: "high",
+        paperSource: "rear",
+        colorMode: "color",
+        doubleSided: "long", // optional (default: none)
+        reverseOrder: false, // optional (default: true)
+        copies: 1,           // optional (default: 1)
+        collate: true        // optional (default: false)
+      }
+    }),
     }
   );
 
@@ -207,7 +210,7 @@ export async function createPrintJob(
   }
 
   // ✅ Step 4: Upload PDF
-  await uploadFileToEpson(jobData.uploadUri, pdfBuffer, "combined.pdf");
+  await uploadFileToEpson(jobData.uploadUri, finalPdfBuffer, "combined.pdf");
 
   return { jobData, accessToken, EPSON_API_KEY };
 }

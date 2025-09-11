@@ -7,13 +7,22 @@ import mongoose, { Schema } from 'mongoose';
           ref: 'UserCollection',
           required: true,
         },
-        link: {
+        Imglink: {
           type: String,
           required: true,
         },
-        public_id: {
+        Imgpublic_id: {
           type: String,
           required: true,
+        },
+
+        insideImgLink: {
+          type: String,
+          required: false,
+        },
+        insideImgPublic_id: {
+          type: String,
+          required: false,
         },
         isDeleted: {
           type: Boolean,

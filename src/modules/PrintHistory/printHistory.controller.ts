@@ -5,15 +5,21 @@ import sendResponse from "../../util/sendResponse";
 
 const create = catchAsync(async (req: Request, res: Response) => {
   const userId = req.params.userId || req.query.userId;
-  const imgFile = req.file;
 
-  if (!imgFile) {
-    throw new Error("image file are required.");
+  // Multer stores files under req.files when using .fields()
+  const photo1 = (req.files as { [fieldname: string]: Express.Multer.File[] })?.photo1?.[0];
+  const photo2 = (req.files as { [fieldname: string]: Express.Multer.File[] })?.photo2?.[0];
+
+  if (!photo1) {
+    throw new Error("photo1 is required.");
   }
 
   const result = await PrintHistoryService.create(
-    imgFile as Express.Multer.File, userId as string
+    userId as string,
+    photo1,
+    photo2 // may be undefined → optional
   );
+
   sendResponse(res, {
     statusCode: 201,
     success: true,
