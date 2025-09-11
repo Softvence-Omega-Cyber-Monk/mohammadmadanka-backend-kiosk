@@ -6,12 +6,15 @@ import sendResponse from "../../util/sendResponse";
 const create = catchAsync(async (req: Request, res: Response) => {
   const imgFile = req.file;
 
+  const bannerTag  = req.query.bannerTag;
+
   if (!imgFile) {
     throw new Error("image file are required.");
   }
 
   const result = await bannerService.create(
-    imgFile as Express.Multer.File
+    imgFile as Express.Multer.File,
+    bannerTag as string
   );
   sendResponse(res, {
     statusCode: 201,
@@ -42,10 +45,9 @@ const getById = catchAsync(async (req: Request, res: Response) => {
 });
 
 const Delete = catchAsync(async (req: Request, res: Response) => {
-
   const id = req.params.id || req.body.id;
   const publicId = req.body.public_id;
-  console.log(publicId)
+  console.log(publicId);
   const result = await bannerService.Delete(id, publicId);
   if (!result) {
     throw new Error("banner not found or already deleted.");

@@ -2,6 +2,10 @@ import mongoose, { Schema } from "mongoose";
 
 const PrintingTokenSchema = new Schema(
   {
+    userId: {
+      type: String,
+      required: true,
+    },
     access_token: {
       type: String,
       required: true,

@@ -1,5 +1,6 @@
 
 export type TPrintingToken ={
+    userId: string;
     access_token: string;
     refresh_token: string;
     scope: string;

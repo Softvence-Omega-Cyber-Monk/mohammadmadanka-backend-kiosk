@@ -1,7 +1,11 @@
 import PrintingTokenModel from "./printing.model";
 
-export async function getValidAccessToken(): Promise<string> {
-  let tokenDoc = await PrintingTokenModel.findOne();
+export async function getValidAccessToken(userId): Promise<string> {
+
+
+  console.log('UserID in getValidAccessToken:', userId);
+
+  let tokenDoc = await PrintingTokenModel.findOne({ userId: userId });
   if (!tokenDoc) throw new Error("No Epson token found");
 
   if (tokenDoc.expires_in <= new Date()) {

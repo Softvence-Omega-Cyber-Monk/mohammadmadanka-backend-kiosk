@@ -4,7 +4,7 @@ import { uploadImgToCloudinary, deleteImageFromCloudinary } from "../../util/upl
 import { v2 as cloudinary } from 'cloudinary';
 
 
-const create = async (imgFile: Express.Multer.File) => {
+const create = async (imgFile: Express.Multer.File,bannerTag:string) => {
   const result = await uploadImgToCloudinary(imgFile.filename, imgFile.path);
 
 
@@ -16,7 +16,9 @@ const create = async (imgFile: Express.Multer.File) => {
   const banner = await bannerModel.create({
     link: result.secure_url,
     public_id: result.public_id,
+    bannerTag: bannerTag
   });
+  console.log(banner);
   return banner;
 };
 
