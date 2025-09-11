@@ -184,21 +184,18 @@ export async function createPrintJob(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-      jobName: jobName, // required
-      printMode: "document", // or "photo"
-      printSettings: {
-        paperSize: "ps_a4", // required
-        paperType: "pt_hagakiphoto", // required
-        borderless: false,
-        printQuality: "high",
-        paperSource: "rear",
-        colorMode: "color",
-        doubleSided: "long", // optional (default: none)
-        reverseOrder: false, // optional (default: true)
-        copies: 1,           // optional (default: 1)
-        collate: true        // optional (default: false)
-      }
-    }),
+        jobName: jobName, // required
+        printMode: "document", // or "photo"
+        printSettings: {
+          paperSize: "ps_a4",
+          paperType: "pt_hagakiphoto",
+          borderless: true,
+          printQuality: "normal",
+          paperSource: "rear", // tray
+          colorMode: "color",
+          copies: 1,
+        },
+      }),
     }
   );
 
