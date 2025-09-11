@@ -4,6 +4,7 @@ import catchAsync from "../../util/catchAsync";
 import sendResponse from "../../util/sendResponse";
 
 const create = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.params.userId || req.query.userId;
   const imgFile = req.file;
 
   if (!imgFile) {
@@ -11,7 +12,7 @@ const create = catchAsync(async (req: Request, res: Response) => {
   }
 
   const result = await PrintHistoryService.create(
-    imgFile as Express.Multer.File
+    imgFile as Express.Multer.File, userId as string
   );
   sendResponse(res, {
     statusCode: 201,
@@ -22,7 +23,8 @@ const create = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getAll = catchAsync(async (req: Request, res: Response) => {
-  const result = await PrintHistoryService.getAll();
+  const userId = req.params.userId || req.query.userId;
+  const result = await PrintHistoryService.getAll(userId as string);
   sendResponse(res, {
     statusCode: 200,
     success: true,

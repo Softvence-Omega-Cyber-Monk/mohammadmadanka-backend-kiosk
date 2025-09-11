@@ -4,7 +4,7 @@ import { uploadImgToCloudinary, deleteImageFromCloudinary } from "../../util/upl
 import { v2 as cloudinary } from 'cloudinary';
 
 
-const create = async (imgFile: Express.Multer.File) => {
+const create = async (imgFile: Express.Multer.File, userId: string) => {
   const result = await uploadImgToCloudinary(imgFile.filename, imgFile.path);
 
   console.log(result);
@@ -14,14 +14,15 @@ const create = async (imgFile: Express.Multer.File) => {
   }
 
   const PrintHistoryer = await PrintHistoryerModel.create({
+    shopId: userId,
     link: result.secure_url,
     public_id: result.public_id,
   });
   return PrintHistoryer;
 };
 
-const getAll = async () => {
-  const PrintHistoryers = await PrintHistoryerModel.find({ isDeleted: false });
+const getAll = async (userId: string) => {
+  const PrintHistoryers = await PrintHistoryerModel.find({userId, isDeleted: false });
   return PrintHistoryers;
 };
 

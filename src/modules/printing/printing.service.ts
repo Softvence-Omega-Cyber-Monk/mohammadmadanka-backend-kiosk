@@ -68,6 +68,59 @@ async function createA4WithTwoA5(editedImg: string | Buffer): Promise<Buffer> {
   return Buffer.from(pdfBytes);
 }
 
+
+// 🔹 Helper: merge fixed brand image + edited image into one A4 PDF
+async function createA4WithInside(editedImg: string | Buffer): Promise<Buffer> {
+  const A4_WIDTH = 595.28;
+  const A4_HEIGHT = 841.89;
+  const HALF_A4_HEIGHT = A4_HEIGHT / 2;
+
+  const pdfDoc = await PDFDocument.create();
+  const page = pdfDoc.addPage([A4_WIDTH, A4_HEIGHT]);
+
+
+  // ✅ Edited image (Buffer | URL | local path)
+  let editedImgBytes: Buffer;
+  if (Buffer.isBuffer(editedImg)) {
+    // Already a buffer (like our JPG conversion step)
+    editedImgBytes = editedImg;
+  } else if (editedImg.startsWith("http")) {
+    editedImgBytes = await fetchRemoteFile(editedImg);
+  } else {
+    editedImgBytes = fs.readFileSync(editedImg);
+  }
+
+  // Embed images
+  const editedImage = await pdfDoc.embedJpg(editedImgBytes);
+
+  // Draw brand image (top half)
+  page.drawImage(editedImage, {
+    x: A4_WIDTH,
+    y: 0,
+    width: HALF_A4_HEIGHT,
+    height: A4_WIDTH,
+    rotate: degrees(90),
+  });
+
+  // Draw edited image (bottom half)
+
+  const pdfBytes = await pdfDoc.save();
+  return Buffer.from(pdfBytes);
+}
+
+async function mergePdfBuffers(buffers: Buffer[]): Promise<Buffer> {
+  const mergedPdf = await PDFDocument.create();
+
+  for (const buffer of buffers) {
+    const pdf = await PDFDocument.load(buffer);
+    const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+    copiedPages.forEach((p) => mergedPdf.addPage(p));
+  }
+
+  const mergedBytes = await mergedPdf.save();
+  return Buffer.from(mergedBytes);
+}
+
 /**
  * Convert PNG (or any image) to JPG buffer
  */
@@ -93,6 +146,7 @@ export async function createPrintJob(
   jobName: string,
   userId: string,
   editedImgPathOrUrl: string,
+  insideImage?: string,
   printMode: "document" | "photo" = "document"
 ) {
   console.log("Creating print job:", jobName);
@@ -102,10 +156,18 @@ export async function createPrintJob(
 
   // ✅ Step 1: Convert image to JPG
   const jpgBuffer = await convertToJpg(editedImgPathOrUrl);
+  const insideJpgBuffer = insideImage
+    ? await convertToJpg(insideImage)
+    : null;
+ 
 
   // ✅ Step 2: Create merged A4 PDF using JPG buffer
   const pdfBuffer = await createA4WithTwoA5(jpgBuffer);
   console.log("✅ Merged PDF created, size:", pdfBuffer.length);
+  if (insideJpgBuffer) {
+  const insidePdfBuffer = await createA4WithInside(insideJpgBuffer);
+  const finalPdfBuffer = await mergePdfBuffers([pdfBuffer, insidePdfBuffer]);
+  }
 
   // ✅ Step 3: Create Epson job
   const response = await fetch(
@@ -145,6 +207,7 @@ export async function createPrintJob(
 
   return { jobData, accessToken, EPSON_API_KEY };
 }
+
 
 // 🔹 Upload merged PDF buffer to Epson
 export async function uploadFileToEpson(

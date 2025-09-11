@@ -5,11 +5,11 @@ import { upload } from "../../util/uploadImgToCloudinary";
 const printHistoryRoutes = Router();
 
 printHistoryRoutes.post(
-  "/upoload-printHistory",
+  "/upoload-printHistory/:userId",
   upload.single("file"),
   printHistoryController.create
 );
-printHistoryRoutes.get("/getAll", printHistoryController.getAll);
+printHistoryRoutes.get("/getAll/:userId", printHistoryController.getAll);
 printHistoryRoutes.get("/getSingle/:id", printHistoryController.getById);
 printHistoryRoutes.delete("/delete/:id", printHistoryController.Delete);
 
