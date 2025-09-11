@@ -163,6 +163,9 @@ export async function createPrintJob(
 
   // ✅ Step 2: Create merged A4 PDF using JPG buffer
   const pdfBuffer = await createA4WithTwoA5(jpgBuffer);
+
+  let finalPdfBuffer = pdfBuffer;
+
   console.log("✅ Merged PDF created, size:", pdfBuffer.length);
   if (insideJpgBuffer) {
   const insidePdfBuffer = await createA4WithInside(insideJpgBuffer);
@@ -184,12 +187,13 @@ export async function createPrintJob(
         printMode,
         printSettings: {
           paperSize: "ps_a4",
-          paperType: "pt_plainpaper",
-          borderless: false,
-          printQuality: "normal",
+          paperType: "pt_hagakiphoto",
+          borderless: true,
+          printQuality: "high",
           paperSource: "rear", // tray
           colorMode: "color",
           copies: 1,
+          doubleSided: finalPdfBuffer ? "long" : "none"
         },
       }),
     }

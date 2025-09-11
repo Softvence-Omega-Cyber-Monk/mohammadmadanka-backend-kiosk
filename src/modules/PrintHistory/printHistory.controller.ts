@@ -17,7 +17,7 @@ const create = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: 201,
     success: true,
-    message: "PrintHistoryer created successfully",
+    message: "PrintHistory created successfully",
     data: result,
   });
 });
@@ -28,7 +28,7 @@ const getAll = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: 200,
     success: true,
-    message: "PrintHistoryers retrieved successfully",
+    message: "PrintHistory retrieved successfully",
     data: result,
   });
 });
@@ -38,7 +38,7 @@ const getById = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: 200,
     success: true,
-    message: "PrintHistoryer retrieved successfully",
+    message: "PrintHistory retrieved successfully",
     data: result,
   });
 });
@@ -50,12 +50,12 @@ const Delete = catchAsync(async (req: Request, res: Response) => {
   console.log(publicId)
   const result = await PrintHistoryService.Delete(id, publicId);
   if (!result) {
-    throw new Error("PrintHistoryer not found or already deleted.");
+    throw new Error("PrintHistory not found or already deleted.");
   }
   sendResponse(res, {
     statusCode: 200,
     success: true,
-    message: "PrintHistoryer soft deleted successfully",
+    message: "PrintHistory soft deleted successfully",
     data: result,
   });
 });
