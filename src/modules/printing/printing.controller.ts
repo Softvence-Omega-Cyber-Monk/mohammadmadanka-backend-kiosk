@@ -32,7 +32,7 @@ export const printDocument = catchAsync(async (req: Request, res: Response) => {
 });
 
 
-export async function checkAccessToken(req: Request, res: Response) {
+export const checkAccessToken = catchAsync(async (req: Request, res: Response) => {
   const userId = req.params.userId;
 
   try {
@@ -44,6 +44,7 @@ export async function checkAccessToken(req: Request, res: Response) {
     return res.status(500).json({ valid: false, error: "Server error" });
   }
 }
+)
 
 // export const printJobController = async (req: Request, res: Response) => {
 //   try {
