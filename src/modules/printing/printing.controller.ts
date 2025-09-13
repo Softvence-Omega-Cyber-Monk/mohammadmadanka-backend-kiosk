@@ -10,18 +10,14 @@ import {
 
 
 export const printDocument = catchAsync(async (req: Request, res: Response) => {
-  const { fileUrl, jobName, userId } = req.body;
+  const { fileUrl,insidefileUrl,copies, jobName, userId } = req.body;
 
-  console.log(fileUrl, jobName, userId, "-------from controller");
+  console.log(fileUrl, jobName,insidefileUrl, copies, userId, "-------from controller");
 
   if (!jobName || !fileUrl) {
     return res.status(400).send({ error: "jobName and file are required" });
   }
-
-
-  const editedImgPathOrUrl = "https://res.cloudinary.com/dbt83nrhl/image/upload/v1757415743/photo_2025-09-09_17-02-01_kagxv2.jpg"; // Assuming fileUrl is the path or URL of the edited image
-
-  const jobData = await createPrintJob(jobName, userId,fileUrl);
+  const jobData = await createPrintJob(jobName, userId,fileUrl, insidefileUrl, copies);
 
   console.log(jobData, "-------job data from controller");
 

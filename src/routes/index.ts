@@ -16,6 +16,7 @@ import EpsonRoute from "../modules/printing/printing.route";
 import stickerRoutes from "../modules/sticker/sticker.routes";
 import bannerRoutes from "../modules/banner/banner.routes";
 import QRrouter from "../modules/template/QrcodeImageUpload";
+import printHistoryRoutes from "../modules/PrintHistory/printHistory.routes";
 
 const Routes = express.Router();
 
@@ -76,6 +77,11 @@ const moduleRouts = [
     
     path: "/qr-upload",
     router: QRrouter,
+  },
+      {
+    
+    path: "/printHistory",
+    router: printHistoryRoutes,
   }
 ];
 
