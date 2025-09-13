@@ -146,7 +146,11 @@ const filterTemplates = catchAsync(async (req: Request, res: Response) => {
   const result = await TemplateService.filterTemplates({
     category: category as string,
     occasion: occasion as string,
-    tags : tags ? (Array.isArray(tags) ? tags : [tags]) : undefined,
+    tags: tags
+      ? (Array.isArray(tags)
+          ? (tags as (string)[]).map(String)
+          : [String(tags)])
+      : undefined,
   });
 
   sendResponse(res, {

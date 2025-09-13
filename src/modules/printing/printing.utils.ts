@@ -1,6 +1,6 @@
 import PrintingTokenModel from "./printing.model";
 
-export async function getValidAccessToken(userId): Promise<string> {
+export async function getValidAccessToken(userId :string): Promise<string> {
 
 
   console.log('UserID in getValidAccessToken:', userId);
