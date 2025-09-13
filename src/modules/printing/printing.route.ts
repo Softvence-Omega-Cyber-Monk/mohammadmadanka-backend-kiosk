@@ -2,15 +2,15 @@
 
 import { Router, Request, Response } from "express";
 
-import { checkAccessToken, printDocument, printJobController } from "./printing.controller"; // Ensure correct import
+import { checkAccessToken, printDocument } from "./printing.controller"; // Ensure correct import
 
 const EpsonRoute = Router();
 
 EpsonRoute.get("/check-auth", (req: Request, res: Response): void => {
-  if (req.session?.deviceToken) {
-    res.json({ isAuthenticated: true });
-    return;
-  }
+  // if (req.session?.deviceToken) {
+  //   res.json({ isAuthenticated: true });
+  //   return;
+  // }
   res.json({ isAuthenticated: false });
 });
 

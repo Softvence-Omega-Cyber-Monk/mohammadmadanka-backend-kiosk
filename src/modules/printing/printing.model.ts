@@ -16,7 +16,7 @@ const PrintingTokenSchema = new Schema(
     },
 
     expires_in: {
-      type: Number,
+      type: Date,
       required: true,
     },
     token_type: {

@@ -17,25 +17,27 @@ import { userRole } from "./constents";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import { uploadImgToCloudinary, uploadMultipleImages } from "./util/uploadImgToCloudinary";
+import { getIO } from "./socket";
 
 app.use(express.json());
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
-const server = http.createServer(app);
+// const server = http.createServer(app);
 
-// --- SOCKET.IO SETUP ---
-const io = new SocketIOServer(server, {
-  cors: {
-    origin: ["*","http://localhost:5173", "https://velvety-quokka-7b3cf9.netlify.app"],
-    methods: ["GET", "POST"],
-    credentials: true,
-  },
-});
+// // --- SOCKET.IO SETUP ---
+// const io = new SocketIOServer(server, {
+//   cors: {
+//     origin: ["http://localhost:5173", "https://velvety-quokka-7b3cf9.netlify.app"],
+//     methods: ["GET", "POST"],
+//     credentials: true,
+//   },
+// });
 
-// Broadcast on new file uploaded
-io.on("connection", (socket) => {
-  console.log("Socket connected:", socket.id);
-});
+// // Broadcast on new file uploaded
+// io.on("connection", (socket) => {
+//   console.log("Socket connected:", socket.id);
+// });
 
 // middleWares
 
@@ -45,7 +47,6 @@ io.on("connection", (socket) => {
 app.use(
   cors({
     origin: [
-      "*",
       "http://localhost:5173",
       "https://velvety-quokka-7b3cf9.netlify.app",
     ],
@@ -167,17 +168,26 @@ app.post(
   upload.single("file"),
   catchAsync(async (req, res) => {
     const { holeId } = req.params;
-    if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
 
-    const publicUrl = `/uploads/${req.file.filename}`;
-    fileMap.set(holeId, publicUrl);
+    // Use local path for upload
+    const localPath = req.file.path;
 
-    // 🔴 Broadcast event to all connected clients
-    io.emit("fileUploaded", { holeId, url: publicUrl });
+    // Upload to cloud (or storage service)
+    const [uploadedUrl] = await uploadMultipleImages([localPath]);
 
-    return res.json({ holeId, url: publicUrl });
+    // Save mapping
+    fileMap.set(holeId, uploadedUrl);
+
+    //  Broadcast event to all connected clients
+    getIO().emit("fileUploaded", { holeId, url: uploadedUrl });
+
+    return res.json({ holeId, url: uploadedUrl });
   })
 );
+
 
 // Fetch uploaded file by holeId
 app.get(

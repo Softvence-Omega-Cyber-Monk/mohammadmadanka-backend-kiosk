@@ -13,11 +13,15 @@ const BRAND_IMAGE_URL =
   "https://res.cloudinary.com/dbt83nrhl/image/upload/v1757415535/back-Card_lownyt.jpg"; // fixed brand image URL
 
 // 🔹 Helper: download remote file as Buffer
-async function fetchRemoteFile(url: string): Promise<Buffer> {
-  const res = await axios.get(url, { responseType: "arraybuffer" });
-  return Buffer.from(res.data);
+export async function fetchRemoteFile(url: string): Promise<Buffer> {
+  try {
+    const res = await axios.get<ArrayBuffer>(url, { responseType: "arraybuffer" });
+    return Buffer.from(res.data);
+  } catch (err) {
+    console.error("❌ Failed to fetch remote file:", err);
+    throw new Error("Failed to fetch remote file");
+  }
 }
-
 // 🔹 Helper: merge fixed brand image + edited image into one A4 PDF
 async function createA4WithTwoA5(editedImg: string | Buffer): Promise<Buffer> {
   const A4_WIDTH = 595.28;
@@ -145,7 +149,6 @@ export async function createPrintJob(
   userId: string,
   editedImgPathOrUrl: string,
   insideImage?: string,
-  copies: number,
   printMode: "document" | "photo" = "document"
 ) {
   console.log("Creating print job:", jobName);
@@ -257,7 +260,7 @@ export async function uploadFileToEpson(
       "Content-Type": "application/pdf",
       "Content-Length": pdfBuffer.length.toString(),
     },
-    body: pdfBuffer,
+    body: new Uint8Array(pdfBuffer),
   });
 
   const bodyText = await putRes.text();
@@ -271,7 +274,7 @@ export async function uploadFileToEpson(
   console.log("✅ Epson upload successful");
 }
 
-export async function isAccessTokenValid(userId) {
+export async function isAccessTokenValid(userId: string) {
   let tokenDoc = await PrintingTokenModel.findOne({ userId: userId });
 
   if (!tokenDoc) return false;
