@@ -23,7 +23,9 @@ const create = async (imgFile: Express.Multer.File, data: Category) => {
 };
 
 const getAll = async () => {
-  const categorys = await CategoryModel.find({ isDeleted: false }).populate('occasions');
+  const categorys = await CategoryModel.find({ isDeleted: false }).populate(
+    "occasions"
+  );
   return categorys;
 };
 
@@ -31,12 +33,15 @@ const getAllname = async () => {
   const categoryName = await CategoryModel.find(
     { isDeleted: false },
     { name: 1, type: 1 }
-  ).populate('occasions', 'name');
+  ).populate("occasions", "name");
   return categoryName;
 };
 
-const getAllOccasion = async (Cid :string ) => {
-  const category = await CategoryModel.findOne({ _id: Cid, isDeleted: false }).populate('occasions', 'name');
+const getAllOccasion = async (Cid: string) => {
+  const category = await CategoryModel.findOne({
+    _id: Cid,
+    isDeleted: false,
+  }).populate("occasions", "name");
   if (!category) {
     throw new Error("Category not found");
   }
@@ -56,6 +61,7 @@ const update = async (id: string, data: Partial<Category>) => {
   );
   return category;
 };
+
 const softDelete = async (id: string) => {
   const category = await CategoryModel.findById(id);
   if (!category) {
@@ -67,11 +73,13 @@ const softDelete = async (id: string) => {
     throw new Error("Image deletion from Cloudinary failed.");
   }
 
-  const result1 = await CategoryModel.findByIdAndUpdate(
-    id,
-    { isDeleted: true },
-    { new: true }
-  );
+  const result1 = await CategoryModel.findByIdAndDelete(id, {
+    isDeleted: true,
+  });
+
+
+  
+
   return result1;
 };
 

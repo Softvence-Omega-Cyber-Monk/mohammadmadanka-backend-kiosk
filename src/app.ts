@@ -73,14 +73,17 @@ app.get(
   "/epson/auth/:userId",
   catchAsync(async (req: Request, res: Response) => {
     const userId = req.params.userId as string;
+    const userUniqueKey = req.query.userUniqueKey as string;
+    console.log("userUniqueKey from auth ", userUniqueKey);
 
     if (!process.env.REDIRECT_URI) {
       throw new Error("REDIRECT_URI is not defined in environment variables");
     }
+    const state = JSON.stringify({ userId, userUniqueKey });
 
     const authUrl = `https://auth.epsonconnect.com/auth/authorize?response_type=code&client_id=${process.env.CLIENT_ID}&redirect_uri=${encodeURIComponent(
       process.env.REDIRECT_URI
-    )}&scope=device&state=${userId}`;
+    )}&scope=device&state=${encodeURIComponent(state)}`;
 
     res.redirect(authUrl);
   })
@@ -91,8 +94,10 @@ app.get(
 app.get(
   "/api/epson/callback",
   catchAsync(async (req: Request, res: Response) => {
-    const userId = req.query.state as string;
-
+    const {userId,userUniqueKey} = req.query.state ? JSON.parse(req.query.state as string) : {};
+    console.log("userId from callback ", userId);
+    console.log("userUniqueKey from callback ", userUniqueKey);
+  
     const code = req.query.code as string;
     if (!code) {
       return res.status(400).send("Missing code");
@@ -135,7 +140,7 @@ app.get(
 
     // Redirect back to frontend
 
-    res.redirect("http://localhost:5173?auth=success");
+    res.redirect(`http://localhost:5173?shopId=${userUniqueKey}&auth=success`);
   })
 );
 

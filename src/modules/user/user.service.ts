@@ -2,6 +2,7 @@ import mongoose, { ClientSession } from "mongoose";
 import { TUser } from "./user.interface";
 import { UserModel } from "./user.model";
 import { Types } from "mongoose";
+import InventoryModel from "../shopinventory/shopinventory.model";
 
 const createUser = async (payload: Partial<TUser>) => {
   const existingUser = await UserModel.findOne({ email: payload.email }).select(
@@ -18,6 +19,7 @@ const createUser = async (payload: Partial<TUser>) => {
   }
 
   try {
+    
     const created = await UserModel.create(payload);
 
     return {
@@ -63,6 +65,24 @@ const updateUser = async (user_id: Types.ObjectId, data: any) => {
     },
     { new: true }
   );
+
+  const shopOwnerId = user_id;
+
+  for (const category of data.categories || []) {
+    await InventoryModel.findOneAndUpdate(
+      {
+        shopOwner: shopOwnerId,
+        category: category, // ObjectId of Product
+      },
+      {
+        $inc: { quantity: 0 }, // ✅ increase stock
+      },
+      {
+        upsert: true, // ✅ create if not exists
+        new: true,
+      }
+    );
+  }
 
   console.log("updated user: ", result);
 

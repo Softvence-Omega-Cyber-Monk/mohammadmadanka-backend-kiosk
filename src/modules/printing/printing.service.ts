@@ -68,7 +68,6 @@ async function createA4WithTwoA5(editedImg: string | Buffer): Promise<Buffer> {
   return Buffer.from(pdfBytes);
 }
 
-
 // 🔹 Helper: merge fixed brand image + edited image into one A4 PDF
 async function createA4WithInside(editedImg: string | Buffer): Promise<Buffer> {
   const A4_WIDTH = 595.28;
@@ -77,7 +76,6 @@ async function createA4WithInside(editedImg: string | Buffer): Promise<Buffer> {
 
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage([A4_WIDTH, A4_HEIGHT]);
-
 
   // ✅ Edited image (Buffer | URL | local path)
   let editedImgBytes: Buffer;
@@ -157,10 +155,7 @@ export async function createPrintJob(
 
   // ✅ Step 1: Convert image to JPG
   const jpgBuffer = await convertToJpg(editedImgPathOrUrl);
-  const insideJpgBuffer = insideImage
-    ? await convertToJpg(insideImage)
-    : null;
- 
+  const insideJpgBuffer = insideImage ? await convertToJpg(insideImage) : null;
 
   // ✅ Step 2: Create merged A4 PDF using JPG buffer
   const pdfBuffer = await createA4WithTwoA5(jpgBuffer);
@@ -169,10 +164,13 @@ export async function createPrintJob(
 
   console.log("✅ Merged PDF created, size:", pdfBuffer.length);
   if (insideJpgBuffer) {
-  const insidePdfBuffer = await createA4WithInside(insideJpgBuffer);
-  finalPdfBuffer = await mergePdfBuffers([pdfBuffer, insidePdfBuffer]);
+    const insidePdfBuffer = await createA4WithInside(insideJpgBuffer);
+    finalPdfBuffer = await mergePdfBuffers([pdfBuffer, insidePdfBuffer]);
   }
 
+
+  // tamim 
+  
   // ✅ Step 3: Create Epson job
   const response = await fetch(
     "https://api.epsonconnect.com/api/2/printing/jobs",
@@ -199,6 +197,35 @@ export async function createPrintJob(
     }
   );
 
+
+
+// soyaib 
+
+  // const response = await fetch(
+  //   "https://api.epsonconnect.com/api/2/printing/jobs",
+  //   {
+  //     method: "POST",
+  //     headers: {
+  //       Authorization: `Bearer ${accessToken}`,
+  //       "x-api-key": EPSON_API_KEY as string,
+  //       "Content-Type": "application/json",
+  //     },
+  //     body: JSON.stringify({
+  //       jobName,
+  //       printMode,
+  //       printSettings: {
+  //         paperSize: "ps_a4",
+  //         paperType: "pt_plainpaper",
+  //         borderless: false,
+  //         printQuality: "normal",
+  //         paperSource: "rear", // tray
+  //         colorMode: "color",
+  //         copies: 1,
+  //       },
+  //     }),
+  //   }
+  // );
+
   const jobData = await response.json();
   console.log(jobData, "-------job data from service");
 
@@ -211,7 +238,6 @@ export async function createPrintJob(
 
   return { jobData, accessToken, EPSON_API_KEY };
 }
-
 
 // 🔹 Upload merged PDF buffer to Epson
 export async function uploadFileToEpson(
