@@ -27,7 +27,7 @@ const UserSchema = new Schema<TUser>(
       default: userRole.shopAdmin,
     },
     bannerImg: { type: String },
-    categories: [{ type: Types.ObjectId, ref: "Category" }],
+    categories: [{ type: mongoose.Schema.Types.ObjectId, ref: "Category" }],
 
     isDeleted: { type: Boolean, default: false },
     isAccepted: {
