@@ -8,6 +8,8 @@ const getByShopOwner = async (shopOwnerId: string) => {
   return inventory;
 };
 
+
+
 const getAll = async () => {
   const inventories = await InventoryModel.find()
     .populate("shopOwner", "name email") // only select needed fields
