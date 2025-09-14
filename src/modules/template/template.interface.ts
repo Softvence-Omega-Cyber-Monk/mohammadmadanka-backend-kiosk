@@ -41,6 +41,7 @@ export type Template = {
   name: string;
   link?: string;
   productlink?:string;
+  productAspectRatio?: number;
   config?: TemplateCofig;
   category: Category;
   occasion?: Occasion;

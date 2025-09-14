@@ -48,8 +48,8 @@ const TemplateSchema = new Schema(
     SKU: { type: String, required: true },
     link: { type: String, required: false },
     productlink: { type: String, required: false},
+    productAspectRatio: {type:Number, reqquired: false, default:1},
     config: {type: TemplateCofig, required: false},
-
     category: { 
           type: mongoose.Schema.Types.ObjectId,
           ref: "Category",
