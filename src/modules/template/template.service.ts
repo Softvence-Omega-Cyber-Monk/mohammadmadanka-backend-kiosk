@@ -22,7 +22,7 @@ const getById = async (id: string) => {
   return template;
 };
 
-const update = async (id: string, data: Partial<Template>) => {
+const update = async(id: string, data: Partial<Template>) => {
   const template = await TemplateModel.findOneAndUpdate(
     { _id: id, isDeleted: false },
     data,
