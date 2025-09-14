@@ -41,7 +41,7 @@ const getAllOccasion = async (Cid: string) => {
   const category = await CategoryModel.findOne({
     _id: Cid,
     isDeleted: false,
-  }).populate("occasions", "name");
+  }).populate("occasions");
   if (!category) {
     throw new Error("Category not found");
   }
