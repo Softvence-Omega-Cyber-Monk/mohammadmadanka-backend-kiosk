@@ -47,8 +47,9 @@ const TemplateSchema = new Schema(
     name: { type: String, required: true },
     SKU: { type: String, required: true },
     link: { type: String, required: false },
-    config: {type: TemplateCofig, required: false},
     productlink: { type: String, required: false},
+    config: {type: TemplateCofig, required: false},
+
     category: { 
           type: mongoose.Schema.Types.ObjectId,
           ref: "Category",

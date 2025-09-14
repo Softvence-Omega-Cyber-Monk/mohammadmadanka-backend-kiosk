@@ -27,7 +27,8 @@ const UserSchema = new Schema<TUser>(
       default: userRole.shopAdmin,
     },
     bannerImg: { type: String },
-    categories: { type: [String], default: [] },
+    categories: [{ type: Types.ObjectId, ref: "Category" }],
+
     isDeleted: { type: Boolean, default: false },
     isAccepted: {
       type: String,
