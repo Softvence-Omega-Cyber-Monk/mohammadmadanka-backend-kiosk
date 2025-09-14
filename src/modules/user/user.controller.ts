@@ -61,25 +61,19 @@ const updateUserStatus = catchAsync(async (req, res) => {
 });
 const updateUser = catchAsync(async (req, res) => {
   const user_id = req.query.user_id as string;
-  const { categories } = req.body; // expecting array of category IDs
-
-  if (!Array.isArray(categories)) {
-    throw new Error("Categories must be an array of IDs");
-  }
+  const data = req.body ;
+  console.log("user id ", user_id);
+  console.log("user user data  ", data);
 
   const userIdConverted = idConverter(user_id);
   if (!userIdConverted) {
-    throw new Error("User id conversion failed");
+    throw new Error("user id conversion failed");
   }
-
-  const result = await userServices.updateUser(userIdConverted, {
-    categories,
-  });
-
+  const result = await userServices.updateUser(userIdConverted, data);
   sendResponse(res, {
     statusCode: 200,
     success: true,
-    message: "User categories updated",
+    message: "All users",
     data: result,
   });
 });
