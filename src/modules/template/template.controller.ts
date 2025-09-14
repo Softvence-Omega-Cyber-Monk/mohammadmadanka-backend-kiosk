@@ -114,7 +114,7 @@ const softDelete = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: 200,
     success: true,
-    message: "Template soft  deleted successfully",
+    message: "Template soft deleted successfully",
     data:result,
   });
 });
