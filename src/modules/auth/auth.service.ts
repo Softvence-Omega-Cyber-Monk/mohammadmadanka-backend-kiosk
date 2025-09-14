@@ -46,7 +46,7 @@ const login = async (payload: { shopId: string; password: string }) => {
     userId: user._id.toString(),
     role: user.role,
     email: user.email,
-    name: user.name,
+    name: user.shopName,
     shopId: user.shopId, // include shopId in token if needed
     categories: user.categories, // include categories in token if needed
     userUniqueKey: user.userUniqueKey,

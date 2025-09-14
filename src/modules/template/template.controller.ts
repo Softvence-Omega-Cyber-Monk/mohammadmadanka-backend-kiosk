@@ -62,9 +62,11 @@ const create = catchAsync(async (req: Request, res: Response) => {
     name,
     ...(templateUrl ? { link: templateUrl } : {}), // ✅ fixed
     previewLink: previewUrls,
-    ...(productUrl ? { productLink: productUrl } : {}), // ✅ fixed key casing
+    ...(productUrl ? { productlink : productUrl } : {}), // ✅ fixed key casing
     ...restData,
   };
+
+  console.log("From backend:   ",templateData)
   // 3. Save to DB
   const result = await TemplateService.create(templateData);
 

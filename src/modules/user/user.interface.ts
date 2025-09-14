@@ -1,4 +1,5 @@
 import { TUserRole } from "../../constents";
+import { Types } from "mongoose";
 
 export type TUser = {
   shopName: string;
@@ -8,8 +9,8 @@ export type TUser = {
   userUniqueKey?: string;
   role?: TUserRole;
   bannerImg?: string;
-  categories?: string[];
-  isDeleted?: string;
+  categories?: (string | Types.ObjectId)[];
+  isDeleted?: boolean;
   isAccepted?: 'pending' | 'approved' | 'rejected';
 
 };

@@ -3,6 +3,7 @@ import { Template } from "./template.interface";
 
 const create = async (data: Template) => {
   const template = await TemplateModel.create(data);
+  console.log("sevice  ",data);
   return template;
 };
 
