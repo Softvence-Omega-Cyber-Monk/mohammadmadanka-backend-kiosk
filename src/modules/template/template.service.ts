@@ -73,7 +73,7 @@ const filterTemplates = async (filters: {
 
   const templates = await TemplateModel.find(
     query,
-    "id previewLink tags rudeContent"
+    "id previewLink tags rudeContent isPersonalizable"
   );
 
   return templates;
@@ -95,16 +95,10 @@ const getTags = async (categoryId?: string) => {
   }
 };
 
-export const bulkUpdateTemplatesService = async (
-  ids: string,
-  type: string,
-  amount: number
-) => {
-  const adjustment = type === "increase" ? amount : -amount;
-
+export const bulkUpdateTemplatesService = async (ids : string, amount: number) => {
   const result = await TemplateModel.updateMany(
     { _id: { $in: ids } },
-    { $inc: { price: adjustment } }
+    { price: amount } 
   );
 
   return result;

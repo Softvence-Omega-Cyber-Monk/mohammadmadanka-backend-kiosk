@@ -4,6 +4,8 @@ import { UserModel } from "./user.model";
 import { Types } from "mongoose";
 import { ShopinventoryModal } from "../shopinventory/shopinventory.model";
 
+import { sendEmail } from "../../util/sendEmail";
+
 const createUser = async (payload: Partial<TUser>) => {
   const existingUser = await UserModel.findOne({ email: payload.email }).select(
     "+password"
@@ -17,10 +19,38 @@ const createUser = async (payload: Partial<TUser>) => {
       };
     }
   }
-
   try {
-    
+    // Create new user
     const created = await UserModel.create(payload);
+    console.log("......",created);
+    // Send welcome email (non-blocking: don’t let email failure break user creation)
+    try {
+      const subject = "🎉 Welcome to My App!";
+      const html = `
+  <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+    <h2 style="color: #2c3e50;">Welcome to Our Platform</h2>
+    
+    <p>Dear Owner of <strong>${created.shopName ?? "your shop"}</strong>,</p>
+    
+    <p>Thank you for registering with us. We’re delighted to have you on board and look forward to supporting your journey 🚀.</p>
+    
+    <p>
+      Your Shop Id is: 
+      <span style="display:inline-block; padding:6px 12px; background:#f4f6f8; border:1px solid #ddd; border-radius:4px; font-weight:bold;">
+        ${created.userUniqueKey}
+      </span>
+    </p>
+    
+    <p>Please keep this id safe, as it will be required whenever you log in.</p>
+    
+    <p style="margin-top: 20px;">Best regards,<br/>The Support Team</p>
+  </div>
+`;
+
+      await sendEmail(created.email as string, subject, html);
+    } catch (emailErr) {
+      console.error("⚠️ Failed to send welcome email:", emailErr);
+    }
 
     return {
       message: "User created successfully.",
