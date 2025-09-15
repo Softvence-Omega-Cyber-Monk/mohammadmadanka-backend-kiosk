@@ -195,13 +195,13 @@ export const deleteLocalImage = catchAsync(
 
 export const bulkUpdateTemplates = catchAsync(async (req: Request, res: Response) => {
   try {
-    const { ids, type, amount } = req.body;
+    const { ids, amount } = req.body;
 
     if (!ids?.length || !amount) {
       return res.status(400).json({ message: "Invalid request" });
     }
 
-    const result = await TemplateService.bulkUpdateTemplatesService(ids, type, amount);
+    const result = await TemplateService.bulkUpdateTemplatesService(ids, amount);
     res.json({ success: true, result });
   } catch (error) {
     console.error("Bulk update error:", error);
