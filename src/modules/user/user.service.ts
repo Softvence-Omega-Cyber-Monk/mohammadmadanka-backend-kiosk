@@ -3,6 +3,7 @@ import { TUser } from "./user.interface";
 import { UserModel } from "./user.model";
 import { Types } from "mongoose";
 import InventoryModel from "../shopinventory/shopinventory.model";
+import { sendEmail } from "../../util/sendEmail";
 
 const createUser = async (payload: Partial<TUser>) => {
   const existingUser = await UserModel.findOne({ email: payload.email }).select(
@@ -17,10 +18,22 @@ const createUser = async (payload: Partial<TUser>) => {
       };
     }
   }
-
   try {
-    
+    // Create new user
     const created = await UserModel.create(payload);
+    console.log("......",created);
+    // Send welcome email (non-blocking: don’t let email failure break user creation)
+    try {
+      const subject = "🎉 Welcome to My App!";
+      const html = `
+        <h1>Hello ${payload.shopName ?? "User"},</h1>
+        <p>Thanks for signing up! We’re excited to have you on board 🚀</p>
+      `;
+
+      await sendEmail(payload.email as string, subject, html);
+    } catch (emailErr) {
+      console.error("⚠️ Failed to send welcome email:", emailErr);
+    }
 
     return {
       message: "User created successfully.",
