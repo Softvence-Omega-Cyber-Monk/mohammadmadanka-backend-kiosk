@@ -4,6 +4,8 @@ import {
   deleteImageFromCloudinary,
   uploadImgToCloudinary,
 } from "../../util/uploadImgToCloudinary";
+import { UserModel } from "../user/user.model";
+import { ShopinventoryModal } from "../shopinventory/shopinventory.model";
 
 const create = async (imgFile: Express.Multer.File, data: Category) => {
   const result = await uploadImgToCloudinary(imgFile.filename, imgFile.path);
@@ -67,20 +69,31 @@ const softDelete = async (id: string) => {
   if (!category) {
     throw new Error("Category not found");
   }
-  const result = await deleteImageFromCloudinary(category.public_id);
 
+  // 1️⃣ Delete image from Cloudinary
+  const result = await deleteImageFromCloudinary(category.public_id);
   if (!result) {
     throw new Error("Image deletion from Cloudinary failed.");
   }
 
-  const result1 = await CategoryModel.findByIdAndDelete(id, {
-    isDeleted: true,
-  });
+  // 2️⃣ Soft delete the category
+  const updatedCategory = await CategoryModel.findByIdAndDelete(
+    id,
+    { isDeleted: true },
+ 
+  );
 
+  if (!updatedCategory) {
+    throw new Error("Category soft delete failed.");
+  }
 
-  
+  // 3️⃣ Remove category from all users
+  await UserModel.updateMany({ categories: id }, { $pull: { categories: id } });
 
-  return result1;
+  // 4️⃣ Delete inventory entries linked to this category
+  await ShopinventoryModal.deleteMany({ category: id });
+
+  return updatedCategory;
 };
 
 const categoryService = {

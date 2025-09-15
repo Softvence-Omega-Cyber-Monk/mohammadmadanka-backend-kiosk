@@ -7,7 +7,7 @@ export type TUser = {
   password: string;
   userUniqueKey?: string;
   role?: TUserRole;
-  bannerImg?: string;
+  bannerId?: string;
   categories?: string[];
   isDeleted?: string;
   isAccepted?: 'pending' | 'approved' | 'rejected';

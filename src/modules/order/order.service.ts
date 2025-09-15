@@ -2,8 +2,9 @@ import OrderModel from "./order.model";
 //import ProductModel from "../category/category.model";
 import { Order } from "./order.interface"; // optional interface
 import mongoose, { ObjectId } from "mongoose";
-import InventoryModel from "../shopinventory/shopinventory.model";
+
 import { UserModel } from "../user/user.model";
+import { ShopinventoryModal } from "../shopinventory/shopinventory.model";
 
 // Create order (shopOwner id comes from token)
 const create = async (
@@ -101,7 +102,7 @@ const updateStatus = async (
 
     // 🔹 For each delivered item, add/update inventory for shop
     for (const item of order.items) {
-      await InventoryModel.findOneAndUpdate(
+      await ShopinventoryModal.findOneAndUpdate(
         {
           shopOwner: order.shopOwner,
           category: item.category, // ObjectId of Product

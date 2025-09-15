@@ -3,7 +3,7 @@ import { Template } from "./template.interface";
 
 const create = async (data: Template) => {
   const template = await TemplateModel.create(data);
-  console.log("sevice  ",data);
+  console.log("sevice  ", data);
   return template;
 };
 
@@ -22,7 +22,7 @@ const getById = async (id: string) => {
   return template;
 };
 
-const update = async(id: string, data: Partial<Template>) => {
+const update = async (id: string, data: Partial<Template>) => {
   const template = await TemplateModel.findOneAndUpdate(
     { _id: id, isDeleted: false },
     data,
@@ -60,7 +60,7 @@ const filterTemplates = async (filters: {
 
   if (filters.tags && filters.tags.length > 0) {
     const tagsArray = filters.tags
-      .map((tag) => tag.split(",")) 
+      .map((tag) => tag.split(","))
       .flat()
       .map((tag) => tag.trim())
       .filter((tag) => tag.length > 0);
@@ -79,22 +79,27 @@ const filterTemplates = async (filters: {
   return templates;
 };
 
-
-const getTags = async (categoryId: string) => {
+const getTags = async (categoryId?: string) => {
   try {
-    const tags = await TemplateModel.distinct("tags", {
-      isDeleted: false,
-      category: categoryId,
-    });
+    const filter: any = { isDeleted: false };
 
+    if (categoryId) {
+      filter.category = categoryId;
+    }
+
+    const tags = await TemplateModel.distinct("tags", filter);
     return tags;
   } catch (err) {
-    console.error("Error fetching unique tags by category:", err);
+    console.error("Error fetching unique tags:", err);
     throw err;
   }
 };
 
-export const bulkUpdateTemplatesService = async (ids : string, type:string, amount: number) => {
+export const bulkUpdateTemplatesService = async (
+  ids: string,
+  type: string,
+  amount: number
+) => {
   const adjustment = type === "increase" ? amount : -amount;
 
   const result = await TemplateModel.updateMany(
@@ -105,7 +110,11 @@ export const bulkUpdateTemplatesService = async (ids : string, type:string, amou
   return result;
 };
 
-export const bulkUpdateTemplateTagsService = async (ids :string, action: string, tags:string[]) => {
+export const bulkUpdateTemplateTagsService = async (
+  ids: string,
+  action: string,
+  tags: string[]
+) => {
   let updateQuery;
 
   if (action === "add") {
@@ -134,7 +143,7 @@ const templateService = {
   filterTemplates,
   getTags,
   bulkUpdateTemplatesService,
-  bulkUpdateTemplateTagsService
+  bulkUpdateTemplateTagsService,
 };
 
 export default templateService;

@@ -26,7 +26,7 @@ const UserSchema = new Schema<TUser>(
       enum: ["superAdmin", "shopAdmin"],
       default: userRole.shopAdmin,
     },
-    bannerImg: { type: String },
+    bannerId: { type: mongoose.Schema.Types.ObjectId, ref: "banner" },
     categories: { type: [String], default: [] },
     isDeleted: { type: Boolean, default: false },
     isAccepted: {
