@@ -62,7 +62,11 @@ const getById = catchAsync(async (req: Request, res: Response) => {
 });
 
 const update = catchAsync(async (req: Request, res: Response) => {
+
+  console.log('update data ',req.body)
   const result = await CategoryService.update(req.params.id, req.body);
+
+
   sendResponse(res, {
     statusCode: 200,
     success: true,

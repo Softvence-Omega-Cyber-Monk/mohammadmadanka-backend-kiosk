@@ -2,7 +2,8 @@ import mongoose, { ClientSession } from "mongoose";
 import { TUser } from "./user.interface";
 import { UserModel } from "./user.model";
 import { Types } from "mongoose";
-import InventoryModel from "../shopinventory/shopinventory.model";
+import { ShopinventoryModal } from "../shopinventory/shopinventory.model";
+
 import { sendEmail } from "../../util/sendEmail";
 
 const createUser = async (payload: Partial<TUser>) => {
@@ -67,7 +68,7 @@ const getAllUsers = async () => {
 };
 
 const getSingleUser = async (user_id: Types.ObjectId) => {
-  const result = await UserModel.findOne({ _id: user_id, isDeleted: false });
+  const result = await UserModel.findOne({ _id: user_id, isDeleted: false }).populate('bannerId');
   return result;
 };
 const updateUserStatus = async (user_id: Types.ObjectId, isAccepted: any) => {
@@ -88,7 +89,7 @@ const updateUser = async (user_id: Types.ObjectId, data: any) => {
     { _id: user_id, isDeleted: false }, // make sure this matches a document
     {
       $set: {
-        ...(data.bannerImg !== undefined && { bannerImg: data.bannerImg }),
+        ...(data.bannerId !== undefined && { bannerId: data.bannerId }),
         ...(data.categories !== undefined && { categories: data.categories }),
       },
     },
@@ -98,7 +99,7 @@ const updateUser = async (user_id: Types.ObjectId, data: any) => {
   const shopOwnerId = user_id;
 
   for (const category of data.categories || []) {
-    await InventoryModel.findOneAndUpdate(
+    await ShopinventoryModal.findOneAndUpdate(
       {
         shopOwner: shopOwnerId,
         category: category, // ObjectId of Product

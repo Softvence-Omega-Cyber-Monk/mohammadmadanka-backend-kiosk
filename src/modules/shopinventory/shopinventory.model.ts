@@ -24,4 +24,4 @@ const InventorySchema = new mongoose.Schema(
 // To make sure one shop has only one inventory entry per product
 InventorySchema.index({ shopOwner: 1, category: 1 }, { unique: true });
 
-export default mongoose.model("Inventory", InventorySchema);
+export const ShopinventoryModal = mongoose.model("Inventory", InventorySchema);
