@@ -15,7 +15,9 @@ const BRAND_IMAGE_URL =
 // 🔹 Helper: download remote file as Buffer
 export async function fetchRemoteFile(url: string): Promise<Buffer> {
   try {
-    const res = await axios.get<ArrayBuffer>(url, { responseType: "arraybuffer" });
+    const res = await axios.get<ArrayBuffer>(url, {
+      responseType: "arraybuffer",
+    });
     return Buffer.from(res.data);
   } catch (err) {
     console.error("❌ Failed to fetch remote file:", err);
@@ -72,56 +74,56 @@ async function createA4WithTwoA5(editedImg: string | Buffer): Promise<Buffer> {
   return Buffer.from(pdfBytes);
 }
 
-// 🔹 Helper: merge fixed brand image + edited image into one A4 PDF
-async function createA4WithInside(editedImg: string | Buffer): Promise<Buffer> {
-  const A4_WIDTH = 595.28;
-  const A4_HEIGHT = 841.89;
-  const HALF_A4_HEIGHT = A4_HEIGHT / 2;
+// // 🔹 Helper: merge fixed brand image + edited image into one A4 PDF
+// async function createA4WithInside(editedImg: string | Buffer): Promise<Buffer> {
+//   const A4_WIDTH = 595.28;
+//   const A4_HEIGHT = 841.89;
+//   const HALF_A4_HEIGHT = A4_HEIGHT / 2;
 
-  const pdfDoc = await PDFDocument.create();
-  const page = pdfDoc.addPage([A4_WIDTH, A4_HEIGHT]);
+//   const pdfDoc = await PDFDocument.create();
+//   const page = pdfDoc.addPage([A4_WIDTH, A4_HEIGHT]);
 
-  // ✅ Edited image (Buffer | URL | local path)
-  let editedImgBytes: Buffer;
-  if (Buffer.isBuffer(editedImg)) {
-    // Already a buffer (like our JPG conversion step)
-    editedImgBytes = editedImg;
-  } else if (editedImg.startsWith("http")) {
-    editedImgBytes = await fetchRemoteFile(editedImg);
-  } else {
-    editedImgBytes = fs.readFileSync(editedImg);
-  }
+//   // ✅ Edited image (Buffer | URL | local path)
+//   let editedImgBytes: Buffer;
+//   if (Buffer.isBuffer(editedImg)) {
+//     // Already a buffer (like our JPG conversion step)
+//     editedImgBytes = editedImg;
+//   } else if (editedImg.startsWith("http")) {
+//     editedImgBytes = await fetchRemoteFile(editedImg);
+//   } else {
+//     editedImgBytes = fs.readFileSync(editedImg);
+//   }
 
-  // Embed images
-  const editedImage = await pdfDoc.embedJpg(editedImgBytes);
+//   // Embed images
+//   const editedImage = await pdfDoc.embedJpg(editedImgBytes);
 
-  // Draw brand image (top half)
-  page.drawImage(editedImage, {
-    x: A4_WIDTH,
-    y: 0,
-    width: HALF_A4_HEIGHT,
-    height: A4_WIDTH,
-    rotate: degrees(90),
-  });
+//   // Draw brand image (top half)
+//   page.drawImage(editedImage, {
+//     x: A4_WIDTH,
+//     y: 0,
+//     width: HALF_A4_HEIGHT,
+//     height: A4_WIDTH,
+//     rotate: degrees(90),
+//   });
 
-  // Draw edited image (bottom half)
+//   // Draw edited image (bottom half)
 
-  const pdfBytes = await pdfDoc.save();
-  return Buffer.from(pdfBytes);
-}
+//   const pdfBytes = await pdfDoc.save();
+//   return Buffer.from(pdfBytes);
+// }
 
-async function mergePdfBuffers(buffers: Buffer[]): Promise<Buffer> {
-  const mergedPdf = await PDFDocument.create();
+// async function mergePdfBuffers(buffers: Buffer[]): Promise<Buffer> {
+//   const mergedPdf = await PDFDocument.create();
 
-  for (const buffer of buffers) {
-    const pdf = await PDFDocument.load(buffer);
-    const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
-    copiedPages.forEach((p) => mergedPdf.addPage(p));
-  }
+//   for (const buffer of buffers) {
+//     const pdf = await PDFDocument.load(buffer);
+//     const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+//     copiedPages.forEach((p) => mergedPdf.addPage(p));
+//   }
 
-  const mergedBytes = await mergedPdf.save();
-  return Buffer.from(mergedBytes);
-}
+//   const mergedBytes = await mergedPdf.save();
+//   return Buffer.from(mergedBytes);
+// }
 
 /**
  * Convert PNG (or any image) to JPG buffer
@@ -158,22 +160,12 @@ export async function createPrintJob(
 
   // ✅ Step 1: Convert image to JPG
   const jpgBuffer = await convertToJpg(editedImgPathOrUrl);
-  const insideJpgBuffer = insideImage ? await convertToJpg(insideImage) : null;
 
   // ✅ Step 2: Create merged A4 PDF using JPG buffer
   const pdfBuffer = await createA4WithTwoA5(jpgBuffer);
 
-  let finalPdfBuffer = pdfBuffer;
+  // tamim
 
-  console.log("✅ Merged PDF created, size:", pdfBuffer.length);
-  if (insideJpgBuffer) {
-    const insidePdfBuffer = await createA4WithInside(insideJpgBuffer);
-    finalPdfBuffer = await mergePdfBuffers([pdfBuffer, insidePdfBuffer]);
-  }
-
-
-  // tamim 
-  
   // ✅ Step 3: Create Epson job
   const response = await fetch(
     "https://api.epsonconnect.com/api/2/printing/jobs",
@@ -185,23 +177,23 @@ export async function createPrintJob(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        jobName: jobName, // required
-        printMode: "document", // or "photo"
+        jobName: "Sample Job",
+        printMode: "document",
         printSettings: {
           paperSize: "ps_a4",
-          paperType: "pt_hagakiphoto",
-          borderless: true,
-          printQuality: "normal",
-          paperSource: "rear", // tray
+          paperType: "pt_photopaper",
+          borderless: false,
+          printQuality: "high",
+          paperSource: "rear",
           colorMode: "color",
+          doubleSided: "none",
           copies: 1,
         },
       }),
     }
   );
 
-
-// soyaib 
+  // soyaib
 
   // const response = await fetch(
   //   "https://api.epsonconnect.com/api/2/printing/jobs",
@@ -236,7 +228,7 @@ export async function createPrintJob(
   }
 
   // ✅ Step 4: Upload PDF
-  await uploadFileToEpson(jobData.uploadUri, finalPdfBuffer, "combined.pdf");
+  await uploadFileToEpson(jobData.uploadUri, pdfBuffer, "combined.pdf");
 
   return { jobData, accessToken, EPSON_API_KEY };
 }

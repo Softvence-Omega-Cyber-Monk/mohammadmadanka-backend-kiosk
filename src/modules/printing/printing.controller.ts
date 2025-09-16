@@ -10,14 +10,14 @@ import {
 
 
 export const printDocument = catchAsync(async (req: Request, res: Response) => {
-  const { fileUrl,insidefileUrl,copies, jobName, userId } = req.body;
+  const { fileUrl,copies, jobName, userId } = req.body;
 
-  console.log(fileUrl, jobName,insidefileUrl, copies, userId, "-------from controller");
+  console.log(fileUrl, jobName, copies, userId, "-------from controller");
 
   if (!jobName || !fileUrl) {
     return res.status(400).send({ error: "jobName and file are required" });
   }
-  const jobData = await createPrintJob(jobName, userId,fileUrl, insidefileUrl, copies);
+  const jobData = await createPrintJob(jobName, userId,fileUrl, copies);
 
   console.log(jobData, "-------job data from controller");
 
