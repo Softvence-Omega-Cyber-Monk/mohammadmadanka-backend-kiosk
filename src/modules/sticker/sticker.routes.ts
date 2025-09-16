@@ -9,7 +9,7 @@ const stickerRoutes = Router();
 //   upload.single("file"),
 //   stickerController.create
 // );
-stickerRoutes.post("/bulk-upload", uploadMultiple,stickerController.createBulk);
+stickerRoutes.post("/upoload-sticker", uploadMultiple,stickerController.createBulk);
 stickerRoutes.get("/getAll", stickerController.getAll);
 stickerRoutes.get("/getSingle/:id", stickerController.getById);
 stickerRoutes.delete("/delete/:id", stickerController.Delete);
