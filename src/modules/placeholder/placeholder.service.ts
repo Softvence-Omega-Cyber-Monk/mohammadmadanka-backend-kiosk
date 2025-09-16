@@ -4,21 +4,32 @@ import { uploadImgToCloudinary, deleteImageFromCloudinary } from "../../util/upl
 import { v2 as cloudinary } from 'cloudinary';
 
 
-const create = async (imgFile: Express.Multer.File) => {
-  const result = await uploadImgToCloudinary(imgFile.filename, imgFile.path);
+const createBulk = async (imgFiles: Express.Multer.File[]) => {
+  // Upload all files to Cloudinary in parallel
+  const uploadResults = await Promise.all(
+    imgFiles.map((file) =>
+      uploadImgToCloudinary(file.filename, file.path)
+    )
+  );
 
-  console.log(result);
-
-  if (!result.secure_url) {
-    throw new Error("Image upload failed.");
-  }
-
-  const placeholder = await PlaceholderModel.create({
-    link: result.secure_url,
-    public_id: result.public_id,
+  // Transform results into DB-ready objects
+  const placeholdersData = uploadResults.map((result) => {
+    if (!result.secure_url) {
+      throw new Error("One or more image uploads failed.");
+    }
+    return {
+      link: result.secure_url,
+      public_id: result.public_id,
+    };
   });
-  return placeholder;
+
+  // Insert all placeholders into DB
+  const placeholders = await PlaceholderModel.insertMany(placeholdersData);
+
+  console.log("Created placeholders:", placeholders);
+  return placeholders;
 };
+
 
 const getAll = async () => {
   const placeholders = await PlaceholderModel.find({ isDeleted: false });
@@ -52,7 +63,7 @@ const Delete = async (id: string, publicId: string) => {
 };
 
 const placeholderService = {
-  create,
+  createBulk,
   getAll,
   getById,
   Delete,
