@@ -201,7 +201,6 @@ export async function createPrintJob(
   );
 
 
-
 // soyaib 
 
   // const response = await fetch(
