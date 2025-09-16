@@ -21,6 +21,24 @@ const create = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const createBulk = catchAsync(async (req: Request, res: Response) => {
+  const imgFiles = req.files as Express.Multer.File[];
+
+  if (!imgFiles || imgFiles.length === 0) {
+    throw new Error("Image files are required.");
+  }
+
+  const result = await stickerService.createBulk(imgFiles);
+
+  sendResponse(res, {
+    statusCode: 201,
+    success: true,
+    message: "Stickers created successfully",
+    data: result,
+  });
+});
+
+
 const getAll = catchAsync(async (req: Request, res: Response) => {
   const result = await stickerService.getAll();
   sendResponse(res, {
@@ -63,6 +81,7 @@ const stickerController = {
   getAll,
   getById,
   Delete,
+  createBulk,
 };
 
 export default stickerController;
