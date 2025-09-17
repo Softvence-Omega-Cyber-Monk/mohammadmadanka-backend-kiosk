@@ -6,6 +6,10 @@ const PrintingTokenSchema = new Schema(
       type: String,
       required: true,
     },
+    Print_type: {
+      type: String,
+      required: true,
+    },
     access_token: {
       type: String,
       required: true,
