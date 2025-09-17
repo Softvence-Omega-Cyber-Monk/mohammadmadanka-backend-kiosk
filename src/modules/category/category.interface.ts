@@ -1,4 +1,4 @@
-export type CategoryType = "single_layer" | "double_layer" | "3D";
+export type CategoryType = "single_layer" | "double_layer" | "3D" | "double_layer_transparent";
 
 export type Category = {
   name: string;
