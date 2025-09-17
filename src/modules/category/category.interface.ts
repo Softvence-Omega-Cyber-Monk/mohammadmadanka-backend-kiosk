@@ -6,6 +6,7 @@ export type Category = {
   type: CategoryType;
   public_id: string;
   occasions?: string[];
+  serialNumber:number;
   isDeleted: boolean;
   createdAt?: Date;
   updatedAt?: Date;

@@ -183,7 +183,7 @@ export async function createPrintJob(
           paperSize: "ps_a4",
           paperType: "pt_photopaper",
           borderless: false,
-          printQuality: "high",
+          printQuality: "normal",
           paperSource: "rear",
           colorMode: "color",
           doubleSided: "none",
