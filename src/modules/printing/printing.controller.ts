@@ -34,9 +34,11 @@ export const printDocument = catchAsync(async (req: Request, res: Response) => {
 
 export const checkAccessToken = catchAsync(async (req: Request, res: Response) => {
   const userId = req.params.userId;
+  const type = req.query.type 
+
 
   try {
-    const valid = await isAccessTokenValid(userId);
+    const valid = await isAccessTokenValid(userId , type);
     // console.log("Token valid:", valid);
     return res.json({ valid });
   } catch (err) {
@@ -46,19 +48,4 @@ export const checkAccessToken = catchAsync(async (req: Request, res: Response) =
 }
 )
 
-// export const printJobController = async (req: Request, res: Response) => {
-//   try {
 
-//     console.log('inside print job controller')
-//     const userId = req.query.userId;
-//     const { jobId } = req.body;
-
-//     console.log(userId, jobId, "---------------from controller ---");
-//     if (!jobId) return res.status(400).json({ error: "jobId is required" });
-
-//     const result = await printJobService(jobId, userId as string);
-//     res.json(result);
-//   } catch (error: any) {
-//     res.status(500).json({ error: error.message || "Printing failed" });
-//   }
-// };

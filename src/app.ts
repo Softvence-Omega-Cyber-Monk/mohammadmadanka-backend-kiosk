@@ -78,7 +78,11 @@ app.get(
     const userUniqueKey = req.query.userUniqueKey as string;
     const Print_type = req.query.type as string;
 
-    console.log("userUniqueKey and type  from auth ", Print_type, userUniqueKey);
+    console.log(
+      "userUniqueKey and type  from auth ",
+      Print_type,
+      userUniqueKey
+    );
 
     if (!process.env.REDIRECT_URI) {
       throw new Error("REDIRECT_URI is not defined in environment variables");
@@ -135,16 +139,18 @@ app.get(
     const tokenData = await tokenResponse.json();
     // console.log("Token response:", tokenData);
 
-    // Save to database
-    await PrintingTokenModel.create({
-      userId: userId,
-      Print_type: Print_type,
-      access_token: tokenData.access_token,
-      refresh_token: tokenData.refresh_token,
-      expires_in: new Date(Date.now() + tokenData.expires_in * 1000),
-      scope: tokenData.scope,
-      token_type: tokenData.token_type,
-    });
+    // Upsert token in database
+    await PrintingTokenModel.findOneAndUpdate(
+      { userId, Print_type },
+      {
+        access_token: tokenData.access_token, 
+        refresh_token: tokenData.refresh_token,
+        expires_in: new Date(Date.now() + tokenData.expires_in * 1000),
+        scope: tokenData.scope,
+        token_type: tokenData.token_type,
+      },
+      { upsert: true, new: true }
+    );
 
     // Redirect back to frontend
 
