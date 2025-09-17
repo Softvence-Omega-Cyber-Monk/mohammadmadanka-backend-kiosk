@@ -24,7 +24,9 @@ export async function fetchRemoteFile(url: string): Promise<Buffer> {
   }
 }
 // 🔹 Helper: merge fixed brand image + edited image into one A4 PDF
-async function createA4_Front_Brand(editedImg: string | Buffer): Promise<Buffer> {
+async function createA4_Front_Brand(
+  editedImg: string | Buffer
+): Promise<Buffer> {
   const A4_WIDTH = 595.28;
   const A4_HEIGHT = 841.89;
   const HALF_A4_HEIGHT = A4_HEIGHT / 2;
@@ -73,7 +75,6 @@ async function createA4_Front_Brand(editedImg: string | Buffer): Promise<Buffer>
   return Buffer.from(pdfBytes);
 }
 
-
 // 🔹 Helper: merge fixed Inside image + blank into one A4 PDF
 async function createA4_Inside(editedImg: string | Buffer): Promise<Buffer> {
   const A4_WIDTH = 595.28;
@@ -97,8 +98,7 @@ async function createA4_Inside(editedImg: string | Buffer): Promise<Buffer> {
   // Embed images
   const editedImage = await pdfDoc.embedJpg(editedImgBytes);
 
-
- // Draw edited image (bottom half)
+  // Draw edited image (bottom half)
   page.drawImage(editedImage, {
     x: A4_WIDTH,
     y: HALF_A4_HEIGHT,
@@ -184,22 +184,20 @@ async function convertToJpg(imgPathOrUrl: string): Promise<Buffer> {
   return sharp(imageBuffer).jpeg().toBuffer();
 }
 
-
-
-
-
-
 // 🔹 Create Epson Front print job
 export async function createFrontPrintJob(
   jobName: string,
   userId: string,
+  type: string,
   editedImgPathOrUrl: string,
   copies: number,
   printMode: "document" | "photo" = "document"
 ) {
   console.log("Creating print job:", jobName);
 
-  const accessToken = await getValidAccessToken(userId);
+  console.log("print type ", type);
+
+  const accessToken = await getValidAccessToken(userId, type);
   console.log(accessToken, "-------access token from service");
 
   // ✅ Step 1: Convert image to JPG
@@ -237,7 +235,6 @@ export async function createFrontPrintJob(
     }
   );
 
- 
   const jobData = await response.json();
   console.log(jobData, "-------job data from service");
 
@@ -251,19 +248,20 @@ export async function createFrontPrintJob(
   return { jobData, accessToken, EPSON_API_KEY };
 }
 
-
-
 // 🔹 Create Epson Front print job
 export async function createInsidePrintJob(
   jobName: string,
   userId: string,
+  type: string,
   editedImgPathOrUrl: string,
   copies: number,
   printMode: "document" | "photo" = "document"
 ) {
   console.log("Creating print job:", jobName);
 
-  const accessToken = await getValidAccessToken(userId);
+  console.log("print type ", type);
+
+  const accessToken = await getValidAccessToken(userId, type);
   console.log(accessToken, "-------access token from service");
 
   // ✅ Step 1: Convert image to JPG
@@ -301,7 +299,6 @@ export async function createInsidePrintJob(
     }
   );
 
- 
   const jobData = await response.json();
   console.log(jobData, "-------job data from service");
 
@@ -314,14 +311,6 @@ export async function createInsidePrintJob(
 
   return { jobData, accessToken, EPSON_API_KEY };
 }
-
-
-
-
-
-
-
-
 
 // 🔹 Upload merged PDF buffer to Epson
 export async function uploadFileToEpson(
@@ -355,8 +344,11 @@ export async function uploadFileToEpson(
   console.log("✅ Epson upload successful");
 }
 
-export async function isAccessTokenValid(userId: string) {
-  let tokenDoc = await PrintingTokenModel.findOne({ userId: userId });
+export async function isAccessTokenValid(userId: string, type: string) {
+  let tokenDoc = await PrintingTokenModel.findOne({
+    userId: userId,
+    Print_type: type,
+  });
 
   if (!tokenDoc) return false;
 
@@ -400,37 +392,3 @@ export async function isAccessTokenValid(userId: string) {
     }
   }
 }
-
-// export const printJobService = async (jobId: string,userId:string) => {
-
-//   console.log('from service of printing ',jobId,userId,'------------------')
-
-//   const token = await PrintingTokenModel.findOne({userId:userId});
-
-//   try {
-//     const EPSON_API_KEY = process.env.EPSON_API_KEY!;
-//     const deviceToken = token?.access_token;
-
-//     const response = await axios.post(
-//       `https://api.epsonconnect.com/api/2/printing/jobs/${jobId}/print`,
-//       {}, // empty body
-//       {
-//         headers: {
-//           "Content-Type": "application/json",
-//           Authorization: `Bearer ${deviceToken}`,
-//           "x-api-key": EPSON_API_KEY,
-//         },
-//       }
-//     );
-
-//     console.log('finished prinsting',response.data )
-
-//     return response.data;
-//   } catch (error: any) {
-//     console.error(
-//       "Printing Service Error:",
-//       error.response?.data || error.message
-//     );
-//     throw new Error("Printing failed");
-//   }
-// };
