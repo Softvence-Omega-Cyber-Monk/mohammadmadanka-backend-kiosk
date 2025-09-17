@@ -17,7 +17,10 @@ import { userRole } from "./constents";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import { uploadImgToCloudinary, uploadMultipleImages } from "./util/uploadImgToCloudinary";
+import {
+  uploadImgToCloudinary,
+  uploadMultipleImages,
+} from "./util/uploadImgToCloudinary";
 import { getIO } from "./socket";
 
 app.use(express.json());
@@ -40,8 +43,6 @@ app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
 // });
 
 // middleWares
-
-
 
 // app.use(cors());
 app.use(
@@ -75,12 +76,14 @@ app.get(
   catchAsync(async (req: Request, res: Response) => {
     const userId = req.params.userId as string;
     const userUniqueKey = req.query.userUniqueKey as string;
-    console.log("userUniqueKey from auth ", userUniqueKey);
+    const Print_type = req.query.type as string;
+
+    console.log("userUniqueKey and type  from auth ", Print_type, userUniqueKey);
 
     if (!process.env.REDIRECT_URI) {
       throw new Error("REDIRECT_URI is not defined in environment variables");
     }
-    const state = JSON.stringify({ userId, userUniqueKey });
+    const state = JSON.stringify({ userId, userUniqueKey, Print_type });
 
     const authUrl = `https://auth.epsonconnect.com/auth/authorize?response_type=code&client_id=${process.env.CLIENT_ID}&redirect_uri=${encodeURIComponent(
       process.env.REDIRECT_URI
@@ -95,10 +98,13 @@ app.get(
 app.get(
   "/api/epson/callback",
   catchAsync(async (req: Request, res: Response) => {
-    const {userId,userUniqueKey} = req.query.state ? JSON.parse(req.query.state as string) : {};
+    const { userId, userUniqueKey, Print_type } = req.query.state
+      ? JSON.parse(req.query.state as string)
+      : {};
     console.log("userId from callback ", userId);
     console.log("userUniqueKey from callback ", userUniqueKey);
-  
+    console.log("Print_type from callback ", Print_type);
+
     const code = req.query.code as string;
     if (!code) {
       return res.status(400).send("Missing code");
@@ -132,6 +138,7 @@ app.get(
     // Save to database
     await PrintingTokenModel.create({
       userId: userId,
+      Print_type: Print_type,
       access_token: tokenData.access_token,
       refresh_token: tokenData.refresh_token,
       expires_in: new Date(Date.now() + tokenData.expires_in * 1000),
@@ -144,7 +151,6 @@ app.get(
     res.redirect(`http://localhost:5173?shopId=${userUniqueKey}&auth=success`);
   })
 );
-
 
 // ============ QR UPLOAD + FILE SHARING ============
 const UPLOAD_DIR = path.join(__dirname, "..", "uploads");
@@ -188,7 +194,6 @@ app.post(
   })
 );
 
-
 // Fetch uploaded file by holeId
 app.get(
   "/api/file/:holeId",
@@ -201,7 +206,6 @@ app.get(
 
 // Serve uploaded files statically
 app.use("/uploads", express.static(UPLOAD_DIR));
-
 
 // route not found
 app.use(routeNotFound);

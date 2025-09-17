@@ -5,13 +5,16 @@ import sendResponse from "../../util/sendResponse";
 
 const create = catchAsync(async (req: Request, res: Response) => {
   const imgFile = req.file;
-  console.log(imgFile)
-  console.log(req.body)
+  console.log(imgFile);
+  console.log(req.body);
 
   if (!imgFile) {
     throw new Error("image file are required.");
   }
-  const result = await CategoryService.create(imgFile as Express.Multer.File,req.body);
+  const result = await CategoryService.create(
+    imgFile as Express.Multer.File,
+    req.body
+  );
   sendResponse(res, {
     statusCode: 201,
     success: true,
@@ -22,6 +25,7 @@ const create = catchAsync(async (req: Request, res: Response) => {
 
 const getAll = catchAsync(async (req: Request, res: Response) => {
   const result = await CategoryService.getAll();
+
   sendResponse(res, {
     statusCode: 200,
     success: true,
@@ -44,7 +48,7 @@ const getAllOccasion = catchAsync(async (req: Request, res: Response) => {
   const Cid = req.params.Cid || req.body.Cid || "";
   const result = await CategoryService.getAllOccasion(Cid);
   sendResponse(res, {
-    statusCode: 200, 
+    statusCode: 200,
     success: true,
     message: "Occasions retrieved successfully",
     data: result,
@@ -62,10 +66,20 @@ const getById = catchAsync(async (req: Request, res: Response) => {
 });
 
 const update = catchAsync(async (req: Request, res: Response) => {
+  console.log("update data ", req.body);
 
-  console.log('update data ',req.body)
-  const result = await CategoryService.update(req.params.id, req.body);
+  const { serialNumber, ...data } = req.body;
 
+  const numberSerialNumber = serialNumber ? Number(serialNumber) : undefined;
+
+  const payload = {
+    ...data,
+    ...(numberSerialNumber !== undefined && {
+      serialNumber: numberSerialNumber,
+    }),
+  };
+
+  const result = await CategoryService.update(req.params.id, payload);
 
   sendResponse(res, {
     statusCode: 200,
@@ -77,7 +91,7 @@ const update = catchAsync(async (req: Request, res: Response) => {
 
 const softDelete = catchAsync(async (req: Request, res: Response) => {
   const id = req.params.id || req.body.id;
-const result = await CategoryService.softDelete(req.params.id);
+  const result = await CategoryService.softDelete(req.params.id);
   sendResponse(res, {
     statusCode: 200,
     success: true,
