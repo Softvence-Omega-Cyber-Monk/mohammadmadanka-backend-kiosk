@@ -1,6 +1,5 @@
 // src/modules/printing/printing.service.ts
 import fs from "fs";
-import path from "path";
 import axios from "axios";
 import { degrees, PDFDocument } from "pdf-lib";
 import { getValidAccessToken } from "./printing.utils";
@@ -25,7 +24,9 @@ export async function fetchRemoteFile(url: string): Promise<Buffer> {
   }
 }
 // 🔹 Helper: merge fixed brand image + edited image into one A4 PDF
-async function createA4WithTwoA5(editedImg: string | Buffer): Promise<Buffer> {
+async function createA4_Front_Brand(
+  editedImg: string | Buffer
+): Promise<Buffer> {
   const A4_WIDTH = 595.28;
   const A4_HEIGHT = 841.89;
   const HALF_A4_HEIGHT = A4_HEIGHT / 2;
@@ -69,6 +70,44 @@ async function createA4WithTwoA5(editedImg: string | Buffer): Promise<Buffer> {
   });
 
   // Draw edited image (bottom half)
+
+  const pdfBytes = await pdfDoc.save();
+  return Buffer.from(pdfBytes);
+}
+
+// 🔹 Helper: merge fixed Inside image + blank into one A4 PDF
+async function createA4_Inside(editedImg: string | Buffer): Promise<Buffer> {
+  const A4_WIDTH = 595.28;
+  const A4_HEIGHT = 841.89;
+  const HALF_A4_HEIGHT = A4_HEIGHT / 2;
+
+  const pdfDoc = await PDFDocument.create();
+  const page = pdfDoc.addPage([A4_WIDTH, A4_HEIGHT]);
+
+  // ✅ Edited image (Buffer | URL | local path)
+  let editedImgBytes: Buffer;
+  if (Buffer.isBuffer(editedImg)) {
+    // Already a buffer (like our JPG conversion step)
+    editedImgBytes = editedImg;
+  } else if (editedImg.startsWith("http")) {
+    editedImgBytes = await fetchRemoteFile(editedImg);
+  } else {
+    editedImgBytes = fs.readFileSync(editedImg);
+  }
+
+  // Embed images
+  const editedImage = await pdfDoc.embedJpg(editedImgBytes);
+
+  // Draw edited image (bottom half)
+  page.drawImage(editedImage, {
+    x: A4_WIDTH,
+    y: HALF_A4_HEIGHT,
+    width: HALF_A4_HEIGHT,
+    height: A4_WIDTH,
+    rotate: degrees(90),
+  });
+
+  // half blank
 
   const pdfBytes = await pdfDoc.save();
   return Buffer.from(pdfBytes);
@@ -145,24 +184,27 @@ async function convertToJpg(imgPathOrUrl: string): Promise<Buffer> {
   return sharp(imageBuffer).jpeg().toBuffer();
 }
 
-// 🔹 Create Epson print job
-export async function createPrintJob(
+// 🔹 Create Epson Front print job
+export async function createFrontPrintJob(
   jobName: string,
   userId: string,
+  type: string,
   editedImgPathOrUrl: string,
-  insideImage?: string,
+  copies: number,
   printMode: "document" | "photo" = "document"
 ) {
   console.log("Creating print job:", jobName);
 
-  const accessToken = await getValidAccessToken(userId);
+  console.log("print type ", type);
+
+  const accessToken = await getValidAccessToken(userId, type);
   console.log(accessToken, "-------access token from service");
 
   // ✅ Step 1: Convert image to JPG
   const jpgBuffer = await convertToJpg(editedImgPathOrUrl);
 
   // ✅ Step 2: Create merged A4 PDF using JPG buffer
-  const pdfBuffer = await createA4WithTwoA5(jpgBuffer);
+  const pdfBuffer = await createA4_Front_Brand(jpgBuffer);
 
   // tamim
 
@@ -193,33 +235,6 @@ export async function createPrintJob(
     }
   );
 
-  // soyaib
-
-  // const response = await fetch(
-  //   "https://api.epsonconnect.com/api/2/printing/jobs",
-  //   {
-  //     method: "POST",
-  //     headers: {
-  //       Authorization: `Bearer ${accessToken}`,
-  //       "x-api-key": EPSON_API_KEY as string,
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: JSON.stringify({
-  //       jobName,
-  //       printMode,
-  //       printSettings: {
-  //         paperSize: "ps_a4",
-  //         paperType: "pt_plainpaper",
-  //         borderless: false,
-  //         printQuality: "normal",
-  //         paperSource: "rear", // tray
-  //         colorMode: "color",
-  //         copies: 1,
-  //       },
-  //     }),
-  //   }
-  // );
-
   const jobData = await response.json();
   console.log(jobData, "-------job data from service");
 
@@ -229,6 +244,70 @@ export async function createPrintJob(
 
   // ✅ Step 4: Upload PDF
   await uploadFileToEpson(jobData.uploadUri, pdfBuffer, "combined.pdf");
+
+  return { jobData, accessToken, EPSON_API_KEY };
+}
+
+// 🔹 Create Epson Front print job
+export async function createInsidePrintJob(
+  jobName: string,
+  userId: string,
+  type: string,
+  editedImgPathOrUrl: string,
+  copies: number,
+  printMode: "document" | "photo" = "document"
+) {
+  console.log("Creating print job:", jobName);
+
+  console.log("print type ", type);
+
+  const accessToken = await getValidAccessToken(userId, type);
+  console.log(accessToken, "-------access token from service");
+
+  // ✅ Step 1: Convert image to JPG
+  const jpgBuffer = await convertToJpg(editedImgPathOrUrl);
+
+  // ✅ Step 2: Create merged A4 PDF using JPG buffer
+  const pdfBuffer = await createA4_Inside(jpgBuffer);
+
+  // tamim
+
+  // ✅ Step 3: Create Epson job
+  const response = await fetch(
+    "https://api.epsonconnect.com/api/2/printing/jobs",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "x-api-key": EPSON_API_KEY as string,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        jobName: "Sample Job",
+        printMode: "document",
+        printSettings: {
+          paperSize: "ps_a4",
+          paperType: "pt_plainpaper",
+          borderless: false,
+          printQuality: "normal",
+          paperSource: "front2",
+          colorMode: "color",
+          doubleSided: "none",
+          copies: 1,
+        },
+      }),
+    }
+  );
+
+  const jobData = await response.json();
+  console.log(jobData, "-------job data from service");
+
+  if (!jobData.uploadUri || !jobData.jobId) {
+    throw new Error("Failed to create print job");
+  }
+
+  // ✅ Step 4: Upload PDF
+  await uploadFileToEpson(jobData.uploadUri, pdfBuffer, "Inside.pdf");
 
   return { jobData, accessToken, EPSON_API_KEY };
 }
@@ -265,8 +344,11 @@ export async function uploadFileToEpson(
   console.log("✅ Epson upload successful");
 }
 
-export async function isAccessTokenValid(userId: string , type: string) {
-  let tokenDoc = await PrintingTokenModel.findOne({ userId: userId , Print_type: type});
+export async function isAccessTokenValid(userId: string, type: string) {
+  let tokenDoc = await PrintingTokenModel.findOne({
+    userId: userId,
+    Print_type: type,
+  });
 
   if (!tokenDoc) return false;
 
@@ -310,4 +392,3 @@ export async function isAccessTokenValid(userId: string , type: string) {
     }
   }
 }
-
