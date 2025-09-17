@@ -11,7 +11,7 @@ import {
 
 export const printFrontImage = catchAsync(
   async (req: Request, res: Response) => {
-    const { frontImage, copies, jobName, userId ,type } = req.body;
+    const { frontImage, copies, jobName, userId, type } = req.body;
 
     console.log(frontImage, jobName, copies, userId, "-------from controller");
 
@@ -41,7 +41,7 @@ export const printFrontImage = catchAsync(
 
 export const printInsideImage = catchAsync(
   async (req: Request, res: Response) => {
-    const { insideImage, copies, jobName, userId ,type} = req.body;
+    const { insideImage, copies, jobName, userId, type } = req.body;
 
     console.log(insideImage, jobName, copies, userId, "-------from controller");
 
@@ -85,14 +85,14 @@ export const printInsideImage = catchAsync(
 // });
 
 export const printGift = catchAsync(async (req: Request, res: Response) => {
-  const { giftImage, copies, jobName, userId } = req.body;
+  const { giftImage, copies, jobName, userId ,type } = req.body;
 
   console.log(giftImage, jobName, copies, userId, "-------from controller");
 
   if (!jobName || !giftImage) {
     return res.status(400).send({ error: "jobName and file are required" });
   }
-  const jobData = await createGiftPrintJob(jobName, userId,giftImage, copies);
+  const jobData = await createGiftPrintJob(jobName, userId, giftImage, copies,type);
 
   console.log(jobData, "-------job data from controller");
 
@@ -106,17 +106,17 @@ export const printGift = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-
-export const checkAccessToken = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.params.userId;
-    const type = req.query.type;
-  try {
-    const valid = await isAccessTokenValid(userId,type);
-    // console.log("Token valid:", valid);
-    return res.json({ valid });
-  } catch (err) {
-    console.error("Error checking Epson token:", err);
-    return res.status(500).json({ valid: false, error: "Server error" });
+export const checkAccessToken = catchAsync(
+  async (req: Request, res: Response) => {
+    const userId = req.params.userId;
+    const type = req.query.type as string
+    try {
+      const valid = await isAccessTokenValid(userId, type);
+      // console.log("Token valid:", valid);
+      return res.json({ valid });
+    } catch (err) {
+      console.error("Error checking Epson token:", err);
+      return res.status(500).json({ valid: false, error: "Server error" });
+    }
   }
-
-})
+);
