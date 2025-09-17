@@ -390,7 +390,7 @@ export async function createGiftPrintJob(
           paperSize: "ps_a4",
           paperType: "pt_photopaper",
           borderless: false,
-          printQuality: "normal",
+          printQuality: "high",
           paperSource: "rear",
           colorMode: "color",
           doubleSided: "none",
