@@ -8,26 +8,47 @@ import { UserModel } from "../user/user.model";
 import { ShopinventoryModal } from "../shopinventory/shopinventory.model";
 
 const create = async (imgFile: Express.Multer.File, data: Category) => {
+  // 1️⃣ Upload image to Cloudinary
   const result = await uploadImgToCloudinary(imgFile.filename, imgFile.path);
-
-  console.log(result);
-
   if (!result.secure_url) {
     throw new Error("Image upload failed.");
   }
 
+  // 2️⃣ Check if category with same name exists and is not deleted
+  const isExist = await CategoryModel.findOne({
+    name: data.name,
+    isDeleted: false,
+  });
+  if (isExist) {
+    throw new Error("The category already exists");
+  }
+
+  // 3️⃣ Determine serialNumber automatically if not provided
+  let serialNumber = data.serialNumber;
+  if (!serialNumber) {
+    const lastCategory = await CategoryModel.findOne({}).sort({
+      serialNumber: -1,
+    });
+    serialNumber = lastCategory ? lastCategory.serialNumber + 1 : 1;
+  }
+
+  // 4️⃣ Create category
   const category = await CategoryModel.create({
     ...data,
-    iconUrl: result.secure_url, // attach cloudinary URL
+    iconUrl: result.secure_url,
     public_id: result.public_id,
+    serialNumber,
+    occasions: data.occasions || [],
   });
+
   return category;
 };
 
 const getAll = async () => {
-  const categorys = await CategoryModel.find({ isDeleted: false }).populate(
-    "occasions"
-  );
+  const categorys = await CategoryModel.find({ isDeleted: false })
+    .sort({ serialNumber: 1 })
+    .populate("occasions");
+
   return categorys;
 };
 
@@ -77,11 +98,9 @@ const softDelete = async (id: string) => {
   }
 
   // 2️⃣ Soft delete the category
-  const updatedCategory = await CategoryModel.findByIdAndDelete(
-    id,
-    { isDeleted: true },
- 
-  );
+  const updatedCategory = await CategoryModel.findByIdAndDelete(id, {
+    isDeleted: true,
+  });
 
   if (!updatedCategory) {
     throw new Error("Category soft delete failed.");
