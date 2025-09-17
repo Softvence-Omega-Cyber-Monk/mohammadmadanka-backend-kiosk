@@ -2,22 +2,44 @@ import { Request, Response } from "express";
 import catchAsync from "../../util/catchAsync";
 import {
 
-  createPrintJob,
+  createFrontPrintJob,
+  createInsidePrintJob,
   isAccessTokenValid,
   // printJobService,
   uploadFileToEpson,
 } from "./printing.service";
 
+export const printFrontImage = catchAsync(async (req: Request, res: Response) => {
+  const { frontImage, copies, jobName, userId } = req.body;
 
-export const printDocument = catchAsync(async (req: Request, res: Response) => {
-  const { fileUrl,copies, jobName, userId } = req.body;
+  console.log(frontImage, jobName, copies, userId, "-------from controller");
 
-  console.log(fileUrl, jobName, copies, userId, "-------from controller");
-
-  if (!jobName || !fileUrl) {
+  if (!jobName || !frontImage) {
     return res.status(400).send({ error: "jobName and file are required" });
   }
-  const jobData = await createPrintJob(jobName, userId,fileUrl, copies);
+  const jobData = await createFrontPrintJob(jobName, userId,frontImage, copies);
+
+  console.log(jobData, "-------job data from controller");
+
+  // await uploadFileToEpson(jobData.jobData.uploadUri, fileUrl);
+
+  res.status(200).send({
+    message: "Print job created and file uploaded successfully",
+    jobId: jobData.jobData.jobId,
+    PrinterAccessToken: jobData.accessToken,
+    EPSON_API_KEY: jobData.EPSON_API_KEY,
+  });
+});
+
+export const printInsideImage = catchAsync(async (req: Request, res: Response) => {
+  const { insideImage, copies, jobName, userId } = req.body;
+
+  console.log(insideImage, jobName, copies, userId, "-------from controller");
+
+  if (!jobName || !insideImage) {
+    return res.status(400).send({ error: "jobName and file are required" });
+  }
+  const jobData = await createInsidePrintJob(jobName, userId,insideImage, copies);
 
   console.log(jobData, "-------job data from controller");
 
