@@ -1,13 +1,16 @@
 import express from 'express';
 import authController from './auth.controller';
 import validator from '../../middleware/validator';
-import { logInValidator } from './auth.validator';
+import { logInValidator, weblogInValidator } from './auth.validator';
 import auth from '../../middleware/auth';
 import { userRole } from '../../constents';
 
 const authRouter = express.Router();
 
 authRouter.post('/logIn', validator(logInValidator), authController.logIn);
+
+authRouter.post('/weblogIn', validator(weblogInValidator), authController.weblogin);
+
 
 authRouter.post(
   '/changePassword',

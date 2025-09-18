@@ -6,3 +6,11 @@ export const logInValidator = z.object({
     password: z.string().optional(),
   }),
 });
+
+
+export const weblogInValidator = z.object({
+  body: z.object({
+    email: z.string().email(),
+    password: z.string().optional(),
+  }),
+});

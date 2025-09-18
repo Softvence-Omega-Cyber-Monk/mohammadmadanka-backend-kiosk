@@ -1,7 +1,7 @@
 
 import { TUserRole } from '../../constents';
 
-export type TUser = {
+export type TWebUser = {
   name: string;
   phone: string;
   email: string;
