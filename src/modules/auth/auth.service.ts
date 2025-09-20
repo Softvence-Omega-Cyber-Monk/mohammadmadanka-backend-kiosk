@@ -6,6 +6,7 @@ import { TUser } from "../user/user.interface";
 import { createAccessToken, createRefreshToken } from "./auth.utill";
 import config from "../../config";
 import jwt, { JwtPayload } from "jsonwebtoken";
+import { WebUserModel } from "../webuser/webuser.model";
 
 const login = async (payload: { shopId: string; password: string }) => {
   if (!payload.shopId) {
@@ -70,6 +71,68 @@ const login = async (payload: { shopId: string; password: string }) => {
     refreshToken,
   };
 };
+
+const weblogin = async (payload: { email: string; password: string }) => {
+  if (!payload.email) {
+    throw new Error("Email ID is required!");
+  }
+
+  if (!payload.password) {
+    throw new Error("Password is required!");
+  }
+
+  // Find user by shopId
+  const user: any = await WebUserModel.findOne({
+    email: payload.email,
+  }).select("+password");
+  console.log("user ", user);
+
+  // Check if user exists
+  if (!user) {
+    throw new Error("User not found!");
+  }
+
+  // Block deleted users
+  if (user.isDeleted) {
+    throw new Error("User is deleted!");
+  }
+
+  // Check password
+  const isPasswordMatched = await bcrypt.compare(
+    payload.password,
+    user.password
+  );
+  if (!isPasswordMatched) {
+    throw new Error("Password not matched!");
+  }
+
+  // Create Tokens
+  const jwtPayload = {
+    userId: user._id.toString(),
+    role: user.role,
+    email: user.email,
+  };
+  console.log(jwtPayload);
+
+  const accessToken = createAccessToken(
+    jwtPayload,
+    config.jwt_token_secret as string,
+    parseInt(config.token_expairsIn as string)
+  );
+
+  const refreshToken = createRefreshToken(
+    jwtPayload,
+    config.jwt_refresh_Token_secret as string,
+    parseInt(config.rifresh_expairsIn as string)
+  );
+
+  return {
+    accessToken,
+    refreshToken,
+  };
+};
+
+
 
 const changePassword = async (
   authorizationToken: string,
@@ -236,7 +299,7 @@ const refreshToken = async (refreshToken: string) => {
 
 const authServices = {
   login,
-
+  weblogin,
   changePassword,
   refreshToken,
   // forgetPassword,

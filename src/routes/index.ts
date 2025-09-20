@@ -17,6 +17,7 @@ import stickerRoutes from "../modules/sticker/sticker.routes";
 import bannerRoutes from "../modules/banner/banner.routes";
 import QRrouter from "../modules/template/QrcodeImageUpload";
 import printHistoryRoutes from "../modules/PrintHistory/printHistory.routes";
+import webuserRoutes from "../modules/webuser/webuser.routes";
 
 const Routes = express.Router();
 
@@ -28,6 +29,10 @@ const moduleRouts = [
   {
     path: "/users",
     router: userRoutes,
+  },
+    {
+    path: "/webusers",
+    router: webuserRoutes,
   },
   {
     path: "/templates",

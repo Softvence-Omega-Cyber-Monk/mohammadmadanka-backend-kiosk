@@ -21,6 +21,30 @@ const logIn = catchAsync(async (req, res) => {
   });
 });
 
+
+const weblogin = catchAsync(async (req, res) => {
+  const { email, password } = req.body;
+  console.log('body in controlller ',email, password);
+  const result = await authServices.weblogin({ email, password });
+  const { accessToken, refreshToken } = result;
+
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production", // true in production (HTTPS)
+    sameSite: "strict", // or 'lax' depending on cross-site needs
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  });
+
+  res.status(200).json({
+    message: "Log In Successful",
+    accessToken,
+    refreshToken,
+  });
+});
+
+
+
+
 const changePassword = catchAsync(async (req, res) => {
   const { oldPassword, newPassword } = req.body;
   const authorizationToken = req.headers?.authorization as string;
@@ -82,7 +106,7 @@ const refreshToken = catchAsync(async (req, res) => {
 
 const authController = {
   logIn,
-
+  weblogin,
   changePassword,
   refreshToken,
   // forgetPassword,

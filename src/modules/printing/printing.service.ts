@@ -414,16 +414,6 @@ export async function createGiftPrintJob(
   return { jobData, accessToken, EPSON_API_KEY };
 }
 
-
-
-
-
-
-
-
-
-
-
 // 🔹 Upload merged PDF buffer to Epson
 export async function uploadFileToEpson(
   uploadUri: string,
