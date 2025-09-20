@@ -11,6 +11,7 @@ const WebUserSchema = new Schema<TWebUser>(
     email: { type: String, required: true, unique: true },
     password: { type: String, required: false },
     role: { type: String, enum: ['webuser'], default: userRole.webuser },
+    address: { type: String, required: false },
     isDeleted: { type: Boolean, default: false },
     isBlocked: { type: Boolean, default: false },
     passwordChangeTime: { type: Date },

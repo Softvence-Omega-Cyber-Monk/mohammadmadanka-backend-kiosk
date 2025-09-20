@@ -6,11 +6,9 @@ export type TWebUser = {
   phone: string;
   email: string;
   password: string;
-
-
+  address?: string;  
   role?: TUserRole;
   isDeleted?: string;
   isBlocked?: boolean;
-
   passwordChangeTime?: Date;
 };
