@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 // src/modules/printing/printing.service.ts
 import fs from "fs";
 import axios from "axios";
@@ -124,7 +125,10 @@ async function createA4_Inside(editedImg: string | Buffer): Promise<Buffer> {
 }
 
 // 🔹 Helper: merge fixed Inside image + blank into one A4 PDF
-async function createA4_Gift(editedImg: string | Buffer, printSize:PrintSize): Promise<Buffer> {
+async function createA4_Gift(
+  editedImg: string | Buffer,
+  printSize: PrintSize
+): Promise<Buffer> {
   const A4_WIDTH = 595.28;
   const A4_HEIGHT = 841.89;
   const HALF_A4_HEIGHT = A4_HEIGHT / 2;
@@ -145,85 +149,32 @@ async function createA4_Gift(editedImg: string | Buffer, printSize:PrintSize): P
 
   // Embed images
   const editedImage = await pdfDoc.embedJpg(editedImgBytes);
-  
 
-  if(printSize.rotation==0)
-  {
-    page.drawImage(editedImage, {  
-    x: printSize.x,
-    y: printSize.y,
-    width: printSize.w,
-    height: printSize.h,
-  });
-  }
-  else{
+  const DPI=300;
+
+
+  if (printSize.rotation == 0) {
     page.drawImage(editedImage, {
-    x: printSize.x+ printSize.h,
-    y: printSize.y,
-    width: printSize.w,
-    height: printSize.h,
-    rotate: degrees(printSize.rotation),
-
-  });
+      x: (printSize.x * (72 / DPI)),
+      y: printSize.y * (72 / DPI),
+      width: printSize.w * (72 / DPI),
+      height: printSize.h * (72 / DPI),
+    });
+  } else {
+    page.drawImage(editedImage, {
+      x: printSize.x * (72 / DPI) + printSize.h * (72 / DPI),
+      y: printSize.y* (72 / DPI),
+      width: printSize.w *  (72 / DPI),
+      height: printSize.h * (72 / DPI),
+      rotate: degrees(printSize.rotation),
+    });
   }
-
 
   // half blank
 
   const pdfBytes = await pdfDoc.save();
   return Buffer.from(pdfBytes);
 }
-
-// // 🔹 Helper: merge fixed brand image + edited image into one A4 PDF
-// async function createA4WithInside(editedImg: string | Buffer): Promise<Buffer> {
-//   const A4_WIDTH = 595.28;
-//   const A4_HEIGHT = 841.89;
-//   const HALF_A4_HEIGHT = A4_HEIGHT / 2;
-
-//   const pdfDoc = await PDFDocument.create();
-//   const page = pdfDoc.addPage([A4_WIDTH, A4_HEIGHT]);
-
-//   // ✅ Edited image (Buffer | URL | local path)
-//   let editedImgBytes: Buffer;
-//   if (Buffer.isBuffer(editedImg)) {
-//     // Already a buffer (like our JPG conversion step)
-//     editedImgBytes = editedImg;
-//   } else if (editedImg.startsWith("http")) {
-//     editedImgBytes = await fetchRemoteFile(editedImg);
-//   } else {
-//     editedImgBytes = fs.readFileSync(editedImg);
-//   }
-
-//   // Embed images
-//   const editedImage = await pdfDoc.embedJpg(editedImgBytes);
-
-//   // Draw brand image (top half)
-//   page.drawImage(editedImage, {
-//     x: A4_WIDTH,
-//     y: 0,
-//     width: HALF_A4_HEIGHT,
-//     height: A4_WIDTH,
-//     rotate: degrees(90),
-//   });
-
-//   // Draw edited image (bottom half)
-
-//   const pdfBytes = await pdfDoc.save();
-//   return Buffer.from(pdfBytes);
-// }
-
-// async function mergePdfBuffers(buffers: Buffer[]): Promise<Buffer> {
-//   const mergedPdf = await PDFDocument.create();
-
-//   for (const buffer of buffers) {
-//     const pdf = await PDFDocument.load(buffer);
-//     const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
-//     copiedPages.forEach((p) => mergedPdf.addPage(p));
-//   }
-
-//   const mergedBytes = await mergedPdf.save();
-//   return Buffer.from(mergedBytes);
-// }
 
 /**
  * Convert PNG (or any image) to JPG buffer
@@ -318,7 +269,7 @@ export async function createFrontPrintJob(
           paperSource: "rear",
           colorMode: "color",
           doubleSided: "none",
-          copies: 1,
+          copies: copies,
         },
       }),
     }
@@ -376,13 +327,13 @@ export async function createInsidePrintJob(
         printMode: "document",
         printSettings: {
           paperSize: "ps_a4",
-          paperType: "pt_plainpaper",
+          paperType: "pt_photopaper",
           borderless: false,
           printQuality: "normal",
-          paperSource: "front2",
+          paperSource: "rear",
           colorMode: "color",
           doubleSided: "none",
-          copies: 1,
+          copies: copies,
         },
       }),
     }
@@ -403,22 +354,15 @@ export async function createInsidePrintJob(
 
 // 🔹 Create Epson Front print job
 export async function createGiftPrintJob(
-  jobName: string,
-  userId: string,
-  type: string,
-  editedImgPathOrUrl: string,
-  copies: number,
-  categoryId: string,
-  templateId: string,
-  printMode: "document" | "photo" = "document"
+  giftImage: string, copies:number, jobName: string, userId : string ,type : string, categoryId : string, templateId: string
 ) {
-  console.log("Creating print job:", jobName);
+  // console.log("from sercice:", { giftImage, copies, jobName, userId, type });
 
   const accessToken = await getValidAccessToken(userId, type);
   console.log(accessToken, "-------access token from service");
 
   // ✅ Step 1: Convert image to JPG
-  const jpgBuffer = await convertToJpg(editedImgPathOrUrl);
+  const jpgBuffer = await convertToJpg(giftImage);
 
   // ✅ Step 2: Create merged A4 PDF using JPG buffer
   const printSize = await buildPrintSize(templateId, categoryId);
@@ -437,17 +381,16 @@ export async function createGiftPrintJob(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        jobName: "Sample Job",
+        jobName: "JobName01",
         printMode: "document",
         printSettings: {
           paperSize: "ps_a4",
-          paperType: "pt_photopaper",
+          paperType: "pt_plainpaper",
           borderless: false,
           printQuality: "high",
           paperSource: "rear",
           colorMode: "color",
-          doubleSided: "none",
-          copies: 1,
+          copies: copies,
         },
       }),
     }

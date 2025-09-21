@@ -69,21 +69,6 @@ export const printInsideImage = catchAsync(
   }
 );
 
-// export const checkAccessToken = catchAsync(
-//   async (req: Request, res: Response) => {
-//     const userId = req.params.userId;
-//     const type = req.query.type;
-
-//   // await uploadFileToEpson(jobData.jobData.uploadUri, fileUrl);
-
-//   res.status(200).send({
-//     message: "Print job created and file uploaded successfully",
-//     jobId: jobData.jobData.jobId,
-//     PrinterAccessToken: jobData.accessToken,
-//     EPSON_API_KEY: jobData.EPSON_API_KEY,
-//   });
-// });
-
 export const printGift = catchAsync(async (req: Request, res: Response) => {
   const { giftImage, copies, jobName, userId ,type, categoryId, templateId} = req.body;
 
@@ -92,7 +77,7 @@ export const printGift = catchAsync(async (req: Request, res: Response) => {
   if (!jobName || !giftImage) {
     return res.status(400).send({ error: "jobName and file are required" });
   }
-  const jobData = await createGiftPrintJob(jobName, userId, giftImage, copies, type, categoryId, templateId);
+  const jobData = await createGiftPrintJob(giftImage, copies, jobName, userId ,type, categoryId, templateId);
 
   console.log(jobData, "-------job data from controller");
 
@@ -109,7 +94,7 @@ export const printGift = catchAsync(async (req: Request, res: Response) => {
 export const checkAccessToken = catchAsync(
   async (req: Request, res: Response) => {
     const userId = req.params.userId;
-    const type = req.query.type as string
+    const type = req.query.type as string;
     try {
       const valid = await isAccessTokenValid(userId, type);
       // console.log("Token valid:", valid);
