@@ -58,14 +58,16 @@ const TemplateSchema = new Schema(
           ref: "Occasion",
 
           required: false },
-    
-
     tags: { type: [String], required: true },
     isPersonalizable: { type: Boolean, required: true, default: true },
     rudeContent: { type: Boolean, required: true, default: false },
     price: { type: Number, required: true },
     holesInfo: { type: [HolesInfoSchema], required: false },
     aspectRatio: { type: Number, require: true },
+    sizeInPixel: {
+      h: { type: Number, default: 0,   required: false},
+      w: { type: Number, default: 0 ,  required: false},
+    },
     isDeleted: { type: Boolean, default: false },
   },
   {
