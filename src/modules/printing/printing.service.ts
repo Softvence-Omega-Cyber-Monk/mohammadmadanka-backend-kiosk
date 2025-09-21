@@ -150,19 +150,22 @@ async function createA4_Gift(
   // Embed images
   const editedImage = await pdfDoc.embedJpg(editedImgBytes);
 
+  const DPI=300;
+
+
   if (printSize.rotation == 0) {
     page.drawImage(editedImage, {
-      x: printSize.x,
-      y: printSize.y,
-      width: printSize.w,
-      height: printSize.h,
+      x: (printSize.x * (72 / DPI)),
+      y: printSize.y * (72 / DPI),
+      width: printSize.w * (72 / DPI),
+      height: printSize.h * (72 / DPI),
     });
   } else {
     page.drawImage(editedImage, {
-      x: printSize.x + printSize.h,
-      y: printSize.y,
-      width: printSize.w,
-      height: printSize.h,
+      x: printSize.x * (72 / DPI) + printSize.h * (72 / DPI),
+      y: printSize.y* (72 / DPI),
+      width: printSize.w *  (72 / DPI),
+      height: printSize.h * (72 / DPI),
       rotate: degrees(printSize.rotation),
     });
   }
@@ -351,13 +354,7 @@ export async function createInsidePrintJob(
 
 // 🔹 Create Epson Front print job
 export async function createGiftPrintJob(
-  giftImage: string,
-  copies: number,
-  jobName: string,
-  userId: string,
-  type: string,
-  categoryId: string,
-  templateId: string
+  giftImage: string, copies:number, jobName: string, userId : string ,type : string, categoryId : string, templateId: string
 ) {
   // console.log("from sercice:", { giftImage, copies, jobName, userId, type });
 

@@ -77,7 +77,7 @@ export const printGift = catchAsync(async (req: Request, res: Response) => {
   if (!jobName || !giftImage) {
     return res.status(400).send({ error: "jobName and file are required" });
   }
-  const jobData = await createGiftPrintJob(jobName, userId, giftImage, copies, type, categoryId, templateId);
+  const jobData = await createGiftPrintJob(giftImage, copies, jobName, userId ,type, categoryId, templateId);
 
   console.log(jobData, "-------job data from controller");
 
