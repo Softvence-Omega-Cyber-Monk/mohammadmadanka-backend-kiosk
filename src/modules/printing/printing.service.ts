@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 // src/modules/printing/printing.service.ts
 import fs from "fs";
 import axios from "axios";
