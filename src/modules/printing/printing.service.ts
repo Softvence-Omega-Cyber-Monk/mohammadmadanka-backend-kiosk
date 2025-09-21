@@ -150,12 +150,11 @@ async function createA4_Gift(
   // Embed images
   const editedImage = await pdfDoc.embedJpg(editedImgBytes);
 
-  const DPI=300;
-
+  const DPI = 300;
 
   if (printSize.rotation == 0) {
     page.drawImage(editedImage, {
-      x: (printSize.x * (72 / DPI)),
+      x: printSize.x * (72 / DPI),
       y: printSize.y * (72 / DPI),
       width: printSize.w * (72 / DPI),
       height: printSize.h * (72 / DPI),
@@ -163,8 +162,8 @@ async function createA4_Gift(
   } else {
     page.drawImage(editedImage, {
       x: printSize.x * (72 / DPI) + printSize.h * (72 / DPI),
-      y: printSize.y* (72 / DPI),
-      width: printSize.w *  (72 / DPI),
+      y: printSize.y * (72 / DPI),
+      width: printSize.w * (72 / DPI),
       height: printSize.h * (72 / DPI),
       rotate: degrees(printSize.rotation),
     });
@@ -264,7 +263,7 @@ export async function createFrontPrintJob(
         printSettings: {
           paperSize: "ps_a4",
           paperType: "pt_photopaper",
-          borderless: false,
+          borderless: true,
           printQuality: "normal",
           paperSource: "rear",
           colorMode: "color",
@@ -328,12 +327,18 @@ export async function createInsidePrintJob(
         printSettings: {
           paperSize: "ps_a4",
           paperType: "pt_photopaper",
-          borderless: false,
+          borderless: false, // ❌ keep false since we want margins
           printQuality: "normal",
-          paperSource: "rear",
+          paperSource: "front2",
           colorMode: "color",
           doubleSided: "none",
           copies: copies,
+          margin: {
+            top: 20,
+            bottom: 20,
+            left: 20,
+            right: 20,
+          },
         },
       }),
     }
@@ -354,7 +359,13 @@ export async function createInsidePrintJob(
 
 // 🔹 Create Epson Front print job
 export async function createGiftPrintJob(
-  giftImage: string, copies:number, jobName: string, userId : string ,type : string, categoryId : string, templateId: string
+  giftImage: string,
+  copies: number,
+  jobName: string,
+  userId: string,
+  type: string,
+  categoryId: string,
+  templateId: string
 ) {
   // console.log("from sercice:", { giftImage, copies, jobName, userId, type });
 
@@ -385,7 +396,7 @@ export async function createGiftPrintJob(
         printMode: "document",
         printSettings: {
           paperSize: "ps_a4",
-          paperType: "pt_plainpaper",
+          paperType: "pt_photopaper",
           borderless: false,
           printQuality: "high",
           paperSource: "rear",
