@@ -145,16 +145,28 @@ async function createA4_Gift(editedImg: string | Buffer, printSize:PrintSize): P
 
   // Embed images
   const editedImage = await pdfDoc.embedJpg(editedImgBytes);
+  
 
-  // Draw edited image (bottom half)
-  page.drawImage(editedImage, {
+  if(printSize.rotation==0)
+  {
+    page.drawImage(editedImage, {  
     x: printSize.x,
     y: printSize.y,
     width: printSize.w,
-    height: printSize.y,
+    height: printSize.h,
+  });
+  }
+  else{
+    page.drawImage(editedImage, {
+    x: printSize.x+ printSize.h,
+    y: printSize.y,
+    width: printSize.w,
+    height: printSize.h,
     rotate: degrees(printSize.rotation),
 
   });
+  }
+
 
   // half blank
 
@@ -396,8 +408,8 @@ export async function createGiftPrintJob(
   type: string,
   editedImgPathOrUrl: string,
   copies: number,
-  categoryId,
-  templateId,
+  categoryId: string,
+  templateId: string,
   printMode: "document" | "photo" = "document"
 ) {
   console.log("Creating print job:", jobName);
