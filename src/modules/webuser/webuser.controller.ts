@@ -38,6 +38,26 @@ const getSinglewebuser = catchAsync(async (req, res) => {
   });
 });
 
+const updateUserInfoController = catchAsync(async (req, res) => {
+  try {
+    const { id } = req.params; // userId from route
+    const payload = req.body;
+
+    const updatedUser = await webuserServices.updateUserInfoService(id, payload);
+
+    res.status(200).json({
+      success: true,
+      message: "User updated successfully",
+      data: updatedUser,
+    });
+  } catch (error: any) {
+    res.status(400).json({
+      success: false,
+      message: error.message || "Failed to update user",
+    });
+  }
+});
+
 const deleteSinglewebuser = catchAsync(async (req, res) => {
   const webuser_id = req.query.webuser_id as string;
   const webuserIdConverted = idConverter(webuser_id);
@@ -58,6 +78,7 @@ const webuserController = {
   getAllwebusers,
   getSinglewebuser,
   deleteSinglewebuser,
+  updateUserInfoController
 };
 
 export default webuserController;

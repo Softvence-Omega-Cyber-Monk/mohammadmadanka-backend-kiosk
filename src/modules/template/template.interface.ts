@@ -34,6 +34,11 @@ export type TemplateCofig= {
   rotation: number;
 }
 
+export interface Size {
+  h?: number;
+  w?: number;
+}
+
 export type Template = {
   _id?: string;
   previewLink: string[];
@@ -50,6 +55,7 @@ export type Template = {
   rudeContent: boolean;
   price: number;
   aspectRatio: number;
+  sizeInPixel?: Size;
   holesInfo?: HolesInfo[];
   isDeleted?: boolean;
   createdAt?: Date;
