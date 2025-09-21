@@ -136,8 +136,7 @@ async function createA4_Gift(editedImg: string | Buffer): Promise<Buffer> {
   // Embed images
   const editedImage = await pdfDoc.embedJpg(editedImgBytes);
 
-
- // Draw edited image (bottom half)
+  // Draw edited image (bottom half)
   page.drawImage(editedImage, {
     x: 0,
     y: 0,
@@ -150,57 +149,6 @@ async function createA4_Gift(editedImg: string | Buffer): Promise<Buffer> {
   const pdfBytes = await pdfDoc.save();
   return Buffer.from(pdfBytes);
 }
-
-// // 🔹 Helper: merge fixed brand image + edited image into one A4 PDF
-// async function createA4WithInside(editedImg: string | Buffer): Promise<Buffer> {
-//   const A4_WIDTH = 595.28;
-//   const A4_HEIGHT = 841.89;
-//   const HALF_A4_HEIGHT = A4_HEIGHT / 2;
-
-//   const pdfDoc = await PDFDocument.create();
-//   const page = pdfDoc.addPage([A4_WIDTH, A4_HEIGHT]);
-
-//   // ✅ Edited image (Buffer | URL | local path)
-//   let editedImgBytes: Buffer;
-//   if (Buffer.isBuffer(editedImg)) {
-//     // Already a buffer (like our JPG conversion step)
-//     editedImgBytes = editedImg;
-//   } else if (editedImg.startsWith("http")) {
-//     editedImgBytes = await fetchRemoteFile(editedImg);
-//   } else {
-//     editedImgBytes = fs.readFileSync(editedImg);
-//   }
-
-//   // Embed images
-//   const editedImage = await pdfDoc.embedJpg(editedImgBytes);
-
-//   // Draw brand image (top half)
-//   page.drawImage(editedImage, {
-//     x: A4_WIDTH,
-//     y: 0,
-//     width: HALF_A4_HEIGHT,
-//     height: A4_WIDTH,
-//     rotate: degrees(90),
-//   });
-
-//   // Draw edited image (bottom half)
-
-//   const pdfBytes = await pdfDoc.save();
-//   return Buffer.from(pdfBytes);
-// }
-
-// async function mergePdfBuffers(buffers: Buffer[]): Promise<Buffer> {
-//   const mergedPdf = await PDFDocument.create();
-
-//   for (const buffer of buffers) {
-//     const pdf = await PDFDocument.load(buffer);
-//     const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
-//     copiedPages.forEach((p) => mergedPdf.addPage(p));
-//   }
-
-//   const mergedBytes = await mergedPdf.save();
-//   return Buffer.from(mergedBytes);
-// }
 
 /**
  * Convert PNG (or any image) to JPG buffer
@@ -267,7 +215,7 @@ export async function createFrontPrintJob(
           paperSource: "rear",
           colorMode: "color",
           doubleSided: "none",
-          copies: 1,
+          copies: copies,
         },
       }),
     }
@@ -325,13 +273,13 @@ export async function createInsidePrintJob(
         printMode: "document",
         printSettings: {
           paperSize: "ps_a4",
-          paperType: "pt_plainpaper",
+          paperType: "pt_photopaper",
           borderless: false,
           printQuality: "normal",
-          paperSource: "front2",
+          paperSource: "rear",
           colorMode: "color",
           doubleSided: "none",
-          copies: 1,
+          copies: copies,
         },
       }),
     }
@@ -350,23 +298,22 @@ export async function createInsidePrintJob(
   return { jobData, accessToken, EPSON_API_KEY };
 }
 
-
 // 🔹 Create Epson Front print job
 export async function createGiftPrintJob(
+  giftImage: string,
+  copies: number,
   jobName: string,
   userId: string,
-  type:string,
-  editedImgPathOrUrl: string,
-  copies: number,
-  printMode: "document" | "photo" = "document"
+  type: string,
+ 
 ) {
-  console.log("Creating print job:", jobName);
+  // console.log("from sercice:", { giftImage, copies, jobName, userId, type });
 
-  const accessToken = await getValidAccessToken(userId,type);
+  const accessToken = await getValidAccessToken(userId, type);
   console.log(accessToken, "-------access token from service");
 
   // ✅ Step 1: Convert image to JPG
-  const jpgBuffer = await convertToJpg(editedImgPathOrUrl);
+  const jpgBuffer = await convertToJpg(giftImage);
 
   // ✅ Step 2: Create merged A4 PDF using JPG buffer
   const pdfBuffer = await createA4_Gift(jpgBuffer);
@@ -384,23 +331,21 @@ export async function createGiftPrintJob(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        jobName: "Sample Job",
+        jobName: "JobName01",
         printMode: "document",
         printSettings: {
           paperSize: "ps_a4",
-          paperType: "pt_photopaper",
+          paperType: "pt_plainpaper",
           borderless: false,
           printQuality: "high",
           paperSource: "rear",
           colorMode: "color",
-          doubleSided: "none",
-          copies: 1,
+          copies: copies,
         },
       }),
     }
   );
 
- 
   const jobData = await response.json();
   console.log(jobData, "-------job data from service");
 

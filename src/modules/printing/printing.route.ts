@@ -2,15 +2,17 @@
 
 import { Router, Request, Response } from "express";
 
-import { checkAccessToken, printFrontImage, printGift, printInsideImage } from "./printing.controller"; // Ensure correct import
+import {
+  checkAccessToken,
+  printFrontImage,
+  printGift,
+  printInsideImage,
+} from "./printing.controller"; // Ensure correct import
 
 const EpsonRoute = Router();
 
 EpsonRoute.get("/check-auth", (req: Request, res: Response): void => {
-  // if (req.session?.deviceToken) {
-  //   res.json({ isAuthenticated: true });
-  //   return;
-  // }
+
   res.json({ isAuthenticated: false });
 });
 
@@ -19,9 +21,6 @@ EpsonRoute.post("/print-frontImage", printFrontImage);
 EpsonRoute.post("/print-insideImage", printInsideImage);
 EpsonRoute.post("/print-gift", printGift);
 
-
 EpsonRoute.get("/check-token/:userId", checkAccessToken);
-// EpsonRoute.post("/print-job", printJobController);
-
 
 export default EpsonRoute;
