@@ -73,8 +73,8 @@ const filterTemplates = async (filters: {
 
   const templates = await TemplateModel.find(
     query,
-    "id previewLink tags rudeContent isPersonalizable"
-  );
+    "id previewLink tags rudeContent isPersonalizable occasion"
+  ).populate('occasion');
 
   return templates;
 };
