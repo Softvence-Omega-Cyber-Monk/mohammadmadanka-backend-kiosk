@@ -24,5 +24,6 @@ webuserRoutes.delete(
   auth(userRole.superAdmin, userRole.webuser),
   webuserController.deleteSinglewebuser,
 );
+webuserRoutes.put("/update/:id", webuserController.updateUserInfoController);
 
 export default webuserRoutes;

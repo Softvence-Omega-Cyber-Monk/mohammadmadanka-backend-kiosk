@@ -5,6 +5,16 @@ import { degrees, PDFDocument } from "pdf-lib";
 import { getValidAccessToken } from "./printing.utils";
 import PrintingTokenModel from "./printing.model";
 import sharp from "sharp";
+import TemplateModel from "../template/template.model";
+import CategoryModel from "../category/category.model";
+
+interface PrintSize {
+  x: number;
+  y: number;
+  h: number;
+  w: number;
+  rotation: number;
+}
 
 const EPSON_API_KEY = process.env.EPSON_API_KEY; // Epson API key
 const BRAND_IMAGE_URL =
@@ -114,7 +124,7 @@ async function createA4_Inside(editedImg: string | Buffer): Promise<Buffer> {
 }
 
 // 🔹 Helper: merge fixed Inside image + blank into one A4 PDF
-async function createA4_Gift(editedImg: string | Buffer): Promise<Buffer> {
+async function createA4_Gift(editedImg: string | Buffer, printSize:PrintSize): Promise<Buffer> {
   const A4_WIDTH = 595.28;
   const A4_HEIGHT = 841.89;
   const HALF_A4_HEIGHT = A4_HEIGHT / 2;
@@ -135,15 +145,28 @@ async function createA4_Gift(editedImg: string | Buffer): Promise<Buffer> {
 
   // Embed images
   const editedImage = await pdfDoc.embedJpg(editedImgBytes);
+  
 
-
- // Draw edited image (bottom half)
-  page.drawImage(editedImage, {
-    x: 0,
-    y: 0,
-    width: A4_WIDTH,
-    height: A4_HEIGHT,
+  if(printSize.rotation==0)
+  {
+    page.drawImage(editedImage, {  
+    x: printSize.x,
+    y: printSize.y,
+    width: printSize.w,
+    height: printSize.h,
   });
+  }
+  else{
+    page.drawImage(editedImage, {
+    x: printSize.x+ printSize.h,
+    y: printSize.y,
+    width: printSize.w,
+    height: printSize.h,
+    rotate: degrees(printSize.rotation),
+
+  });
+  }
+
 
   // half blank
 
@@ -220,6 +243,34 @@ async function convertToJpg(imgPathOrUrl: string): Promise<Buffer> {
 
   // Convert with sharp → JPG buffer
   return sharp(imageBuffer).jpeg().toBuffer();
+}
+
+async function buildPrintSize(
+  templateId: string,
+  categoryId: string
+): Promise<PrintSize> {
+  // Fetch template (h, w)
+  const template = await TemplateModel.findById(templateId).lean();
+  if (!template) {
+    throw new Error("Template not found");
+  }
+
+  // Fetch category (x, y, rotation)
+  const category = await CategoryModel.findById(categoryId).lean();
+  if (!category || !category.printData) {
+    throw new Error("Category or printData not found");
+  }
+
+  // Merge values into printSize
+  const printSize: PrintSize = {
+    h: template.sizeInPixel?.h ?? 3508, // fallback to 3508 if undefined
+    w: template.sizeInPixel?.w ?? 2480, // fallback to 2480 if undefined
+    x: category.printData.x,
+    y: category.printData.y,
+    rotation: category.printData.rotation,
+  };
+
+  return printSize;
 }
 
 // 🔹 Create Epson Front print job
@@ -350,26 +401,28 @@ export async function createInsidePrintJob(
   return { jobData, accessToken, EPSON_API_KEY };
 }
 
-
 // 🔹 Create Epson Front print job
 export async function createGiftPrintJob(
   jobName: string,
   userId: string,
-  type:string,
+  type: string,
   editedImgPathOrUrl: string,
   copies: number,
+  categoryId: string,
+  templateId: string,
   printMode: "document" | "photo" = "document"
 ) {
   console.log("Creating print job:", jobName);
 
-  const accessToken = await getValidAccessToken(userId,type);
+  const accessToken = await getValidAccessToken(userId, type);
   console.log(accessToken, "-------access token from service");
 
   // ✅ Step 1: Convert image to JPG
   const jpgBuffer = await convertToJpg(editedImgPathOrUrl);
 
   // ✅ Step 2: Create merged A4 PDF using JPG buffer
-  const pdfBuffer = await createA4_Gift(jpgBuffer);
+  const printSize = await buildPrintSize(templateId, categoryId);
+  const pdfBuffer = await createA4_Gift(jpgBuffer, printSize);
 
   // tamim
 
@@ -400,7 +453,6 @@ export async function createGiftPrintJob(
     }
   );
 
- 
   const jobData = await response.json();
   console.log(jobData, "-------job data from service");
 

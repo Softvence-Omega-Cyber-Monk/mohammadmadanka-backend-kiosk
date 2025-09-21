@@ -1,7 +1,6 @@
 import mongoose, { ClientSession } from 'mongoose';
 import { TWebUser } from './webuser.interface';
 import { WebUserModel } from './webuser.model';
-import { uploadImgToCloudinary } from '../../util/uploadImgToCloudinary';
 import { Types, Document } from 'mongoose';
 
 const createwebuser = async (payload: Partial<TWebUser>) => {
@@ -17,7 +16,7 @@ const createwebuser = async (payload: Partial<TWebUser>) => {
       };
     }
   }
-
+ console.log("payload", payload);
   try {
     const created = await WebUserModel.create(payload);
 
@@ -47,11 +46,36 @@ const deleteSinglewebuser = async (webuser_id: Types.ObjectId) => {
   );
 };
 
+const updateUserInfoService = async (
+  userId: string,
+  payload: Partial<TWebUser>
+) => {
+  const user = await WebUserModel.findById(userId);
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  // If password is included, let mongoose pre-save hook handle hashing
+  if (payload.password) {
+    user.password = payload.password;
+  }
+
+  if (payload.name !== undefined) user.name = payload.name;
+  if (payload.phone !== undefined) user.phone = payload.phone;
+  if (payload.address !== undefined) user.address = payload.address;
+  if (payload.isBlocked !== undefined) user.isBlocked = payload.isBlocked;
+
+  await user.save();
+  return user;
+};
+
+
 const webuserServices = {
   createwebuser,
   getAllwebusers,
   getSinglewebuser,
   deleteSinglewebuser,
+  updateUserInfoService
 };
 
 export default webuserServices;

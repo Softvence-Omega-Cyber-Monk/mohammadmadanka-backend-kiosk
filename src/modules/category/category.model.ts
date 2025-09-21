@@ -28,6 +28,12 @@ const categorySchema = new Schema(
       },
     ],
 
+    printData: {
+      x: { type: Number, default: 0 },
+      y: { type: Number, default: 0 },
+      rotation: { type: Number, default: 0 },
+    },
+
     serialNumber: {
       type: Number,
       default: 0, // temporary default, will be replaced in pre-save
