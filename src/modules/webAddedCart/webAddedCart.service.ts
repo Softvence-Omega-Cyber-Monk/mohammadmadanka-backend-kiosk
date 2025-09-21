@@ -11,7 +11,7 @@ import { uploadImgToCloudinary } from '../../util/uploadImgToCloudinary';
 
   // Initialize print history data
   const printHistoryData: any = {
-    shopId: userId,
+    User_id: userId,
     Imglink: result1.secure_url,
     Imgpublic_id: result1.public_id,
   };
@@ -28,8 +28,8 @@ import { uploadImgToCloudinary } from '../../util/uploadImgToCloudinary';
   }
 
   // Save to DB
-  const PrintHistoryer = await WebAddedCartModel.create(printHistoryData);
-  return PrintHistoryer;
+  const addToCart = await WebAddedCartModel.create(printHistoryData);
+  return addToCart;
 };
 
     const getAll = async () => {
