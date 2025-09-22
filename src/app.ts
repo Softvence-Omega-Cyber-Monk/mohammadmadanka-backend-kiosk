@@ -25,7 +25,6 @@ import { getIO } from "./socket";
 
 
 app.use(express.json());
-=======
 
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
