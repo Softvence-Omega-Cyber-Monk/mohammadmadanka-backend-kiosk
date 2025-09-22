@@ -2,7 +2,7 @@
 // src/modules/printing/printing.service.ts
 import fs from "fs";
 import axios from "axios";
-import { degrees, PDFDocument } from "pdf-lib";
+import { degrees, PDFDocument, popGraphicsState, pushGraphicsState, scale, translate } from "pdf-lib";
 import { getValidAccessToken } from "./printing.utils";
 import PrintingTokenModel from "./printing.model";
 import sharp from "sharp";
@@ -134,13 +134,73 @@ async function createA4_Inside(editedImg: string | Buffer): Promise<Buffer> {
 }
 
 // 🔹 Helper: merge fixed Inside image + blank into one A4 PDF
+// async function createA4_Gift(
+//   editedImg: string | Buffer,
+//   printSize: PrintSize
+// ): Promise<Buffer> {
+//   const A4_WIDTH = 595.28;  // A4 in points (72 dpi)
+//   const A4_HEIGHT = 841.89;
+//   const pdfDoc = await PDFDocument.create();
+//   const page = pdfDoc.addPage([A4_WIDTH, A4_HEIGHT]);
+
+//   // ✅ Load edited image as buffer
+//   let editedImgBytes: Buffer;
+//   if (Buffer.isBuffer(editedImg)) {
+//     editedImgBytes = editedImg;
+//   } else if (typeof editedImg === "string" && editedImg.startsWith("http")) {
+//     editedImgBytes = await fetchRemoteFile(editedImg);
+//   } else {
+//     editedImgBytes = fs.readFileSync(editedImg as string);
+//   }
+
+//   // ✅ Mirror with sharp before embedding
+//   const mirroredBuffer = await sharp(editedImgBytes).flop().toBuffer();
+
+//   // ✅ Embed mirrored buffer into PDF
+//   const mirroredImage = await pdfDoc.embedJpg(mirroredBuffer);
+
+//   const DPI = 300;
+//   const scaleX = 72 / DPI;
+//   const scaleY = 72 / DPI;
+
+//   if (printSize.rotation === 0) {
+//     page.drawImage(mirroredImage, {
+//       x: printSize.x * scaleX,
+//       y: printSize.y * scaleY,
+//       width: printSize.w * scaleX,
+//       height: printSize.h * scaleY,
+//     });
+//   } else {
+//     page.drawImage(mirroredImage, {
+//       x: printSize.x * scaleX + printSize.h * scaleX,
+//       y: printSize.y * scaleY,
+//       width: printSize.w * scaleX,
+//       height: printSize.h * scaleY,
+//       rotate: degrees(printSize.rotation),
+//     });
+//   }
+
+//   // 🔹 TODO: add "half blank" if needed (e.g. draw white rect)
+
+//   const pdfBytes = await pdfDoc.save();
+//   return Buffer.from(pdfBytes);
+// }
+
+
+// 🔹 Helper: merge fixed Inside image + blank into one A4 PDF
 async function createA4_Gift(
   editedImg: string | Buffer,
-  printSize: PrintSize
+  printSize: {
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+    rotation: number;
+    mirror?: boolean; // ✅ allow mirror flag
+  }
 ): Promise<Buffer> {
   const A4_WIDTH = 595.28;
   const A4_HEIGHT = 841.89;
-  const HALF_A4_HEIGHT = A4_HEIGHT / 2;
 
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage([A4_WIDTH, A4_HEIGHT]);
@@ -148,43 +208,75 @@ async function createA4_Gift(
   // ✅ Edited image (Buffer | URL | local path)
   let editedImgBytes: Buffer;
   if (Buffer.isBuffer(editedImg)) {
-    // Already a buffer (like our JPG conversion step)
     editedImgBytes = editedImg;
-  } else if (editedImg.startsWith("http")) {
+  } else if (typeof editedImg === "string" && editedImg.startsWith("http")) {
     editedImgBytes = await fetchRemoteFile(editedImg);
-  } else {
+  } else if (typeof editedImg === "string") {
     editedImgBytes = fs.readFileSync(editedImg);
+  } else {
+    throw new Error("Invalid editedImg input");
   }
 
-  // Embed images
+  // Embed image
   const editedImage = await pdfDoc.embedJpg(editedImgBytes);
 
   const DPI = 300;
-  if (printSize.mirror) {
-        const mirroredBuffer = await sharp(editedImgBytes).flop().toBuffer();
-        editedImgBytes = mirroredBuffer;
-  }
-  if (printSize.rotation == 0) {
-    page.drawImage(editedImage, {
-      x: printSize.x * (72 / DPI),
-      y: printSize.y * (72 / DPI),
-      width: printSize.w * (72 / DPI),
-      height: printSize.h * (72 / DPI),
-      //transform: [-1, 0, 0, 1, 0, 0],
-    });
+  const imgWidth = printSize.w * (72 / DPI);
+  const imgHeight = printSize.h * (72 / DPI);
+
+  if (printSize.rotation === 0) {
+    if (printSize.mirror) {
+      // 🔹 Flip horizontally
+      page.pushOperators(
+        pushGraphicsState(),
+        translate((printSize.x + printSize.w) * (72 / DPI), printSize.y * (72 / DPI)),
+        scale(-1, 1)
+      );
+      page.drawImage(editedImage, {
+        x: 0,
+        y: 0,
+        width: imgWidth,
+        height: imgHeight,
+      });
+      page.pushOperators(popGraphicsState());
+    } else {
+      // 🔹 Normal
+      page.drawImage(editedImage, {
+        x: printSize.x * (72 / DPI),
+        y: printSize.y * (72 / DPI),
+        width: imgWidth,
+        height: imgHeight,
+      });
+    }
   } else {
-    page.drawImage(editedImage, {
-      x: printSize.x * (72 / DPI) + printSize.h * (72 / DPI),
-      y: printSize.y * (72 / DPI),
-      width: printSize.w * (72 / DPI),
-      height: printSize.h * (72 / DPI),
-      rotate: degrees(printSize.rotation),
-      //transform: [-1, 0, 0, 1, 0, 0],
-    });
+    if (printSize.mirror) {
+      // 🔹 Flip + rotate
+      page.pushOperators(
+        pushGraphicsState(),
+        translate((printSize.x + printSize.w) * (72 / DPI), printSize.y * (72 / DPI)),
+        scale(-1, 1)
+      );
+      page.drawImage(editedImage, {
+        x: 0,
+        y: 0,
+        width: imgWidth,
+        height: imgHeight,
+        rotate: degrees(printSize.rotation),
+      });
+      page.pushOperators(popGraphicsState());
+    } else {
+      // 🔹 Normal rotation
+      page.drawImage(editedImage, {
+        x: printSize.x * (72 / DPI) + imgHeight, // shift correctly for rotation
+        y: printSize.y * (72 / DPI),
+        width: imgWidth,
+        height: imgHeight,
+        rotate: degrees(printSize.rotation),
+      });
+    }
   }
 
-  // half blank
-
+  // Return buffer
   const pdfBytes = await pdfDoc.save();
   return Buffer.from(pdfBytes);
 }
