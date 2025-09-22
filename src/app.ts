@@ -176,10 +176,10 @@ const fileMap = new Map<string, string>();
 
 // Upload endpoint
 app.post(
-  "/api/uploadqr/:holeId",
+  "/api/uploadqr/:holeId/:userId",
   upload.single("file"),
   catchAsync(async (req, res) => {
-    const { holeId } = req.params;
+    const { holeId, userId } = req.params;
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded" });
     }
@@ -190,22 +190,25 @@ app.post(
     // Upload to cloud (or storage service)
     const [uploadedUrl] = await uploadMultipleImages([localPath]);
 
+    const key = `${holeId}_${userId}`;
+
     // Save mapping
-    fileMap.set(holeId, uploadedUrl);
+    fileMap.set(key, uploadedUrl);
 
     //  Broadcast event to all connected clients
-    getIO().emit("fileUploaded", { holeId, url: uploadedUrl });
+    getIO().emit("fileUploaded", { holeId, userId, url: uploadedUrl });
 
-    return res.json({ holeId, url: uploadedUrl });
+    return res.json({ holeId, userId, url: uploadedUrl });
   })
 );
 
 // Fetch uploaded file by holeId
 app.get(
-  "/api/file/:holeId",
+  "/api/file/:holeId/:userId",
   catchAsync(async (req, res) => {
-    const { holeId } = req.params;
-    const url = fileMap.get(holeId);
+    const { holeId, userId } = req.params;
+    const key = `${holeId}_${userId}`;
+    const url = fileMap.get(key);
     return res.json(url ? { url } : {});
   })
 );
