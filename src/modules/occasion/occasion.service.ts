@@ -6,65 +6,109 @@ import {
 } from "../../util/uploadImgToCloudinary";
 
 const create = async (imgFile: Express.Multer.File, data: Occasion) => {
-  const result = await uploadImgToCloudinary(imgFile.filename, imgFile.path);
+  try {
+    const result = await uploadImgToCloudinary(imgFile.filename, imgFile.path);
 
-  console.log(result);
+    console.log(result);
 
-  if (!result.secure_url) {
-    throw new Error("Image upload failed.");
+    if (!result.secure_url) {
+      throw new Error("Image upload failed.");
+    }
+
+    const occasion = await OccasionModel.create({
+      ...data,
+      iconUrl: result.secure_url, // attach cloudinary URL
+      public_id: result.public_id,
+    });
+
+    return occasion;
+  } catch (err) {
+    console.error("Error creating occasion:", err);
+    throw new Error("Error creating occasion");
   }
-
-  const category = await OccasionModel.create({
-    ...data,
-    iconUrl: result.secure_url, // attach cloudinary URL
-    public_id: result.public_id,
-  });
-  return category;
 };
 
-const getAll = async () => {
-  const categorys = await OccasionModel.find({ isDeleted: false });
-  return categorys;
+const getAll = async (Cid: string) => {
+  try {
+    const occasion = await OccasionModel.find({ isDeleted: false });
+    return occasion;
+  } catch (err) {
+    console.error("Error fetching all occasions:", err);
+    throw new Error("Error fetching all occasions");
+  }
 };
 
 const getAllname = async () => {
-  const categoryName = await OccasionModel.find(
-    { isDeleted: false },
-    { name: 1 }
-  );
-  return categoryName;
+  try {
+    const categoryName = await OccasionModel.find(
+      { isDeleted: false },
+      { name: 1 }
+    );
+    return categoryName;
+  } catch (err) {
+    console.error("Error fetching occasion names:", err);
+    throw new Error("Error fetching occasion names");
+  }
 };
 
 const getById = async (id: string) => {
-  const category = await OccasionModel.findOne({ _id: id, isDeleted: false });
-  return category;
+  try {
+    const category = await OccasionModel.findOne({ _id: id, isDeleted: false });
+    if (!category) {
+      throw new Error("Occasion not found");
+    }
+    return category;
+  } catch (err) {
+    console.error(`Error fetching occasion with id ${id}:`, err);
+    throw new Error(`Error fetching occasion with id ${id}`);
+  }
 };
 
 const update = async (id: string, data: Partial<Occasion>) => {
-  const category = await OccasionModel.findOneAndUpdate(
-    { _id: id, isDeleted: false },
-    data,
-    { new: true }
-  );
-  return category;
+  try {
+    const category = await OccasionModel.findOneAndUpdate(
+      { _id: id, isDeleted: false },
+      data,
+      { new: true }
+    );
+    if (!category) {
+      throw new Error("Occasion not found for update");
+    }
+    return category;
+  } catch (err) {
+    console.error(`Error updating occasion with id ${id}:`, err);
+    throw new Error(`Error updating occasion with id ${id}`);
+  }
 };
+
 const softDelete = async (id: string) => {
-  const category = await OccasionModel.findById(id);
-  if (!category) {
-    throw new Error("Category not found");
-  }
-  const result = await deleteImageFromCloudinary(category.public_id);
+  try {
+    const category = await OccasionModel.findById(id);
+    if (!category) {
+      throw new Error("Occasion not found");
+    }
 
-  if (!result) {
-    throw new Error("Image deletion from Cloudinary failed.");
-  }
+    // Delete image from Cloudinary
+    const result = await deleteImageFromCloudinary(category.public_id);
+    if (!result) {
+      throw new Error("Image deletion from Cloudinary failed.");
+    }
 
-  const result1 = await OccasionModel.findByIdAndUpdate(
-    id,
-    { isDeleted: true },
-    { new: true }
-  );
-  return result1;
+    // Soft delete the occasion
+    const result1 = await OccasionModel.findByIdAndUpdate(
+      id,
+      { isDeleted: true },
+      { new: true }
+    );
+    if (!result1) {
+      throw new Error("Soft delete failed");
+    }
+
+    return result1;
+  } catch (err) {
+    console.error(`Error soft deleting occasion with id ${id}:`, err);
+    throw new Error(`Error soft deleting occasion with id ${id}`);
+  }
 };
 
 const occasionService = {

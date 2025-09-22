@@ -17,8 +17,8 @@ const PhotoHoleSchema = new Schema({
   y: { type: Number, required: true },
   height: { type: Number, required: true },
   width: { type: Number, required: true },
-  scaleX: { type: Number,  required: false, default: 1 },
-  scaleY: { type: Number,  required: false, default: 1 },
+  scaleX: { type: Number, required: false, default: 1 },
+  scaleY: { type: Number, required: false, default: 1 },
   rotation: { type: Number, required: false, default: 0 },
 });
 
@@ -28,8 +28,8 @@ const TextHoleSchema = new Schema({
   y: { type: Number, required: true },
   height: { type: Number, required: true },
   width: { type: Number, required: true },
-  scaleX: { type: Number,  required: false, default: 1 },
-  scaleY: { type: Number,  required: false, default: 1 },
+  scaleX: { type: Number, required: false, default: 1 },
+  scaleY: { type: Number, required: false, default: 1 },
   rotation: { type: Number, required: false, default: 0 },
   font: { type: String, required: true },
   fontSize: { type: Number, required: true },
@@ -43,24 +43,34 @@ const HolesInfoSchema = new Schema({
 
 const TemplateSchema = new Schema(
   {
-    previewLink: { type: String, required: true },
+    previewLink: { type: [String], required: true },
     name: { type: String, required: true },
     SKU: { type: String, required: true },
-    link: { type: String, required: true },
-    config: {type: TemplateCofig, required: false},
-    productlink: { type: String, required: false},
-    category: { 
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Category",
-          required: true},
-    occasion: { type: mongoose.Schema.Types.ObjectId,
-          ref: "Occasion",
-          required: true },
-    targetUser: { type: String, required: true },
+    link: { type: String, required: false },
+    productlink: { type: String, required: false },
+    productAspectRatio: { type: Number, reqquired: false, default: 1 },
+    config: { type: TemplateCofig, required: false },
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+      required: true,
+    },
+    occasion: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Occasion",
+
+      required: false,
+    },
+    tags: { type: [String], required: true },
+    isPersonalizable: { type: Boolean, required: true, default: true },
     rudeContent: { type: Boolean, required: true, default: false },
     price: { type: Number, required: true },
-    holesInfo: [HolesInfoSchema],
+    holesInfo: { type: [HolesInfoSchema], required: false },
     aspectRatio: { type: Number, require: true },
+    sizeInPixel: {
+      h: { type: Number, default: 0, required: false },
+      w: { type: Number, default: 0, required: false },
+    },
     isDeleted: { type: Boolean, default: false },
   },
   {

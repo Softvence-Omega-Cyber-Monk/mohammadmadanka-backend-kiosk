@@ -94,3 +94,10 @@ const storage = multer.diskStorage({
 
 // Multer upload setup
 export const upload = multer({ storage: storage });
+export const uploadMultiple = upload.array("images", 30);
+
+export const Multiupload = multer({ storage }).fields([
+  { name: "photo1", maxCount: 1 },
+  { name: "photo2", maxCount: 1 }, // optional
+]);
+

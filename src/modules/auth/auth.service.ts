@@ -6,16 +6,26 @@ import { TUser } from "../user/user.interface";
 import { createAccessToken, createRefreshToken } from "./auth.utill";
 import config from "../../config";
 import jwt, { JwtPayload } from "jsonwebtoken";
+import { WebUserModel } from "../webuser/webuser.model";
 
-const login = async (payload: Partial<TUser>) => {
-  const user: any = await UserModel.findOne({ email: payload?.email }).select(
-    "+password"
-  );
-  console.log(user);
+const login = async (payload: { shopId: string; password: string }) => {
+  if (!payload.shopId) {
+    throw new Error("Shop ID is required!");
+  }
+
+  if (!payload.password) {
+    throw new Error("Password is required!");
+  }
+
+  // Find user by shopId
+  const user: any = await UserModel.findOne({
+    userUniqueKey: payload.shopId,
+  }).select("+password");
+  console.log("user ", user);
 
   // Check if user exists
   if (!user) {
-    throw new Error("User is not found !");
+    throw new Error("User not found!");
   }
 
   // Block deleted users
@@ -23,28 +33,27 @@ const login = async (payload: Partial<TUser>) => {
     throw new Error("User is deleted!");
   }
 
-  //  Check password
-  if (!payload.password) {
-    throw new Error("Password is required!");
-  }
-
+  // Check password
   const isPasswordMatched = await bcrypt.compare(
     payload.password,
     user.password
   );
-
   if (!isPasswordMatched) {
-    throw new Error("Password not matched !");
+    throw new Error("Password not matched!");
   }
 
-  //  Create Tokens
+  // Create Tokens
   const jwtPayload = {
     userId: user._id.toString(),
     role: user.role,
     email: user.email,
-    name: user.name,
+    name: user.shopName,
+    shopId: user.shopId, // include shopId in token if needed
+    categories: user.categories, // include categories in token if needed
+    userUniqueKey: user.userUniqueKey,
   };
   console.log(jwtPayload);
+
   const accessToken = createAccessToken(
     jwtPayload,
     config.jwt_token_secret as string,
@@ -62,7 +71,68 @@ const login = async (payload: Partial<TUser>) => {
     refreshToken,
   };
 };
-//
+
+const weblogin = async (payload: { email: string; password: string }) => {
+  if (!payload.email) {
+    throw new Error("Email ID is required!");
+  }
+
+  if (!payload.password) {
+    throw new Error("Password is required!");
+  }
+
+  // Find user by shopId
+  const user: any = await WebUserModel.findOne({
+    email: payload.email,
+  }).select("+password");
+  console.log("user ", user);
+
+  // Check if user exists
+  if (!user) {
+    throw new Error("User not found!");
+  }
+
+  // Block deleted users
+  if (user.isDeleted) {
+    throw new Error("User is deleted!");
+  }
+
+  // Check password
+  const isPasswordMatched = await bcrypt.compare(
+    payload.password,
+    user.password
+  );
+  if (!isPasswordMatched) {
+    throw new Error("Password not matched!");
+  }
+
+  // Create Tokens
+  const jwtPayload = {
+    userId: user._id.toString(),
+    role: user.role,
+    email: user.email,
+  };
+  console.log(jwtPayload);
+
+  const accessToken = createAccessToken(
+    jwtPayload,
+    config.jwt_token_secret as string,
+    parseInt(config.token_expairsIn as string)
+  );
+
+  const refreshToken = createRefreshToken(
+    jwtPayload,
+    config.jwt_refresh_Token_secret as string,
+    parseInt(config.rifresh_expairsIn as string)
+  );
+
+  return {
+    accessToken,
+    refreshToken,
+  };
+};
+
+
 
 const changePassword = async (
   authorizationToken: string,
@@ -229,7 +299,7 @@ const refreshToken = async (refreshToken: string) => {
 
 const authServices = {
   login,
-
+  weblogin,
   changePassword,
   refreshToken,
   // forgetPassword,

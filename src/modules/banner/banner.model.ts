@@ -15,6 +15,10 @@ import mongoose, { Schema } from 'mongoose';
           type: String,
           required: true,
         },
+        bannerTag: {
+          type: String,
+          required: true,
+        },
         isDeleted: {
           type: Boolean,
           default: false,

@@ -5,8 +5,11 @@ export type TUser = {
   phone: string;
   email: string;
   password: string;
-
+  userUniqueKey?: string;
   role?: TUserRole;
+  bannerId?: string;
+  categories?: string[];
   isDeleted?: string;
-  isBlocked?: boolean;
+  isAccepted?: 'pending' | 'approved' | 'rejected';
+
 };

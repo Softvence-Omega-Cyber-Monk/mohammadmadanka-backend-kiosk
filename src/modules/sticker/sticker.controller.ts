@@ -3,23 +3,23 @@ import stickerService from "./sticker.service";
 import catchAsync from "../../util/catchAsync";
 import sendResponse from "../../util/sendResponse";
 
-const create = catchAsync(async (req: Request, res: Response) => {
-  const imgFile = req.file;
+const createBulk = catchAsync(async (req: Request, res: Response) => {
+  const imgFiles = req.files as Express.Multer.File[];
 
-  if (!imgFile) {
-    throw new Error("image file are required.");
+  if (!imgFiles || imgFiles.length === 0) {
+    throw new Error("Image files are required.");
   }
 
-  const result = await stickerService.create(
-    imgFile as Express.Multer.File
-  );
+  const result = await stickerService.createBulk(imgFiles);
+
   sendResponse(res, {
     statusCode: 201,
     success: true,
-    message: "sticker created successfully",
+    message: "Stickers created successfully",
     data: result,
   });
 });
+
 
 const getAll = catchAsync(async (req: Request, res: Response) => {
   const result = await stickerService.getAll();
@@ -59,10 +59,10 @@ const Delete = catchAsync(async (req: Request, res: Response) => {
 });
 
 const stickerController = {
-  create,
   getAll,
   getById,
   Delete,
+  createBulk,
 };
 
 export default stickerController;
