@@ -198,7 +198,7 @@ app.post(
     console.log(`File uploaded for ${key}: ${uploadedUrl}`);
 
     //  Broadcast event to all connected clients
-    getIO().emit("fileUploaded", { holeId, userId, url: uploadedUrl });
+    getIO().emit("fileUploaded", { holeId, s_userId : userId, url: uploadedUrl });
 
     return res.json({ holeId, userId, url: uploadedUrl });
   })
