@@ -3,6 +3,7 @@ export interface IPrintData {
   x: number;
   y: number;
   rotation: number;
+    mirror: boolean
 }
 
 export type Category = {
