@@ -195,6 +195,8 @@ app.post(
     // Save mapping
     fileMap.set(key, uploadedUrl);
 
+    console.log(`File uploaded for ${key}: ${uploadedUrl}`);
+
     //  Broadcast event to all connected clients
     getIO().emit("fileUploaded", { holeId, userId, url: uploadedUrl });
 
@@ -209,6 +211,7 @@ app.get(
     const { holeId, userId } = req.params;
     const key = `${holeId}_${userId}`;
     const url = fileMap.get(key);
+    console.log(`Fetch file for ${key}: ${url}`);
     return res.json(url ? { url } : {});
   })
 );
