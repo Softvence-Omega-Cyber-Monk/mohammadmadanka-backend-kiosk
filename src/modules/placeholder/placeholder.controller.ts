@@ -3,24 +3,22 @@ import PlaceholderService from "./placeholder.service";
 import catchAsync from "../../util/catchAsync";
 import sendResponse from "../../util/sendResponse";
 
-const create = catchAsync(async (req: Request, res: Response) => {
-  const imgFile = req.file;
+const createBulk = catchAsync(async (req: Request, res: Response) => {
+  const imgFiles = req.files as Express.Multer.File[];
 
-  if (!imgFile) {
-    throw new Error("image file are required.");
+  if (!imgFiles || imgFiles.length === 0) {
+    throw new Error("Image files are required.");
   }
 
-  const result = await PlaceholderService.create(
-    imgFile as Express.Multer.File
-  );
+  const result = await PlaceholderService.createBulk(imgFiles);
+
   sendResponse(res, {
     statusCode: 201,
     success: true,
-    message: "Placeholder created successfully",
+    message: "Placeholders created successfully",
     data: result,
   });
 });
-
 const getAll = catchAsync(async (req: Request, res: Response) => {
   const result = await PlaceholderService.getAll();
   sendResponse(res, {
@@ -59,7 +57,7 @@ const Delete = catchAsync(async (req: Request, res: Response) => {
 });
 
 const placeholderController = {
-  create,
+  createBulk,
   getAll,
   getById,
   Delete,

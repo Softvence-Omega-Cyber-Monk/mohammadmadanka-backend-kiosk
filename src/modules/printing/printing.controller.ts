@@ -1,62 +1,107 @@
-// src/modules/printing/printing.controller.ts
+import { Request, Response } from "express";
+import catchAsync from "../../util/catchAsync";
+import {
+  createFrontPrintJob,
+  createGiftPrintJob,
+  createInsidePrintJob,
+  isAccessTokenValid,
+  // printJobService,
+  uploadFileToEpson,
+} from "./printing.service";
 
-import { Request, Response } from 'express';
-import axios from 'axios';
-import qs from 'qs';
-import { uploadFileToEpson, createPrintJob, startPrintJob } from './printing.service';
-import catchAsync from '../../util/catchAsync';  // Ensure this utility is correct
+export const printFrontImage = catchAsync(
+  async (req: Request, res: Response) => {
+    const { frontImage, copies, jobName, userId, type } = req.body;
 
-let deviceToken = '';  // This could be stored in a session or DB in real-world usage
+    console.log(frontImage, jobName, copies, userId, "-------from controller");
 
-// Auth callback function after user authorization
-export const authCallback = catchAsync(async (req: Request, res: Response) => {
-  const { code } = req.query;  // Get authorization code from query string
+    if (!jobName || !frontImage) {
+      return res.status(400).send({ error: "jobName and file are required" });
+    }
+    const jobData = await createFrontPrintJob(
+      jobName,
+      userId,
+      type,
+      frontImage,
+      copies
+    );
 
-  if (!code) {
-    return res.status(400).send('Error: No authorization code received.');
+    console.log(jobData, "-------job data from controller");
+
+    // await uploadFileToEpson(jobData.jobData.uploadUri, fileUrl);
+
+    res.status(200).send({
+      message: "Print job created and file uploaded successfully",
+      jobId: jobData.jobData.jobId,
+      PrinterAccessToken: jobData.accessToken,
+      EPSON_API_KEY: jobData.EPSON_API_KEY,
+    });
   }
+);
 
-  try {
-    // Exchange authorization code for device token
-    const tokenResponse = await axios.post<{ access_token: string }>('https://auth.epsonconnect.com/auth/token', qs.stringify({
-      code: code,
-      client_id: process.env.CLIENT_ID,
-      client_secret: process.env.CLIENT_SECRET,
-      redirect_uri: process.env.REDIRECT_URI,
-      grant_type: 'authorization_code'
-    }));
+export const printInsideImage = catchAsync(
+  async (req: Request, res: Response) => {
+    const { insideImage, copies, jobName, userId, type } = req.body;
 
-    deviceToken = tokenResponse.data.access_token;  // Store device token (store it in DB or session for production)
-    res.send('Authentication successful! You can now print by calling /print.');
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Error exchanging authorization code for token.');
+    console.log(insideImage, jobName, copies, userId, "-------from controller");
+
+    if (!jobName || !insideImage) {
+      return res.status(400).send({ error: "jobName and file are required" });
+    }
+    const jobData = await createInsidePrintJob(
+      jobName,
+      userId,
+      type,
+      insideImage,
+      copies
+    );
+
+    console.log(jobData, "-------job data from controller");
+
+    // await uploadFileToEpson(jobData.jobData.uploadUri, fileUrl);
+
+    res.status(200).send({
+      message: "Print job created and file uploaded successfully",
+      jobId: jobData.jobData.jobId,
+      PrinterAccessToken: jobData.accessToken,
+      EPSON_API_KEY: jobData.EPSON_API_KEY,
+    });
   }
+);
+
+export const printGift = catchAsync(async (req: Request, res: Response) => {
+  const { giftImage, copies, jobName, userId ,type, categoryId, templateId} = req.body;
+
+  console.log(giftImage, jobName, copies, userId, "-------from controller");
+
+  if (!jobName || !giftImage) {
+    return res.status(400).send({ error: "jobName and file are required" });
+  }
+  const jobData = await createGiftPrintJob(giftImage, copies, jobName, userId ,type, categoryId, templateId);
+
+  console.log(jobData, "-------job data from controller");
+
+  // await uploadFileToEpson(jobData.jobData.uploadUri, fileUrl);
+
+  res.status(200).send({
+    message: "Print job created and file uploaded successfully",
+    jobId: jobData.jobData.jobId,
+    PrinterAccessToken: jobData.accessToken,
+    EPSON_API_KEY: jobData.EPSON_API_KEY,
+  });
 });
 
-// Print image method with error handling
-export const printImage = catchAsync(async (req: Request, res: Response) => {
-  const file = req.file;  // Uploaded file
-  const token = deviceToken;  // Retrieve deviceToken
-
-  if (!token) {
-    return res.status(401).send('Error: User not authenticated.');
+export const checkAccessToken = catchAsync(
+  async (req: Request, res: Response) => {
+    const userId = req.params.userId;
+    const type = req.query.type as string;
+    try {
+      const valid = await isAccessTokenValid(userId, type);
+      // console.log("Token valid:", valid);
+      return res.json({ valid });
+    } catch (err) {
+      console.error("Error checking Epson token:", err);
+      return res.status(500).json({ valid: false, error: "Server error" });
+    }
   }
-
-  try {
-    // Step 1: Create the print job
-    const jobResponse = await createPrintJob(token, 'ImagePrintJob', 'document') as { jobId: string; uploadUri: string };
-    const { jobId, uploadUri } = jobResponse;
-
-    // Step 2: Upload the image to Epson Connect
-    await uploadFileToEpson(uploadUri, file);
-
-    // Step 3: Start printing the image
-    await startPrintJob(token, jobId);
-
-    res.status(200).send({ message: 'Print job started successfully', jobId });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send({ error: 'An error occurred while processing the print job' });
-  }
-});
+);

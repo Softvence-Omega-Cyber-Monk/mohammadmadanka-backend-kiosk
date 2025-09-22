@@ -4,24 +4,37 @@ import { uploadImgToCloudinary, deleteImageFromCloudinary } from "../../util/upl
 import { v2 as cloudinary } from 'cloudinary';
 
 
-const create = async (imgFile: Express.Multer.File) => {
-  console.log('paylojad data ',imgFile)
-  const result = await uploadImgToCloudinary(imgFile.filename, imgFile.path);
+const createBulk = async (imgFiles: Express.Multer.File[]) => {
+  // Extract local file paths
+  const filePaths = imgFiles.map((file) => file.path);
 
+  // Upload to Cloudinary (parallel for speed)
+  const uploadResults = await Promise.all(
+    imgFiles.map((file) =>
+      uploadImgToCloudinary(file.filename, file.path)
+    )
+  );
 
-
-  if (!result.secure_url) {
-    throw new Error("Image upload failed.");
-  }
-
-
-  const sticker = await stickerModel.create({
-    link: result.secure_url,
-    public_id: result.public_id,
+  // Verify and create DB entries
+  const stickersData = uploadResults.map((result) => {
+    if (!result.secure_url) {
+      throw new Error("One or more image uploads failed.");
+    }
+    return {
+      link: result.secure_url,
+      public_id: result.public_id,
+    };
   });
-  console.log('created data ',sticker)
-  return sticker;
+
+  // Insert all at once
+  const stickers = await stickerModel.insertMany(stickersData);
+
+  console.log("Created stickers:", stickers);
+  return stickers;
 };
+
+
+
 
 const getAll = async () => {
   const stickers = await stickerModel.find({ isDeleted: false });
@@ -55,10 +68,10 @@ const Delete = async (id: string, publicId: string) => {
 };
 
 const stickerService = {
-  create,
   getAll,
   getById,
   Delete,
+  createBulk,
 };
 
 export default stickerService;

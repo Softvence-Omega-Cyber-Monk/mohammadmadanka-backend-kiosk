@@ -9,6 +9,9 @@ const adminSeeder = async () => {
     email: "superAdmin@gmail.com",
     role: userRole.superAdmin,
     password: "123456",
+
+    bannerImg:
+      "https://res.cloudinary.com/dbt83nrhl/image/upload/v1757486403/file-1757486397491-184842453.jpg",
   };
 
   const adminExist = await UserModel.findOne({ role: userRole.superAdmin });

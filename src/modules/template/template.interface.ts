@@ -34,21 +34,29 @@ export type TemplateCofig= {
   rotation: number;
 }
 
+export interface Size {
+  h?: number;
+  w?: number;
+}
+
 export type Template = {
   _id?: string;
-  previewLink: string;
-  SKU?: string;
+  previewLink: string[];
+  SKU: string;
   name: string;
-  link: string;
+  link?: string;
   productlink?:string;
+  productAspectRatio?: number;
   config?: TemplateCofig;
   category: Category;
-  occasion: Occasion;
-  targetUser: string;
+  occasion?: Occasion;
+  tags: string[];
+  isPersonalizable: boolean;
   rudeContent: boolean;
   price: number;
   aspectRatio: number;
-  holesInfo: HolesInfo[];
+  sizeInPixel?: Size;
+  holesInfo?: HolesInfo[];
   isDeleted?: boolean;
   createdAt?: Date;
   updatedAt?: Date;

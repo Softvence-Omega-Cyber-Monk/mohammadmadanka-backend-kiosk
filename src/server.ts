@@ -1,8 +1,11 @@
 import mongoose from "mongoose";
 import app from "./app";
-import { Server } from "http";
+import { createServer, Server } from "http";
 import adminSeeder from "./seeder/adminSeeder";
 import config from "./config";
+import { Server as SocketIOServer } from "socket.io";
+import { initSocket } from "./socket";
+
 
 let server: Server;
 
@@ -11,9 +14,30 @@ async function main() {
     console.log("connecting to mongodb....⏳");
     await mongoose.connect(config.mongoose_uri);
     await adminSeeder()
-    server = app.listen(config.port, () => {
+    server = createServer(app);
+
+    // attach socket.io
+    initSocket(server);
+
+    server.listen(config.port, "0.0.0.0", () => {
       console.log(`Mohammad server app listening on port ${config.port}`);
     });
+    // initSocket(server)
+    //  const io = new SocketIOServer(server, {
+    //   cors: {
+    //     origin: [
+    //       "http://localhost:5173",
+    //       "http://192.168.1.100:5173",
+    //       "https://velvety-quokka-7b3cf9.netlify.app",
+    //     ],
+    //     methods: ["GET", "POST"],
+    //     credentials: true,
+    //   },
+    // });
+
+    // io.on("connection", (socket) => {
+    //   console.log("Socket connected:", socket.id);
+    // });
   } 
   catch (err:any) {
     throw Error('something went wrong in server or mongoose connection');
