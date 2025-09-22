@@ -32,7 +32,10 @@ const categorySchema = new Schema(
       x: { type: Number, default: 0 },
       y: { type: Number, default: 0 },
       rotation: { type: Number, default: 0 },
-      mirror: { type: Boolean, default: false },
+      mirror: {
+        type: Boolean,
+        default: false,
+      },
     },
 
     serialNumber: {

@@ -36,6 +36,7 @@ export async function fetchRemoteFile(url: string): Promise<Buffer> {
   }
 }
 // 🔹 Helper: merge fixed brand image + edited image into one A4 PDF
+// 🔹 Helper: merge fixed brand image + edited image into one A4 PDF
 async function createA4_Front_Brand(
   editedImg: string | Buffer
 ): Promise<Buffer> {
@@ -88,12 +89,12 @@ async function createA4_Front_Brand(
 }
 
 // 🔹 Helper: merge fixed Inside image + blank into one A4 PDF
+// 🔹 Helper: merge fixed Inside image + blank into one A4 PDF
 async function createA4_Inside(editedImg: string | Buffer): Promise<Buffer> {
   const A4_WIDTH = 595.28;
   const A4_HEIGHT = 841.89;
   const HALF_A4_HEIGHT = A4_HEIGHT / 2;
- const BORDER_PT = 2 * 28.35; // ≈ 56.7pt
-
+  const BORDER_PT = 2 * 28.35; // ≈ 56.7pt
 
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage([A4_WIDTH, A4_HEIGHT]);
@@ -113,10 +114,10 @@ async function createA4_Inside(editedImg: string | Buffer): Promise<Buffer> {
   const editedImage = await pdfDoc.embedJpg(editedImgBytes);
 
   // Image target size (bottom half, but leave border)
-  const imgWidth = HALF_A4_HEIGHT - BORDER_PT * 2;  // reduce both sides
-  const imgHeight = A4_WIDTH - BORDER_PT * 2;       // reduce top + bottom
-  const imgX = A4_WIDTH - BORDER_PT;                // shift right
-  const imgY = HALF_A4_HEIGHT + BORDER_PT;          // shift up
+  const imgWidth = HALF_A4_HEIGHT - BORDER_PT * 2; // reduce both sides
+  const imgHeight = A4_WIDTH - BORDER_PT * 2; // reduce top + bottom
+  const imgX = A4_WIDTH - BORDER_PT; // shift right
+  const imgY = HALF_A4_HEIGHT + BORDER_PT; // shift up
 
   // Draw edited image with border margin
   page.drawImage(editedImage, {
@@ -169,6 +170,7 @@ async function createA4_Gift(
       y: printSize.y * (72 / DPI),
       width: printSize.w * (72 / DPI),
       height: printSize.h * (72 / DPI),
+      //transform: [-1, 0, 0, 1, 0, 0],
     });
   } else {
     page.drawImage(editedImage, {
@@ -177,6 +179,7 @@ async function createA4_Gift(
       width: printSize.w * (72 / DPI),
       height: printSize.h * (72 / DPI),
       rotate: degrees(printSize.rotation),
+      //transform: [-1, 0, 0, 1, 0, 0],
     });
   }
 
@@ -230,6 +233,7 @@ async function buildPrintSize(
     y: category.printData.y,
     rotation: category.printData.rotation,
     mirror: category.printData.mirror || false,
+    
   };
 
   return printSize;
@@ -345,12 +349,6 @@ export async function createInsidePrintJob(
           colorMode: "color",
           doubleSided: "none",
           copies: copies,
-          margin: {
-            top: 20,
-            bottom: 20,
-            left: 20,
-            right: 20,
-          },
         },
       }),
     }
