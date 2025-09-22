@@ -158,7 +158,7 @@ app.get(
 
     // Redirect back to frontend
 
-    res.redirect(`http://localhost:5173?shopId=${userUniqueKey}&auth=success`);
+    res.redirect(`https://velvety-quokka-7b3cf9.netlify.app?shopId=${userUniqueKey}&auth=success`);
   })
 );
 
