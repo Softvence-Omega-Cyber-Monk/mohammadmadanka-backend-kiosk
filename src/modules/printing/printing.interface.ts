@@ -7,4 +7,5 @@ export type TPrintingToken ={
     scope: string;
    token_type: string;
     expires_in: number;
+
 }
