@@ -15,6 +15,7 @@ interface PrintSize {
   h: number;
   w: number;
   rotation: number;
+  mirror: boolean;
 }
 
 const EPSON_API_KEY = process.env.EPSON_API_KEY; // Epson API key
@@ -91,6 +92,8 @@ async function createA4_Inside(editedImg: string | Buffer): Promise<Buffer> {
   const A4_WIDTH = 595.28;
   const A4_HEIGHT = 841.89;
   const HALF_A4_HEIGHT = A4_HEIGHT / 2;
+ const BORDER_PT = 2 * 28.35; // ≈ 56.7pt
+
 
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage([A4_WIDTH, A4_HEIGHT]);
@@ -109,15 +112,20 @@ async function createA4_Inside(editedImg: string | Buffer): Promise<Buffer> {
   // Embed images
   const editedImage = await pdfDoc.embedJpg(editedImgBytes);
 
-  // Draw edited image (bottom half)
+  // Image target size (bottom half, but leave border)
+  const imgWidth = HALF_A4_HEIGHT - BORDER_PT * 2;  // reduce both sides
+  const imgHeight = A4_WIDTH - BORDER_PT * 2;       // reduce top + bottom
+  const imgX = A4_WIDTH - BORDER_PT;                // shift right
+  const imgY = HALF_A4_HEIGHT + BORDER_PT;          // shift up
+
+  // Draw edited image with border margin
   page.drawImage(editedImage, {
-    x: A4_WIDTH,
-    y: HALF_A4_HEIGHT,
-    width: HALF_A4_HEIGHT,
-    height: A4_WIDTH,
+    x: imgX,
+    y: imgY,
+    width: imgWidth,
+    height: imgHeight,
     rotate: degrees(90),
   });
-
   // half blank
 
   const pdfBytes = await pdfDoc.save();
@@ -151,7 +159,10 @@ async function createA4_Gift(
   const editedImage = await pdfDoc.embedJpg(editedImgBytes);
 
   const DPI = 300;
-
+  if (printSize.mirror) {
+        const mirroredBuffer = await sharp(editedImgBytes).flop().toBuffer();
+        editedImgBytes = mirroredBuffer;
+  }
   if (printSize.rotation == 0) {
     page.drawImage(editedImage, {
       x: printSize.x * (72 / DPI),
@@ -218,6 +229,7 @@ async function buildPrintSize(
     x: category.printData.x,
     y: category.printData.y,
     rotation: category.printData.rotation,
+    mirror: category.printData.mirror || false,
   };
 
   return printSize;
