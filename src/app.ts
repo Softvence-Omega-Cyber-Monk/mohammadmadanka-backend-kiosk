@@ -23,7 +23,10 @@ import {
 } from "./util/uploadImgToCloudinary";
 import { getIO } from "./socket";
 
+
 app.use(express.json());
+=======
+
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
 // const server = http.createServer(app);
@@ -47,6 +50,7 @@ app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
 // app.use(cors());
 app.use(
   cors({
+
     origin: [
       "http://localhost:5173",
       "https://velvety-quokka-7b3cf9.netlify.app",
@@ -55,6 +59,7 @@ app.use(
     allowedHeaders: "Content-Type, Authorization",
     credentials: true,
   })
+
 );
 
 app.get("/", (req, res) => {
