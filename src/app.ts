@@ -23,30 +23,15 @@ import {
 } from "./util/uploadImgToCloudinary";
 import { getIO } from "./socket";
 
+
 app.use(express.json());
+
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
-// const server = http.createServer(app);
 
-// // --- SOCKET.IO SETUP ---
-// const io = new SocketIOServer(server, {
-//   cors: {
-//     origin: ["http://localhost:5173", "https://velvety-quokka-7b3cf9.netlify.app"],
-//     methods: ["GET", "POST"],
-//     credentials: true,
-//   },
-// });
-
-// // Broadcast on new file uploaded
-// io.on("connection", (socket) => {
-//   console.log("Socket connected:", socket.id);
-// });
-
-// middleWares
-
-// app.use(cors());
 app.use(
   cors({
+
     origin: [
       "http://localhost:5173",
       "https://velvety-quokka-7b3cf9.netlify.app",
@@ -55,6 +40,7 @@ app.use(
     allowedHeaders: "Content-Type, Authorization",
     credentials: true,
   })
+
 );
 
 app.get("/", (req, res) => {
@@ -176,10 +162,10 @@ const fileMap = new Map<string, string>();
 
 // Upload endpoint
 app.post(
-  "/api/uploadqr/:holeId",
+  "/api/uploadqr/:holeId/:userId",
   upload.single("file"),
   catchAsync(async (req, res) => {
-    const { holeId } = req.params;
+    const { holeId, userId } = req.params;
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded" });
     }
@@ -190,22 +176,28 @@ app.post(
     // Upload to cloud (or storage service)
     const [uploadedUrl] = await uploadMultipleImages([localPath]);
 
+    const key = `${holeId}_${userId}`;
+
     // Save mapping
-    fileMap.set(holeId, uploadedUrl);
+    fileMap.set(key, uploadedUrl);
+
+    console.log(`File uploaded for ${key}: ${uploadedUrl}`);
 
     //  Broadcast event to all connected clients
-    getIO().emit("fileUploaded", { holeId, url: uploadedUrl });
+    getIO().emit("fileUploaded", { holeId, s_userId : userId, url: uploadedUrl });
 
-    return res.json({ holeId, url: uploadedUrl });
+    return res.json({ holeId, userId, url: uploadedUrl });
   })
 );
 
 // Fetch uploaded file by holeId
 app.get(
-  "/api/file/:holeId",
+  "/api/file/:holeId/:userId",
   catchAsync(async (req, res) => {
-    const { holeId } = req.params;
-    const url = fileMap.get(holeId);
+    const { holeId, userId } = req.params;
+    const key = `${holeId}_${userId}`;
+    const url = fileMap.get(key);
+    console.log(`Fetch file for ${key}: ${url}`);
     return res.json(url ? { url } : {});
   })
 );

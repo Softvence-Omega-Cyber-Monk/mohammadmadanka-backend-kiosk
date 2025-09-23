@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
     import WebOrderService from './webOrder.service';
-    import catchAsync from '../../utils/catchAsync';
-    import sendResponse from '../../utils/sendResponse';
+    import catchAsync from '../../util/catchAsync';
+    import sendResponse from '../../util/sendResponse';
 
     const create = catchAsync(async (req: Request, res: Response) => {
       const result = await WebOrderService.create(req.body);

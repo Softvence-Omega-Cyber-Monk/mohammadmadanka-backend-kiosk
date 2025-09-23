@@ -1,0 +1,15 @@
+version: '3.9'
+
+services:
+  app:
+    build: .
+    container_name: my-node-app
+    image: rahmanaq777/my-node-app:latest
+    platform: linux/amd64
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    volumes:
+      - ./Upload:/usr/src/app/Upload   # Mount Upload folder
+      - /usr/src/app/node_modules      # Keep node_modules inside container
