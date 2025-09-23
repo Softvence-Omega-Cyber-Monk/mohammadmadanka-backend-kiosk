@@ -4,7 +4,6 @@ export async function getValidAccessToken(
   userId: string,
   type: string
 ): Promise<string> {
-  console.log("UserID in getValidAccessToken:", userId , type);
 
   let tokenDoc = await PrintingTokenModel.findOne({
     userId: userId,

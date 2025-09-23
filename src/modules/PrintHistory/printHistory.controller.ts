@@ -14,10 +14,21 @@ const create = catchAsync(async (req: Request, res: Response) => {
     throw new Error("photo1 is required.");
   }
 
+  const { templateId, categoryId, type, quantity } = req.body;
+
+  if (!templateId || !categoryId || !type || !quantity) {
+    throw new Error("templateId, categoryId, type, and quantity are required.");
+  }
+
+  // Assuming you need to upload images and save other fields to PrintHistory
   const result = await PrintHistoryService.create(
     userId as string,
     photo1,
-    photo2 // may be undefined → optional
+    photo2, // photo2 may be undefined → optional
+    templateId,
+    categoryId,
+    type,
+    quantity
   );
 
   sendResponse(res, {
@@ -27,6 +38,20 @@ const create = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+const updatePrintStatus = catchAsync(async (req: Request, res: Response) => {
+  const id = req.params.id || req.body.id;
+  const result = await PrintHistoryService.updatePrintStatus(id); 
+  if (!result) {
+    throw new Error("PrintHistory not found.");
+    }
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,  
+    message: "Print status updated successfully",
+    data: result,
+  });
+});
+
 
 const getAll = catchAsync(async (req: Request, res: Response) => {
   const userId = req.params.userId || req.query.userId;
@@ -68,6 +93,7 @@ const Delete = catchAsync(async (req: Request, res: Response) => {
 
 const PrintHistoryController = {
   create,
+  updatePrintStatus,
   getAll,
   getById,
   Delete,

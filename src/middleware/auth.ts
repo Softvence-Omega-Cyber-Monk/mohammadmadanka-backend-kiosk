@@ -24,7 +24,6 @@ const auth = (...requiredRoles: TUserRole[]) => {
         config.jwt_token_secret as string
       ) as JwtPayload;
     } catch (error) {
-      console.log(error);
       throw new Error("can not verify !");
     }
     const { email, userId, role } = decoded;

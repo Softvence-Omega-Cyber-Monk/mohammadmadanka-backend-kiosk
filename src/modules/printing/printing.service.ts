@@ -153,25 +153,30 @@ async function createA4_Gift(
     editedImgBytes = fs.readFileSync(editedImg as string);
   }
 
-  // ✅ Mirror with sharp before embedding
-  const mirroredBuffer = await sharp(editedImgBytes).flop().toBuffer();
+  // ✅ Mirror only if printSize.mirror is true
+  let finalBuffer: Buffer;
+  if (printSize.mirror) {
+    finalBuffer = await sharp(editedImgBytes).flop().toBuffer();
+  } else {
+    finalBuffer = editedImgBytes;
+  }
 
-  // ✅ Embed mirrored buffer into PDF
-  const mirroredImage = await pdfDoc.embedJpg(mirroredBuffer);
+  // ✅ Embed into PDF
+  const embeddedImage = await pdfDoc.embedJpg(finalBuffer);
 
   const DPI = 300;
   const scaleX = 72 / DPI;
   const scaleY = 72 / DPI;
 
   if (printSize.rotation === 0) {
-    page.drawImage(mirroredImage, {
+    page.drawImage(embeddedImage, {
       x: printSize.x * scaleX,
       y: printSize.y * scaleY,
       width: printSize.w * scaleX,
       height: printSize.h * scaleY,
     });
   } else {
-    page.drawImage(mirroredImage, {
+    page.drawImage(embeddedImage, {
       x: printSize.x * scaleX + printSize.h * scaleX,
       y: printSize.y * scaleY,
       width: printSize.w * scaleX,
@@ -185,6 +190,7 @@ async function createA4_Gift(
   const pdfBytes = await pdfDoc.save();
   return Buffer.from(pdfBytes);
 }
+
 
 
 /**
@@ -246,9 +252,6 @@ export async function createFrontPrintJob(
   copies: number,
   printMode: "document" | "photo" = "document"
 ) {
-  console.log("Creating print job:", jobName);
-
-  console.log("print type ", type);
 
   const accessToken = await getValidAccessToken(userId, type);
   console.log(accessToken, "-------access token from service");
@@ -310,9 +313,6 @@ export async function createInsidePrintJob(
   copies: number,
   printMode: "document" | "photo" = "document"
 ) {
-  console.log("Creating print job:", jobName);
-
-  console.log("print type ", type);
 
   const accessToken = await getValidAccessToken(userId, type);
   console.log(accessToken, "-------access token from service");
@@ -375,7 +375,6 @@ export async function createGiftPrintJob(
   categoryId: string,
   templateId: string
 ) {
-  // console.log("from sercice:", { giftImage, copies, jobName, userId, type });
 
   const accessToken = await getValidAccessToken(userId, type);
   console.log(accessToken, "-------access token from service");
@@ -451,8 +450,6 @@ export async function uploadFileToEpson(
   });
 
   const bodyText = await putRes.text();
-  console.log("Epson upload status:", putRes.status, putRes.statusText);
-  console.log("Epson upload body:", bodyText);
 
   if (!putRes.ok) {
     throw new Error(`Epson upload failed: ${putRes.status} - ${bodyText}`);

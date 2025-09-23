@@ -22,22 +22,7 @@ async function main() {
     server.listen(config.port, "0.0.0.0", () => {
       console.log(`Mohammad server app listening on port ${config.port}`);
     });
-    // initSocket(server)
-    //  const io = new SocketIOServer(server, {
-    //   cors: {
-    //     origin: [
-    //       "http://localhost:5173",
-    //       "http://192.168.1.100:5173",
-    //       "https://velvety-quokka-7b3cf9.netlify.app",
-    //     ],
-    //     methods: ["GET", "POST"],
-    //     credentials: true,
-    //   },
-    // });
-
-    // io.on("connection", (socket) => {
-    //   console.log("Socket connected:", socket.id);
-    // });
+    
   } 
   catch (err:any) {
     throw Error('something went wrong in server or mongoose connection');
