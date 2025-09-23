@@ -72,7 +72,6 @@ const getSingleUser = async (user_id: Types.ObjectId) => {
   return result;
 };
 const updateUserStatus = async (user_id: Types.ObjectId, isAccepted: any) => {
-  console.log("user id in service ", isAccepted);
 
   const result = await UserModel.findOneAndUpdate(
     { _id: user_id, isDeleted: false },
@@ -83,8 +82,6 @@ const updateUserStatus = async (user_id: Types.ObjectId, isAccepted: any) => {
   return result;
 };
 const updateUser = async (user_id: Types.ObjectId, data: any) => {
-  console.log("user id in service", data);
-
   const result = await UserModel.findOneAndUpdate(
     { _id: user_id, isDeleted: false }, // make sure this matches a document
     {

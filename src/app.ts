@@ -28,25 +28,7 @@ app.use(express.json());
 
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
-// const server = http.createServer(app);
 
-// // --- SOCKET.IO SETUP ---
-// const io = new SocketIOServer(server, {
-//   cors: {
-//     origin: ["http://localhost:5173", "https://velvety-quokka-7b3cf9.netlify.app"],
-//     methods: ["GET", "POST"],
-//     credentials: true,
-//   },
-// });
-
-// // Broadcast on new file uploaded
-// io.on("connection", (socket) => {
-//   console.log("Socket connected:", socket.id);
-// });
-
-// middleWares
-
-// app.use(cors());
 app.use(
   cors({
 
@@ -69,7 +51,6 @@ app.get("/", (req, res) => {
 app.use("/api/v1", Routes);
 
 app.use((req, res, next) => {
-  console.log("Incoming request:", req.method, req.originalUrl);
   next();
 });
 
@@ -81,12 +62,6 @@ app.get(
     const userId = req.params.userId as string;
     const userUniqueKey = req.query.userUniqueKey as string;
     const Print_type = req.query.type as string;
-
-    console.log(
-      "userUniqueKey and type  from auth ",
-      Print_type,
-      userUniqueKey
-    );
 
     if (!process.env.REDIRECT_URI) {
       throw new Error("REDIRECT_URI is not defined in environment variables");
@@ -109,9 +84,6 @@ app.get(
     const { userId, userUniqueKey, Print_type } = req.query.state
       ? JSON.parse(req.query.state as string)
       : {};
-    console.log("userId from callback ", userId);
-    console.log("userUniqueKey from callback ", userUniqueKey);
-    console.log("Print_type from callback ", Print_type);
 
     const code = req.query.code as string;
     if (!code) {
@@ -141,7 +113,6 @@ app.get(
     );
 
     const tokenData = await tokenResponse.json();
-    // console.log("Token response:", tokenData);
 
     // Upsert token in database
     await PrintingTokenModel.findOneAndUpdate(
@@ -199,8 +170,6 @@ app.post(
     // Save mapping
     fileMap.set(key, uploadedUrl);
 
-    console.log(`File uploaded for ${key}: ${uploadedUrl}`);
-
     //  Broadcast event to all connected clients
     getIO().emit("fileUploaded", { holeId, s_userId : userId, url: uploadedUrl });
 
@@ -215,7 +184,6 @@ app.get(
     const { holeId, userId } = req.params;
     const key = `${holeId}_${userId}`;
     const url = fileMap.get(key);
-    console.log(`Fetch file for ${key}: ${url}`);
     return res.json(url ? { url } : {});
   })
 );

@@ -9,6 +9,10 @@ printHistoryRoutes.post(
   Multiupload, // ✅ use fields instead of single
   printHistoryController.create
 );
+printHistoryRoutes.put(
+  "/update-printStatus/:id",
+  printHistoryController.updatePrintStatus
+);
 printHistoryRoutes.get("/getAll/:userId", printHistoryController.getAll);
 printHistoryRoutes.get("/getSingle/:id", printHistoryController.getById);
 printHistoryRoutes.delete("/delete/:id", printHistoryController.Delete);

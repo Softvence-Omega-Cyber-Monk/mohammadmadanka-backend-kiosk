@@ -1,11 +1,16 @@
 export type PrintHistoryer = {
-      _id?: string;
-      shopId: string;
-      Imglink: string; 
-      Imgpublic_id: string;
-      insideImgLink?: string;
-      insideImgPublic_id?: string;
-      isDeleted?: boolean;
-      createdAt?: Date;
-      updatedAt?: Date;
-    }
+  _id?: string;
+  shopId: string;
+  photo1Link: string;
+  photo1PublicId: string;
+  photo2Link?: string;
+  photo2PublicId?: string;
+  templateId: string;
+  categoryId: string;
+  type: string;
+  quantity: number;
+  printStatus?: boolean;
+  isDeleted?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+};

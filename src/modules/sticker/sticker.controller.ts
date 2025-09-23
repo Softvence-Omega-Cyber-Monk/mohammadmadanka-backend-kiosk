@@ -45,7 +45,6 @@ const Delete = catchAsync(async (req: Request, res: Response) => {
 
   const id = req.params.id || req.body.id;
   const publicId = req.body.public_id;
-  console.log(publicId)
   const result = await stickerService.Delete(id, publicId);
   if (!result) {
     throw new Error("sticker not found or already deleted.");

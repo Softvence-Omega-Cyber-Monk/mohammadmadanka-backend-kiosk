@@ -133,153 +133,65 @@ async function createA4_Inside(editedImg: string | Buffer): Promise<Buffer> {
   return Buffer.from(pdfBytes);
 }
 
-// 🔹 Helper: merge fixed Inside image + blank into one A4 PDF
-// async function createA4_Gift(
-//   editedImg: string | Buffer,
-//   printSize: PrintSize
-// ): Promise<Buffer> {
-//   const A4_WIDTH = 595.28;  // A4 in points (72 dpi)
-//   const A4_HEIGHT = 841.89;
-//   const pdfDoc = await PDFDocument.create();
-//   const page = pdfDoc.addPage([A4_WIDTH, A4_HEIGHT]);
-
-//   // ✅ Load edited image as buffer
-//   let editedImgBytes: Buffer;
-//   if (Buffer.isBuffer(editedImg)) {
-//     editedImgBytes = editedImg;
-//   } else if (typeof editedImg === "string" && editedImg.startsWith("http")) {
-//     editedImgBytes = await fetchRemoteFile(editedImg);
-//   } else {
-//     editedImgBytes = fs.readFileSync(editedImg as string);
-//   }
-
-//   // ✅ Mirror with sharp before embedding
-//   const mirroredBuffer = await sharp(editedImgBytes).flop().toBuffer();
-
-//   // ✅ Embed mirrored buffer into PDF
-//   const mirroredImage = await pdfDoc.embedJpg(mirroredBuffer);
-
-//   const DPI = 300;
-//   const scaleX = 72 / DPI;
-//   const scaleY = 72 / DPI;
-
-//   if (printSize.rotation === 0) {
-//     page.drawImage(mirroredImage, {
-//       x: printSize.x * scaleX,
-//       y: printSize.y * scaleY,
-//       width: printSize.w * scaleX,
-//       height: printSize.h * scaleY,
-//     });
-//   } else {
-//     page.drawImage(mirroredImage, {
-//       x: printSize.x * scaleX + printSize.h * scaleX,
-//       y: printSize.y * scaleY,
-//       width: printSize.w * scaleX,
-//       height: printSize.h * scaleY,
-//       rotate: degrees(printSize.rotation),
-//     });
-//   }
-
-//   // 🔹 TODO: add "half blank" if needed (e.g. draw white rect)
-
-//   const pdfBytes = await pdfDoc.save();
-//   return Buffer.from(pdfBytes);
-// }
-
-
-// 🔹 Helper: merge fixed Inside image + blank into one A4 PDF
+//🔹 Helper: merge fixed Inside image + blank into one A4 PDF
 async function createA4_Gift(
   editedImg: string | Buffer,
-  printSize: {
-    x: number;
-    y: number;
-    w: number;
-    h: number;
-    rotation: number;
-    mirror?: boolean; // ✅ allow mirror flag
-  }
+  printSize: PrintSize
 ): Promise<Buffer> {
-  const A4_WIDTH = 595.28;
+  const A4_WIDTH = 595.28;  // A4 in points (72 dpi)
   const A4_HEIGHT = 841.89;
-
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage([A4_WIDTH, A4_HEIGHT]);
 
-  // ✅ Edited image (Buffer | URL | local path)
+  // ✅ Load edited image as buffer
   let editedImgBytes: Buffer;
   if (Buffer.isBuffer(editedImg)) {
     editedImgBytes = editedImg;
   } else if (typeof editedImg === "string" && editedImg.startsWith("http")) {
     editedImgBytes = await fetchRemoteFile(editedImg);
-  } else if (typeof editedImg === "string") {
-    editedImgBytes = fs.readFileSync(editedImg);
   } else {
-    throw new Error("Invalid editedImg input");
+    editedImgBytes = fs.readFileSync(editedImg as string);
   }
 
-  // Embed image
-  const editedImage = await pdfDoc.embedJpg(editedImgBytes);
+  // ✅ Mirror only if printSize.mirror is true
+  let finalBuffer: Buffer;
+  if (printSize.mirror) {
+    finalBuffer = await sharp(editedImgBytes).flop().toBuffer();
+  } else {
+    finalBuffer = editedImgBytes;
+  }
+
+  // ✅ Embed into PDF
+  const embeddedImage = await pdfDoc.embedJpg(finalBuffer);
 
   const DPI = 300;
-  const imgWidth = printSize.w * (72 / DPI);
-  const imgHeight = printSize.h * (72 / DPI);
+  const scaleX = 72 / DPI;
+  const scaleY = 72 / DPI;
 
   if (printSize.rotation === 0) {
-    if (printSize.mirror) {
-      // 🔹 Flip horizontally
-      page.pushOperators(
-        pushGraphicsState(),
-        translate((printSize.x + printSize.w) * (72 / DPI), printSize.y * (72 / DPI)),
-        scale(-1, 1)
-      );
-      page.drawImage(editedImage, {
-        x: 0,
-        y: 0,
-        width: imgWidth,
-        height: imgHeight,
-      });
-      page.pushOperators(popGraphicsState());
-    } else {
-      // 🔹 Normal
-      page.drawImage(editedImage, {
-        x: printSize.x * (72 / DPI),
-        y: printSize.y * (72 / DPI),
-        width: imgWidth,
-        height: imgHeight,
-      });
-    }
+    page.drawImage(embeddedImage, {
+      x: printSize.x * scaleX,
+      y: printSize.y * scaleY,
+      width: printSize.w * scaleX,
+      height: printSize.h * scaleY,
+    });
   } else {
-    if (printSize.mirror) {
-      // 🔹 Flip + rotate
-      page.pushOperators(
-        pushGraphicsState(),
-        translate((printSize.x + printSize.w) * (72 / DPI), printSize.y * (72 / DPI)),
-        scale(-1, 1)
-      );
-      page.drawImage(editedImage, {
-        x: 0,
-        y: 0,
-        width: imgWidth,
-        height: imgHeight,
-        rotate: degrees(printSize.rotation),
-      });
-      page.pushOperators(popGraphicsState());
-    } else {
-      // 🔹 Normal rotation
-      page.drawImage(editedImage, {
-        x: printSize.x * (72 / DPI) + imgHeight, // shift correctly for rotation
-        y: printSize.y * (72 / DPI),
-        width: imgWidth,
-        height: imgHeight,
-        rotate: degrees(printSize.rotation),
-      });
-    }
+    page.drawImage(embeddedImage, {
+      x: printSize.x * scaleX + printSize.h * scaleX,
+      y: printSize.y * scaleY,
+      width: printSize.w * scaleX,
+      height: printSize.h * scaleY,
+      rotate: degrees(printSize.rotation),
+    });
   }
 
-  // Return buffer
+  // 🔹 TODO: add "half blank" if needed (e.g. draw white rect)
+
   const pdfBytes = await pdfDoc.save();
   return Buffer.from(pdfBytes);
 }
+
+
 
 /**
  * Convert PNG (or any image) to JPG buffer
@@ -340,9 +252,6 @@ export async function createFrontPrintJob(
   copies: number,
   printMode: "document" | "photo" = "document"
 ) {
-  console.log("Creating print job:", jobName);
-
-  console.log("print type ", type);
 
   const accessToken = await getValidAccessToken(userId, type);
   console.log(accessToken, "-------access token from service");
@@ -366,12 +275,12 @@ export async function createFrontPrintJob(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        jobName: "Sample Job",
+         jobName: "Sample Job",
         printMode: "document",
         printSettings: {
           paperSize: "ps_a4",
           paperType: "pt_photopaper",
-          borderless: true,
+          borderless: false,
           printQuality: "normal",
           paperSource: "rear",
           colorMode: "color",
@@ -404,9 +313,6 @@ export async function createInsidePrintJob(
   copies: number,
   printMode: "document" | "photo" = "document"
 ) {
-  console.log("Creating print job:", jobName);
-
-  console.log("print type ", type);
 
   const accessToken = await getValidAccessToken(userId, type);
   console.log(accessToken, "-------access token from service");
@@ -469,13 +375,13 @@ export async function createGiftPrintJob(
   categoryId: string,
   templateId: string
 ) {
-  // console.log("from sercice:", { giftImage, copies, jobName, userId, type });
 
   const accessToken = await getValidAccessToken(userId, type);
   console.log(accessToken, "-------access token from service");
 
   // ✅ Step 1: Convert image to JPG
   const jpgBuffer = await convertToJpg(giftImage);
+  console.log(jpgBuffer, "-------jpg buffer from service");
 
   // ✅ Step 2: Create merged A4 PDF using JPG buffer
   const printSize = await buildPrintSize(templateId, categoryId);
@@ -544,8 +450,6 @@ export async function uploadFileToEpson(
   });
 
   const bodyText = await putRes.text();
-  console.log("Epson upload status:", putRes.status, putRes.statusText);
-  console.log("Epson upload body:", bodyText);
 
   if (!putRes.ok) {
     throw new Error(`Epson upload failed: ${putRes.status} - ${bodyText}`);

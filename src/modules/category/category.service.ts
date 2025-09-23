@@ -20,6 +20,7 @@ const create = async (imgFile: Express.Multer.File, data: Category) => {
       name: data.name,
       isDeleted: false,
     });
+    
     if (isExist) {
       throw new Error("The category already exists");
     }
