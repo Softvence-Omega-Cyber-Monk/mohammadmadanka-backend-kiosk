@@ -26,10 +26,8 @@ const getAllUsers = catchAsync(async (req, res) => {
 
 const getSingleUser = catchAsync(async (req, res) => {
   const user_id = req.query.user_id as string;
-  console.log("user id ", user_id);
   const userIdConverted = idConverter(user_id);
 
-  console.log("user id converter ", userIdConverted);
   if (!userIdConverted) {
     throw new Error("user id conversion failed");
   }
@@ -44,7 +42,6 @@ const getSingleUser = catchAsync(async (req, res) => {
 const updateUserStatus = catchAsync(async (req, res) => {
   const user_id = req.query.user_id as string;
   const isAccepted = req.body ;
-  console.log("user id ", user_id);
   console.log("isAccepted ", isAccepted);
 
   const userIdConverted = idConverter(user_id);
@@ -62,8 +59,6 @@ const updateUserStatus = catchAsync(async (req, res) => {
 const updateUser = catchAsync(async (req, res) => {
   const user_id = req.query.user_id as string;
   const data = req.body ;
-  console.log("user id ", user_id);
-  console.log("user user data  ", data);
 
   const userIdConverted = idConverter(user_id);
   if (!userIdConverted) {
