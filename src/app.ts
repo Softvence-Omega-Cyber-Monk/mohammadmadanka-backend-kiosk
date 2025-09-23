@@ -25,29 +25,10 @@ import { getIO } from "./socket";
 
 
 app.use(express.json());
-=======
 
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
-// const server = http.createServer(app);
 
-// // --- SOCKET.IO SETUP ---
-// const io = new SocketIOServer(server, {
-//   cors: {
-//     origin: ["http://localhost:5173", "https://velvety-quokka-7b3cf9.netlify.app"],
-//     methods: ["GET", "POST"],
-//     credentials: true,
-//   },
-// });
-
-// // Broadcast on new file uploaded
-// io.on("connection", (socket) => {
-//   console.log("Socket connected:", socket.id);
-// });
-
-// middleWares
-
-// app.use(cors());
 app.use(
   cors({
 
@@ -159,7 +140,7 @@ app.get(
 
     // Redirect back to frontend
 
-    res.redirect(`https://velvety-quokka-7b3cf9.netlify.app?shopId=${userUniqueKey}&auth=success`);
+    res.redirect(`http://localhost:5173?shopId=${userUniqueKey}&auth=success`);
   })
 );
 
