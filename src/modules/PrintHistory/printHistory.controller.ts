@@ -54,8 +54,18 @@ const updatePrintStatus = catchAsync(async (req: Request, res: Response) => {
 
 
 const getAll = catchAsync(async (req: Request, res: Response) => {
+  const result = await PrintHistoryService.getAll();
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "PrintHistory retrieved successfully",
+    data: result,
+  });
+});
+
+const getAllByShop = catchAsync(async (req: Request, res: Response) => {
   const userId = req.params.userId || req.query.userId;
-  const result = await PrintHistoryService.getAll(userId as string);
+  const result = await PrintHistoryService.getAllByShop(userId as string);
   sendResponse(res, {
     statusCode: 200,
     success: true,
@@ -95,6 +105,7 @@ const PrintHistoryController = {
   create,
   updatePrintStatus,
   getAll,
+  getAllByShop,
   getById,
   Delete,
 };
