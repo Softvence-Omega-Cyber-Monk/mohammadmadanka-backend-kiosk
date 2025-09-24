@@ -87,6 +87,7 @@ const getAll = async () => {
     isDeleted: false,
   })
     .sort({ createdAt: -1 })
+    .populate("shopId", "shopName userUniqueKey")
     .populate("templateId", "name SKU price")
     .populate("categoryId", "name");
   return PrintHistoryers;
