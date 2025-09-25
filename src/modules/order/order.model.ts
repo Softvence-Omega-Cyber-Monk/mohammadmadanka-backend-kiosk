@@ -30,12 +30,12 @@ const OrderSchema = new mongoose.Schema(
       default: "pending",
       unique: false,
     },
-    delivaryLink: {
+    trackingNumber: {
       type: String,
       default: null,
       required: false,
     },
-    deliveryToken: {
+    trackingLink: {
       type: String,
       default: null,
       required: false,

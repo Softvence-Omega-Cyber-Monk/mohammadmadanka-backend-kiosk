@@ -5,12 +5,11 @@ export type Order = {
     quantity: number;
   }[];
   status: "pending" | "approved" | "delivered" | "rejected";
-  delivaryLink?: string | null;
-  deliveryToken?: string | null;
+  trackingLink?: string | null;
+  trackingNumber?: string | null;
   approvedBy?: string | null;
   deliveredAt?: Date | null;
   createdAt: Date;
   isDeleted: boolean;
-
   updatedAt: Date;
 };
