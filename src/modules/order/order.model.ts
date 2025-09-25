@@ -30,6 +30,16 @@ const OrderSchema = new mongoose.Schema(
       default: "pending",
       unique: false,
     },
+    delivaryLink: {
+      type: String,
+      default: null,
+      required: false,
+    },
+    deliveryToken: {
+      type: String,
+      default: null,
+      required: false,
+    },
     approvedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Admin",

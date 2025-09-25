@@ -61,8 +61,8 @@ const update = catchAsync(async (req: Request, res: Response) => {
 // Update order status
 const updateStatus = catchAsync(async (req: Request, res: Response) => {
   const adminId = (req as any).user.userId;
-  const { status } = req.body;
-  const order = await orderService.updateStatus(req.params.id, status, adminId);
+  const { status, delivaryLink, deliveryToken} = req.body;
+  const order = await orderService.updateStatus(req.params.id, status, delivaryLink, deliveryToken, adminId);
   if (!order) return res.status(404).json({ message: "Order not found" });
   sendResponse(res, {
     statusCode: 200,

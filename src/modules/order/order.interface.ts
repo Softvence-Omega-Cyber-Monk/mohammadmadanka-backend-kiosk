@@ -5,6 +5,8 @@ export type Order = {
     quantity: number;
   }[];
   status: "pending" | "approved" | "delivered" | "rejected";
+  delivaryLink?: string | null;
+  deliveryToken?: string | null;
   approvedBy?: string | null;
   deliveredAt?: Date | null;
   createdAt: Date;
