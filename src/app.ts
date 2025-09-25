@@ -131,7 +131,7 @@ app.get(
 
     // Redirect back to frontend
 
-    res.redirect(`http://localhost:5173?shopId=${userUniqueKey}&auth=success`);
+    res.redirect(`https://mantelworthy.online?shopId=${userUniqueKey}&auth=success`);
   })
 );
 
