@@ -13,7 +13,8 @@ printHistoryRoutes.put(
   "/update-printStatus/:id",
   printHistoryController.updatePrintStatus
 );
-printHistoryRoutes.get("/getAll/:userId", printHistoryController.getAll);
+printHistoryRoutes.get("/getAll/:userId", printHistoryController.getAllByShop);
+printHistoryRoutes.get("/getAll", printHistoryController.getAll);
 printHistoryRoutes.get("/getSingle/:id", printHistoryController.getById);
 printHistoryRoutes.delete("/delete/:id", printHistoryController.Delete);
 

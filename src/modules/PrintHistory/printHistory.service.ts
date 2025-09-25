@@ -82,13 +82,24 @@ const updatePrintStatus = async (id: string) => {
   return PrintHistoryer;
 };
 
-const getAll = async (userId: string) => {
+const getAll = async () => {
+  const PrintHistoryers = await PrintHistoryerModel.find({
+    isDeleted: false,
+  })
+    .sort({ createdAt: -1 })
+    .populate("shopId", "shopName userUniqueKey")
+    .populate("templateId", "name SKU price")
+    .populate("categoryId", "name");
+  return PrintHistoryers;
+};
+
+const getAllByShop = async (userId: string) => {
   const PrintHistoryers = await PrintHistoryerModel.find({
     isDeleted: false,
     shopId: userId,
   })
     .sort({ createdAt: -1 })
-    .populate("templateId", "name price")
+    .populate("templateId", "name SKU price")
     .populate("categoryId", "name");
   return PrintHistoryers;
 };
@@ -120,6 +131,7 @@ const PrintHistoryerService = {
   create,
   updatePrintStatus,
   getAll,
+  getAllByShop,
   getById,
   Delete,
 };
