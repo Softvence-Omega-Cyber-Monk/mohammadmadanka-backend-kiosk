@@ -36,6 +36,7 @@ app.use(
     origin: [
       "http://localhost:5173",
       "https://velvety-quokka-7b3cf9.netlify.app",
+      "https://mantelworthy.online"
     ],
     methods: "GET,POST,PUT,PATCH,DELETE",
     allowedHeaders: "Content-Type, Authorization",
