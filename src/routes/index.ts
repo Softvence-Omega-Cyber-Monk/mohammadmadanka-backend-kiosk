@@ -18,6 +18,8 @@ import bannerRoutes from "../modules/banner/banner.routes";
 import QRrouter from "../modules/template/QrcodeImageUpload";
 import printHistoryRoutes from "../modules/PrintHistory/printHistory.routes";
 import webuserRoutes from "../modules/webuser/webuser.routes";
+import path from "path";
+import printSetting from "../modules/printSetting/printSetting.routes";
 
 const Routes = express.Router();
 
@@ -30,7 +32,7 @@ const moduleRouts = [
     path: "/users",
     router: userRoutes,
   },
-    {
+  {
     path: "/webusers",
     router: webuserRoutes,
   },
@@ -66,7 +68,7 @@ const moduleRouts = [
     path: "/occasion",
     router: OccasionRouter,
   },
-    {
+  {
     path: "/printing",
     router: EpsonRoute,
   },
@@ -74,20 +76,19 @@ const moduleRouts = [
     path: "/sticker",
     router: stickerRoutes,
   },
-    {
+  {
     path: "/banner",
     router: bannerRoutes,
   },
-    {
-    
+  {
     path: "/qr-upload",
     router: QRrouter,
   },
-      {
-    
+  {
     path: "/printHistory",
     router: printHistoryRoutes,
-  }
+  },
+  { path: "/brandImg", router: printSetting },
 ];
 
 moduleRouts.forEach(({ path, router }) => {

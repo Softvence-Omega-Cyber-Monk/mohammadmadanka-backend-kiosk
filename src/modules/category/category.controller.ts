@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import CategoryService from "./category.service";
 import catchAsync from "../../util/catchAsync";
 import sendResponse from "../../util/sendResponse";
+import { uploadImgToCloudinary } from "../../util/uploadImgToCloudinary";
 
 const create = catchAsync(async (req: Request, res: Response) => {
   try {
@@ -114,11 +115,11 @@ const getById = catchAsync(async (req: Request, res: Response) => {
 const update = catchAsync(async (req: Request, res: Response) => {
   try {
     console.log("Update data ", req.body);
-
     const { serialNumber, ...data } = req.body;
 
     const numberSerialNumber = serialNumber ? Number(serialNumber) : undefined;
 
+    // Prepare the payload
     const payload = {
       ...data,
       ...(numberSerialNumber !== undefined && {
@@ -126,6 +127,20 @@ const update = catchAsync(async (req: Request, res: Response) => {
       }),
     };
 
+    // If there's a file, upload it to Cloudinary and add it to the payload
+    if (req.file) {
+      const imgFile = req.file;
+      const result = await uploadImgToCloudinary(imgFile.filename, imgFile.path);
+      
+      if (!result.secure_url) {
+        throw new Error("Image upload failed.");
+      }
+
+      payload.iconUrl = result.secure_url; // Set the new iconUrl
+      payload.public_id = result.public_id; // Optionally store the public_id if needed for later deletion
+    }
+
+    // Update the category in the database
     const result = await CategoryService.update(req.params.id, payload);
 
     sendResponse(res, {
@@ -144,6 +159,7 @@ const update = catchAsync(async (req: Request, res: Response) => {
     });
   }
 });
+
 
 const softDelete = catchAsync(async (req: Request, res: Response) => {
   try {

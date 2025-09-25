@@ -30,6 +30,16 @@ const OrderSchema = new mongoose.Schema(
       default: "pending",
       unique: false,
     },
+    trackingNumber: {
+      type: String,
+      default: null,
+      required: false,
+    },
+    trackingLink: {
+      type: String,
+      default: null,
+      required: false,
+    },
     approvedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Admin",

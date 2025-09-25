@@ -50,7 +50,7 @@ const create = async (
   return PrintHistoryer;
 };
 
-const updatePrintStatus = async (id: string) => {
+const updatePrintStatus = async (id: string, isReprint :boolean) => {
   const PrintHistoryer = await PrintHistoryerModel.findById(id);
   if (!PrintHistoryer) {
     return null; // or throw an error if preferred
@@ -76,7 +76,11 @@ const updatePrintStatus = async (id: string) => {
 
   // Save the updated inventory back to the database
   await inventory.save();
-
+  if(isReprint)
+  {
+      PrintHistoryer.isReprint = true;
+      PrintHistoryer.quantity = 2 * quantity;
+  }
   PrintHistoryer.printStatus = true;
   await PrintHistoryer.save();
   return PrintHistoryer;
