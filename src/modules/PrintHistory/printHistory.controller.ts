@@ -40,7 +40,8 @@ const create = catchAsync(async (req: Request, res: Response) => {
 });
 const updatePrintStatus = catchAsync(async (req: Request, res: Response) => {
   const id = req.params.id || req.body.id;
-  const result = await PrintHistoryService.updatePrintStatus(id); 
+  const isReprint = req.body.isReprint || false;
+  const result = await PrintHistoryService.updatePrintStatus(id, isReprint); 
   if (!result) {
     throw new Error("PrintHistory not found.");
     }

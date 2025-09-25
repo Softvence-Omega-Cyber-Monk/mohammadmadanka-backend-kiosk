@@ -86,6 +86,8 @@ const update = async (id: string, data: Partial<Order>) => {
 const updateStatus = async (
   id: string,
   status: "pending" | "approved" | "delivered" | "rejected",
+  trackingNumber?: string | null,
+  trackingLink?: string | null,
   adminId?: string
 ) => {
   const order = await OrderModel.findById(id).populate("items.category");
@@ -94,6 +96,8 @@ const updateStatus = async (
   order.status = status;
 
   if (status === "approved" && adminId) {
+    order.trackingLink = trackingLink ?? null;
+    order.trackingNumber = trackingNumber ?? null;
     order.approvedBy = new mongoose.Types.ObjectId(adminId);
   }
 

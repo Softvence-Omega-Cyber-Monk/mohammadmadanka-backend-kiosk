@@ -9,6 +9,7 @@ export type PrintHistoryer = {
   categoryId: string;
   type: string;
   quantity: number;
+  isReprint?: boolean;
   printStatus?: boolean;
   isDeleted?: boolean;
   createdAt?: Date;

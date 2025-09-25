@@ -47,6 +47,11 @@ const PrintHistorySchema = new Schema(
       type: Boolean,
       default: false,
     },
+    isReprint: {
+      type: Boolean,
+      default: false,
+      required: false,
+    },
     isDeleted: {
       type: Boolean,
       default: false,

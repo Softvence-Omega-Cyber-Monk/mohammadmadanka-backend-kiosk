@@ -20,7 +20,7 @@ const create = async (imgFile: Express.Multer.File, data: Category) => {
       name: data.name,
       isDeleted: false,
     });
-    
+
     if (isExist) {
       throw new Error("The category already exists");
     }
@@ -80,10 +80,15 @@ const getAllOccasion = async (Cid: string) => {
     const category = await CategoryModel.findOne({
       _id: Cid,
       isDeleted: false,
-    }).populate("occasions");
+    }).populate({
+      path: "occasions",
+      options: { sort: { serialNumber: 1 } }, 
+    });
+
     if (!category) {
       throw new Error("Category not found");
     }
+
     return category.occasions;
   } catch (err) {
     console.error("Error fetching category occasions:", err);
@@ -106,20 +111,24 @@ const getById = async (id: string) => {
 
 const update = async (id: string, data: Partial<Category>) => {
   try {
+    // Update the category by its id, ensuring it's not deleted
     const category = await CategoryModel.findOneAndUpdate(
       { _id: id, isDeleted: false },
       data,
-      { new: true }
+      { new: true } // Return the updated category
     );
+    
     if (!category) {
       throw new Error("Category not found for update");
     }
+
     return category;
   } catch (err) {
     console.error(`Error updating category with id ${id}:`, err);
     throw new Error(`Error updating category with id ${id}`);
   }
 };
+
 
 const softDelete = async (id: string) => {
   try {
@@ -144,7 +153,10 @@ const softDelete = async (id: string) => {
     }
 
     // 3️⃣ Remove category from all users
-    await UserModel.updateMany({ categories: id }, { $pull: { categories: id } });
+    await UserModel.updateMany(
+      { categories: id },
+      { $pull: { categories: id } }
+    );
 
     // 4️⃣ Delete inventory entries linked to this category
     await ShopinventoryModal.deleteMany({ category: id });

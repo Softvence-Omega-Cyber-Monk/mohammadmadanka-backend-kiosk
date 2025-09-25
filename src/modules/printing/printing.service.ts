@@ -40,8 +40,8 @@ export async function fetchRemoteFile(url: string): Promise<Buffer> {
 async function createA4_Front_Brand(
   editedImg: string | Buffer
 ): Promise<Buffer> {
-  const A4_WIDTH = 612; //595.28; A4 in points (70 dpi)
-  const A4_HEIGHT = 792 //841.89;
+  const A4_WIDTH = 595.28; // A4 in points (70 dpi)
+  const A4_HEIGHT = 841.89 ;
   const HALF_A4_HEIGHT = A4_HEIGHT / 2;
 
   const pdfDoc = await PDFDocument.create();
@@ -91,8 +91,8 @@ async function createA4_Front_Brand(
 // 🔹 Helper: merge fixed Inside image + blank into one A4 PDF
 // 🔹 Helper: merge fixed Inside image + blank into one A4 PDF
 async function createA4_Inside(editedImg: string | Buffer): Promise<Buffer> {
-  const A4_WIDTH = 612; //595.28; A4 in points (70 dpi)
-  const A4_HEIGHT = 792 //841.89;
+  const A4_WIDTH = 595.28; // A4 in points (72 dpi)
+  const A4_HEIGHT = 841.89; 
   const HALF_A4_HEIGHT = A4_HEIGHT / 2;
   const BORDER_PT = 2 * 28.35; // ≈ 56.7pt
 
