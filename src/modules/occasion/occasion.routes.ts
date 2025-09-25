@@ -8,7 +8,7 @@ import { upload } from '../../util/uploadImgToCloudinary';
     OccasionRouter.get('/getAll', occasionController.getAll);
     OccasionRouter.get('/names', occasionController.getAllname);
     OccasionRouter.get('/getSingle/:id', occasionController.getById);
-    OccasionRouter.put('/update/:id', occasionController.update);
+    OccasionRouter.put("/update/:id", upload.single("file"), occasionController.update);
     OccasionRouter.delete('/delete/:id', occasionController.softDelete);
 
     export default OccasionRouter;

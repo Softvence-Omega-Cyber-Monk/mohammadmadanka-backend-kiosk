@@ -84,20 +84,24 @@ const getById = async (id: string) => {
 
 const update = async (id: string, data: Partial<Occasion>) => {
   try {
-    const category = await OccasionModel.findOneAndUpdate(
+    // Update the occasion by its id, ensuring it's not deleted
+    const occasion = await OccasionModel.findOneAndUpdate(
       { _id: id, isDeleted: false },
       data,
-      { new: true }
+      { new: true } // Return the updated occasion
     );
-    if (!category) {
+
+    if (!occasion) {
       throw new Error("Occasion not found for update");
     }
-    return category;
+
+    return occasion;
   } catch (err) {
     console.error(`Error updating occasion with id ${id}:`, err);
     throw new Error(`Error updating occasion with id ${id}`);
   }
 };
+
 
 const softDelete = async (id: string) => {
   try {
