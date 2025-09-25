@@ -22,6 +22,7 @@ import {
   uploadMultipleImages,
 } from "./util/uploadImgToCloudinary";
 import { getIO } from "./socket";
+import { htmlContent } from "./util/htmlContent";
 
 
 app.use(express.json());
@@ -43,8 +44,8 @@ app.use(
 
 );
 
-app.get("/", (req, res) => {
-  res.send("Welcome to APP NAME server..!");
+app.get("/api/v1", (req, res) => {
+  res.send(htmlContent);
 });
 
 //  Routes
@@ -129,7 +130,7 @@ app.get(
 
     // Redirect back to frontend
 
-    res.redirect(`https://velvety-quokka-7b3cf9.netlify.app?shopId=${userUniqueKey}&auth=success`);
+    res.redirect(`https://mantelworthy.online?shopId=${userUniqueKey}&auth=success`);
   })
 );
 
