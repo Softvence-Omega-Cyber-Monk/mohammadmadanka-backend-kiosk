@@ -131,7 +131,7 @@ app.get(
 
     // Redirect back to frontend
 
-    res.redirect(`https://mantelworthy.online?shopId=${userUniqueKey}&auth=success`);
+    res.redirect(`https://velvety-quokka-7b3cf9.netlify.app?shopId=${userUniqueKey}&auth=success`);
   })
 );
 
