@@ -10,14 +10,32 @@ const create = async (imgFile: Express.Multer.File, data: Occasion) => {
     const result = await uploadImgToCloudinary(imgFile.filename, imgFile.path);
 
     console.log(result);
+    console.log(data);
 
     if (!result.secure_url) {
       throw new Error("Image upload failed.");
     }
+    // Check if occasion with same name exists and is not deleted
+    const isExist = await OccasionModel.findOne({
+      name: data.name,  
+      isDeleted: false,
+    });
+    if (isExist) {
+      throw new Error("The occasion already exists");
+    }
+    let serialNumber = data.serialNumber;
+    if (!serialNumber) {
+      const lastoccation = await OccasionModel.findOne({}).sort({
+        serialNumber: -1,
+      });
+      serialNumber = lastoccation ? lastoccation.serialNumber + 1 : 1;
+    }
+
 
     const occasion = await OccasionModel.create({
       ...data,
       iconUrl: result.secure_url, // attach cloudinary URL
+      serialNumber,
       public_id: result.public_id,
     });
 
@@ -30,7 +48,7 @@ const create = async (imgFile: Express.Multer.File, data: Occasion) => {
 
 const getAll = async (Cid: string) => {
   try {
-    const occasion = await OccasionModel.find({ isDeleted: false });
+    const occasion = await OccasionModel.find({ isDeleted: false }).sort({ serialNumber: 1 });;
     return occasion;
   } catch (err) {
     console.error("Error fetching all occasions:", err);

@@ -16,6 +16,11 @@ const occasionSchema = new Schema(
       type: String,
       required: true,
     },
+    serialNumber: { 
+      type: Number, 
+      required: true, 
+      unique: true 
+    },
     isDeleted: {
       type: Boolean,
       default: false,
