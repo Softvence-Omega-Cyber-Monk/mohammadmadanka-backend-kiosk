@@ -1,10 +1,15 @@
 import { Router } from 'express';
-    import printSettingController from './printSetting.controller';
+import printSettingController from './printSetting.controller';
 import { upload } from '../../util/uploadImgToCloudinary';
 
-    const printSetting = Router();
+const printSetting = Router();
 
-    printSetting.post('/create', upload.single("file"), printSettingController.create);
+printSetting.post(
+    '/brand-image',
+    upload.single('file'), // field name for the image
+    printSettingController.createOrReplace
+);
 
+printSetting.get('/brand-image', printSettingController.getLatest);
 
-    export default printSetting;
+export default printSetting;

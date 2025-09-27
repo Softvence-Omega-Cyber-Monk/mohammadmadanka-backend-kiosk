@@ -8,6 +8,7 @@ import PrintingTokenModel from "./printing.model";
 import sharp from "sharp";
 import TemplateModel from "../template/template.model";
 import CategoryModel from "../category/category.model";
+import PrintSettingModel from "../printSetting/printSetting.model";
 
 interface PrintSize {
   x: number;
@@ -19,9 +20,8 @@ interface PrintSize {
 }
 
 const EPSON_API_KEY = process.env.EPSON_API_KEY; // Epson API key
-const BRAND_IMAGE_URL =
-  process.env.BRAND_IMAGE_URL ||
-  "https://res.cloudinary.com/dbt83nrhl/image/upload/v1757415535/back-Card_lownyt.jpg"; // fixed brand image URL
+
+
 
 // 🔹 Helper: download remote file as Buffer
 export async function fetchRemoteFile(url: string): Promise<Buffer> {
@@ -47,8 +47,16 @@ async function createA4_Front_Brand(
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage([A4_WIDTH, A4_HEIGHT]);
 
+  const latestBrandImage = await PrintSettingModel
+  .findOne()                // get only one
+  .sort({ createdAt: -1 })  // newest first
+  .select('imageLink')      // only the field you need
+  .lean();                  // plain JS object
+
+  const BRAND_IMAGE_URL = latestBrandImage?.imageLink;
+
   // ✅ Brand image (always from URL)
-  const brandImgBytes = await fetchRemoteFile(BRAND_IMAGE_URL);
+  const brandImgBytes = await fetchRemoteFile(BRAND_IMAGE_URL ||"https://res.cloudinary.com/dbt83nrhl/image/upload/v1758971542/photo_2025-09-27_17-10-08_u0so9c.jpg");
 
   // ✅ Edited image (Buffer | URL | local path)
   let editedImgBytes: Buffer;
