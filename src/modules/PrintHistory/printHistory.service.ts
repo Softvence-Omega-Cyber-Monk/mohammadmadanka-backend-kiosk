@@ -88,7 +88,7 @@ const updatePrintStatus = async (id: string, isReprint :boolean) => {
 
 const getAll = async () => {
   const PrintHistoryers = await PrintHistoryerModel.find({
-    isDeleted: false,
+    isDeleted: false, printStatus : true,
   })
     .sort({ createdAt: -1 })
     .populate("shopId", "shopName userUniqueKey")
@@ -100,6 +100,7 @@ const getAll = async () => {
 const getAllByShop = async (userId: string) => {
   const PrintHistoryers = await PrintHistoryerModel.find({
     isDeleted: false,
+    printStatus : true,
     shopId: userId,
   })
     .sort({ createdAt: -1 })
