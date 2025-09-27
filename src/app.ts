@@ -81,7 +81,7 @@ app.get(
 
 // Epson OAuth callback
 app.get(
-  "/api/epson/callback",
+  "/api/v1/api/epson/callback",
   catchAsync(async (req: Request, res: Response) => {
     const { userId, userUniqueKey, Print_type } = req.query.state
       ? JSON.parse(req.query.state as string)
