@@ -59,7 +59,7 @@ app.use((req, res, next) => {
 // Authentication callback route (Epson authorization)j
 // Epson OAuth start
 app.get(
-  "/api/v1/epson/auth/:userId",
+  "/epson/auth/:userId",
   catchAsync(async (req: Request, res: Response) => {
     const userId = req.params.userId as string;
     const userUniqueKey = req.query.userUniqueKey as string;
@@ -81,7 +81,7 @@ app.get(
 
 // Epson OAuth callback
 app.get(
-  "/api/v1/api/epson/callback",
+  "/api/epson/callback",
   catchAsync(async (req: Request, res: Response) => {
     const { userId, userUniqueKey, Print_type } = req.query.state
       ? JSON.parse(req.query.state as string)
